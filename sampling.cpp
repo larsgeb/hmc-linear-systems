@@ -17,6 +17,8 @@ int main(int argc, char *argv[]) {
     int nt, iterations;
     double dt;
     bool verbose;
+    int taylorOrder;  // Order of approximation of the gradient of Xi (misfit, potential)
+    taylorOrder = 1;
 
     if (!strcmp(argv[1], "metropolis")) {
         nt = 0;

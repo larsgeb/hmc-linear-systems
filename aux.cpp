@@ -12,9 +12,10 @@
 #include <stdlib.h>
 #include "aux.hpp"
 
-/*=================================================================================*/
-/* Inversion and model parameters class. ------------------------------------------*/
-/*=================================================================================*/
+/*====================================================================================================================*/
+/* Inversion and model parameters class. -----------------------------------------------------------------------------*/
+/*====================================================================================================================*/
+
 
 /* Constructor. ------------------------------------------------------------------------------------------------------*/
 parameters::parameters() {
@@ -34,9 +35,11 @@ parameters::parameters(const parameters &a) {
         mean_q[i] = a.mean_q[i];
         layerBase[i] = a.layerBase[i];
     }
+    nLayers = a.nLayers;
+    Nq = a.Nq;
 }
 
-/* Assignment operator. -----------------------------------------------------------*/
+/* Assignment operator. ----------------------------------------------------------------------------------------------*/
 parameters &parameters::operator=(const parameters &a) {
     /* Check for self-assignment. */
     if (this == &a) return *this;
@@ -51,7 +54,7 @@ parameters &parameters::operator=(const parameters &a) {
     return *this;
 }
 
-/* Addition. ----------------------------------------------------------------------*/
+/* Addition. ---------------------------------------------------------------------------------------------------------*/
 parameters operator+(const parameters &a, const parameters &b) {
     // add values (in q), takes mean & sigma of a
     parameters c;
@@ -65,7 +68,7 @@ parameters operator+(const parameters &a, const parameters &b) {
     return c;
 }
 
-/* Subtraction. -------------------------------------------------------------------*/
+/* Subtraction. ------------------------------------------------------------------------------------------------------*/
 parameters operator-(const parameters &a, const parameters &b) {
     parameters c;
 
@@ -78,8 +81,7 @@ parameters operator-(const parameters &a, const parameters &b) {
     return c;
 }
 
-
-/* Read input from file. ----------------------------------------------------------*/
+/* Read input from file. ---------------------------------------------------------------------------------------------*/
 void parameters::read_input(const char *filename) {
     FILE *fid;
     char str[1000];
@@ -89,6 +91,8 @@ void parameters::read_input(const char *filename) {
     fgets(str, 1000, fid); // Move line
     fscanf(fid, "%d", &nLayers);
     fgets(str, 1000, fid);
+
+    Nq = nLayers * 2 + 1;
 
     double temp;
 
@@ -126,10 +130,12 @@ void parameters::read_input(const char *filename) {
     }
 
     calculateLayerBase();
+    calculateInverseCM();
 
     fclose(fid);
 }
 
+/* Calculate layer bases ---------------------------------------------------------------------------------------------*/
 void parameters::calculateLayerBase() {
     for (int i = 0; i < nLayers; i++) {
         if (i == 0) {
@@ -140,9 +146,36 @@ void parameters::calculateLayerBase() {
     }
 }
 
-/*=================================================================================*/
-/* VSP data class. ----------------------------------------------------------------*/
-/*=================================================================================*/
+/* Calculate taylor expansion of starting model ----------------------------------------------------------------------*/
+void parameters::tExpand(data d, int order, double ratioStep) {
+    if (order != 1) {
+        return;
+    }
+    t0U = d.misfit(this);   // Calculate Xi
+    t1U = d.misfitT1(this, ratioStep); // Calculate and evaluate first derivative
+}
+
+/* Calculate inverse covariance matrix -------------------------------------------------------------------------------*/
+void parameters::calculateInverseCM() {
+    // Note that only uncorrelated prior is as of yet implemented (unit matrices)
+    for (int i = 0; i < Nq; i++) {
+        std::vector<double> row_iCM;
+        // Generating the row for an identity matrix
+        for (int j = 0; j < Nq; j++) {
+            if (i == j) {
+                row_iCM.push_back(1 / sigma_q[i]);
+            } else {
+                row_iCM.push_back(0);
+            }
+        }
+        // Pushing the row into the matrix
+        iCM.push_back(row_iCM);
+    }
+}
+
+/*====================================================================================================================*/
+/* VSP data class. ---------------------------------------------------------------------------------------------------*/
+/*====================================================================================================================*/
 
 data::data() {
     // Set up has to be always loaded from the same file, therefor it's hardcoded into the constructor.
@@ -190,18 +223,13 @@ std::vector<double> data::forwardModel(parameters &q) {
             top = j != 0 ? q.layerBase[j - 1] : 0;
 
             if (recZ[i] >= base) {
-                // checking whether receiver is completely below layers:
-//                std::cout << "Receiver " << i + 1 << " at x=" << recZ[i] << " is below  layer " << j + 1
-//                          << " with top " << top << " and base " << base << std::endl;
                 travelTime[i] += thickness / q.q[j];
             } else if (recZ[i] > top) {
-//                std::cout << "Receiver " << i + 1 << " at x=" << recZ[i] << " is within layer " << j + 1 << std::endl;
                 travelTime[i] += (recZ[i] - top) / q.q[j];
             }
         }
-        if (recZ[i] > q.layerBase[q.nLayers-1]) {
-//            std::cout << "Receiver " << i + 1 << " at x=" << recZ[i] << " is in the lower halfspace" << std::endl;
-            travelTime[i] += (recZ[i] - q.layerBase[q.nLayers-1]) / q.q[q.nLayers];
+        if (recZ[i] > q.layerBase[q.nLayers - 1]) {
+            travelTime[i] += (recZ[i] - q.layerBase[q.nLayers - 1]) / q.q[q.nLayers];
         }
     }
     return travelTime;
@@ -210,7 +238,7 @@ std::vector<double> data::forwardModel(parameters &q) {
 void data::read_data(const char *filename) {
     double a;
     std::ifstream infile(filename);
-    for (int i = 0; i < recN; i++){
+    for (int i = 0; i < recN; i++) {
         infile >> a;
         recT.push_back(a);
     }
@@ -228,8 +256,94 @@ void data::write(const char *filename) {
     fclose(fid);
 }
 
+double data::misfit(parameters *q) {
+    // This function only incorporates prior and forward model misfit. Added could be forward model errors.
+    double Xi;
 
+    // Maybe implement some extra functions for vector arithmetic
+    std::vector<double> q_difference;
+    q_difference = VectorDifference(q->q, q->mean_q);
+    Xi = 0.5 * VectorVectorProduct(q_difference, MatrixVectorProduct(q->iCM, q_difference));
 
+    std::vector<double> d_difference;
+    std::vector<double> d_forward;
+    d_forward = forwardModel(*q);
+    d_difference = VectorDifference(d_forward, recT);
+    d_forward.clear();
 
+    return Xi;
+}
 
+std::vector<double> data::misfitT1(parameters *q, double ratioStep) {
+    std::vector<double> firstDerivative;
+
+    // Doing a Taylor expansion of the first order. This evaluates the derivatives at the starting model,
+    // but note that it still would have to be multiplied by (m - m0) for the taylor function
+    for (int i = 0; i < q->Nq; i++) {
+        double current_q;
+        current_q = q->q[i];
+        parameters q_perturbed;
+        q_perturbed.read_input("INPUT/parameters.txt");
+        q_perturbed.q[i] = current_q*ratioStep;
+        firstDerivative.push_back((q_perturbed.t0U - q->t0U)/(current_q*ratioStep));
+    }
+    return firstDerivative;
+}
+
+std::vector<double> VectorDifference(std::vector<double> A, std::vector<double> B) {
+
+    std::vector<double> C;
+
+    if (A.size() != B.size()) {
+        // Get some Exception class to THROW.
+        std::cout << "Vectors are not the same dimension! The code DIDN'T run successfully.";
+        return C;
+    }
+
+    std::vector<double> q_difference;
+    for (int i = 0; i < A.size(); i++) {
+        // Prior misfit
+        C.push_back(A[i] - B[i]);
+    }
+    return C;
+}
+
+std::vector<double> MatrixVectorProduct(std::vector<std::vector<double>> M, std::vector<double> A) {
+    std::vector<double> C;
+
+    // Using std::vector<>.size() requires casting for clean compilation (seems unnecessary.. But oh well)
+    // So watch out if you're working on 2^63 order problems.. ;) (Maximum <int>, not maximum <unsigned int>)
+    int rowsM = static_cast<int>(M.size());
+    int columnsM = static_cast<int>(M[0].size());
+    int rowsA = static_cast<int>(A.size());
+
+    if (columnsM != rowsA) {
+        // Get some Exception class to THROW.
+        std::cout << "Vector and matrix are not compatible in dimension! The code DIDN'T run successfully.";
+        return C;
+    }
+
+    for (int i = 0; i < rowsM; i++) {
+        C.push_back(0);
+        for (int j = 0; j < columnsM; j++) {
+            C[i] += M[i][j] * A[j];
+        }
+    }
+    return C;
+}
+
+double VectorVectorProduct(std::vector<double> A, std::vector<double> B) {
+    double C;
+
+    if (A.size() != B.size()) {
+        // Get some Exception class to THROW.
+        std::cout << "Vectors are not compatible in dimension! The code DIDN'T run successfully.";
+        return C;
+    }
+    C = 0;
+    for (int i = 0; i < A.size(); i++) {
+        C += (A[i] * B[i]);
+    }
+    return C;
+}
 

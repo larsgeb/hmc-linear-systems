@@ -41,4 +41,3 @@ plt.xlim([0,travelTime[travelTime.__len__()-1]])
 ax1.invert_yaxis()
 plt.show()
 fid.close()
-

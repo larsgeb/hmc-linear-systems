@@ -15,5 +15,8 @@ int main() {
     q.read_input("INPUT/parameters.txt"); // Load subsurface parameters into q
     d.make_synthetics(q);
     d.write("DATA/synthetics.txt");
+
+    q.tExpand(d,1,1.000001); //1.000001 seems sufficient for working precision. (~15 digits)
+
     return 0;
 }
