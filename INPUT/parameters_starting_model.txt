@@ -1,0 +1,8 @@
+#- number of layers -----------------------------------------------------------------------
+4
+#- layer speeds, including half space (prior means, next line: prior standard deviation) --
+2000.0 2000.0 3000.0 3000.0 3000.0
+100.0 100.0 100.0 100.0 100.0
+#- layer thicknesses (prior means, next line: prior standard deviation) -------------------
+500.0 500.0 500.0 500.0
+10.0 10.0 10.0 10.0

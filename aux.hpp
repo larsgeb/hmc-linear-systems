@@ -20,7 +20,7 @@ public:
             sigma_q,
             mean_q;
     // q, sigma_q and mean_q contain layer speeds (0:nLayers, nLayers+1) and layer thicknesses (nLayers+1:nLayers*2 nLayers)
-    // Usage of std::vector allows us to not define the model dimensions in the code, but rather in the parameters.txt-file (dynamic allocation of memory)
+    // Usage of std::vector allows us to not define the model dimensions in the code, but rather in the parameters_synthetics_model.txt-file (dynamic allocation of memory)
     std::vector<std::vector<double>> iCM;
 
 
@@ -57,6 +57,8 @@ public:
     std::vector<double> recT; /**< Time observed. */
     std::vector<double> recZ; /**< Depth of receiver. */
 
+    std::vector<std::vector<double>> iCD; // Inverse data covariance matrix
+
     /** Constructor and destructor. */
     data();         /**< Constructor. */
     ~data();
@@ -69,14 +71,33 @@ public:
     std::vector<double> forwardModel(parameters &q);
     void read_data(const char *filename);           /**< Fill data from previously computed and stored file. */
     void write(const char *filename);               /**< Write data to a file. */
-    double misfit(parameters *q);
-
-    std::vector<double> misfitT1(parameters *q,double ratioStep);
+    double misfit(parameters *starting_q);
+    void calculateInverseCD(double MeasurementErrorStd); // Calculates data covariance matrix based upon a single standard deviation
+    std::vector<double> misfitT1(parameters *starting_q,double ratioStep);
 };
 
 // Some useful linear algebra functions
 std::vector<double> VectorDifference(std::vector<double> A,std::vector<double> B);
 std::vector<double> MatrixVectorProduct(std::vector<std::vector<double>> M, std::vector<double> A);
 double VectorVectorProduct(std::vector<double> A, std::vector<double> B);
+
+/** Double-valued, uniformly distributed random numbers. */
+double randf(
+        double min,    /**< Minimum value. */
+        double max     /**< Maximum value. */
+);
+
+/** Double-valued, normally distributed random numbers. */
+void randn(
+        double mean,        /**< Mean. */
+        double stdv,        /**< Standard deviation. */
+        double *x1,         /**< Pointer to first random number. */
+        double *x2          /**< Pointer to second random number. */
+);
+
+double randn(
+        double mean,       /**< Mean. */
+        double stdv        /**< Standard deviation. */
+);
 
 #endif //HMC_VSP_AUX_HPP

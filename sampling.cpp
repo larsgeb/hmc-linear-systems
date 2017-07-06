@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 
     int nt, iterations;
     double dt;
-    bool verbose;
+    bool verbose = false;
     int taylorOrder;  // Order of approximation of the gradient of Xi (misfit, potential)
     taylorOrder = 1;
 
@@ -35,22 +35,54 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    parameters parameters1;
+    parameters start_model;
     data data1;
-    parameters1.read_input("INPUT/parameters.txt"); // Load subsurface parameters into q
-    data1.read_data("DATA/synthetics.txt");  //
+    start_model.read_input("INPUT/parameters_starting_model.txt"); // Load subsurface parameters into q
+    data1.read_data("DATA/synthetics.txt");
 
-    mc m(iterations, nt, dt, verbose);
+    start_model.tExpand(data1,1,1.000001); // Do a Taylor expansion of the misfit function to avoid MANY calculations
+
+    mc m(iterations, nt, dt, start_model.Nq, verbose);
     clock_t start = clock();
     int accepted = 0;
     double x, x_new;
 
-    /* Initial values. ----------------------------------------------------------------*/
+    FILE *pfile;
+    pfile = fopen("OUTPUT/samples.txt", "w");
 
+    /* Initial values. ----------------------------------------------------------------*/
     if (!strcmp(argv[1], "metropolis")) x = m.chi();
     else if (!strcmp(argv[1], "hamilton")) x = m.energy();
 
-    m.write_sample(pfile, x, 0);
+    /* Random walk. -------------------------------------------------------------------*/
+    for (int it = 0; it < m.iterations; it++) {
+        /* Make a model proposition and compute misfit/energy. */
+        if (!strcmp(argv[1], "metropolis")) {
+            m.propose_metropolis();
+            x_new = m.chi();
+        } else if (!strcmp(argv[1], "hamilton")) {
+            m.propose_hamilton();
+            x_new = m.energy();
+        }
+
+        /* Check Metropolis rule. */
+        if ((x_new < x) || (exp(x - x_new) > randf(0.0, 1.0))) {
+            x = x_new;
+            m.q = m.q_new;
+            accepted++;
+        }
+
+    }
+
+    printf("accepted: %d\n", accepted);
+    printf("elapsed time: %f\n", (double) (clock() - start) / CLOCKS_PER_SEC);
+
+    /* Clean up. ----------------------------------------------------------------------*/
+
+    fclose(pfile);
+
+    return 0;
+
 
 
     return 0;

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include "aux.hpp"
 
+const double PI = 3.14159265358979323846264338327;
 /*====================================================================================================================*/
 /* Inversion and model parameters class. -----------------------------------------------------------------------------*/
 /*====================================================================================================================*/
@@ -43,7 +44,10 @@ parameters::parameters(const parameters &a) {
 parameters &parameters::operator=(const parameters &a) {
     /* Check for self-assignment. */
     if (this == &a) return *this;
-
+    q.clear();
+    mean_q.clear();
+    sigma_q.clear();
+    layerBase.clear();
     for (int i = 0; i < a.q.size(); i++) {
         q.push_back(a.q[i]);
         mean_q.push_back(a.mean_q[i]);
@@ -158,18 +162,12 @@ void parameters::tExpand(data d, int order, double ratioStep) {
 /* Calculate inverse covariance matrix -------------------------------------------------------------------------------*/
 void parameters::calculateInverseCM() {
     // Note that only uncorrelated prior is as of yet implemented (unit matrices)
+    std::vector<double> row_iCM((unsigned long) Nq, 0);
+    iCM.insert(iCM.end(), (unsigned long) Nq, row_iCM);
+    row_iCM.clear();
+
     for (int i = 0; i < Nq; i++) {
-        std::vector<double> row_iCM;
-        // Generating the row for an identity matrix
-        for (int j = 0; j < Nq; j++) {
-            if (i == j) {
-                row_iCM.push_back(1 / sigma_q[i]);
-            } else {
-                row_iCM.push_back(0);
-            }
-        }
-        // Pushing the row into the matrix
-        iCM.push_back(row_iCM);
+        iCM[i][i] = 1/sigma_q[i];
     }
 }
 
@@ -194,7 +192,7 @@ data::data() {
         recZ.push_back(initialLocation + receiverSpacing * i);
     }
 
-
+    calculateInverseCD(0.002); // Hardcoded measurement error. Update as you see fit.
     fclose(fid2);
 }
 
@@ -209,9 +207,9 @@ void data::make_synthetics(parameters &q) {
 std::vector<double> data::forwardModel(parameters &q) {
     // This is the forward model code for a simple VSP where first arrivals are calculated from layer thicknesses and speeds.
     // Remember, positive Z is downward
-    // q is filled in the following way: 0 - nLayers: speeds || nLayers+1 - nLayers*2: thicknesses
+    // q is filled in the following way: 0 - nLayers: speeds || nLayers+1 - nLayers*2:
     std::vector<double> travelTime;
-
+    travelTime.clear();
     for (int i = 0; i < recN; i++) {
         // Looping through receivers
         travelTime.push_back(0.0);
@@ -236,7 +234,9 @@ std::vector<double> data::forwardModel(parameters &q) {
 }
 
 void data::read_data(const char *filename) {
+    // Be careful if data is already generated, will add more! (and will add a lot of debugging time..)
     double a;
+    recT.clear(); // This actually mitigates the above described error
     std::ifstream infile(filename);
     for (int i = 0; i < recN; i++) {
         infile >> a;
@@ -256,38 +256,51 @@ void data::write(const char *filename) {
     fclose(fid);
 }
 
-double data::misfit(parameters *q) {
+double data::misfit(parameters *starting_q) {
     // This function only incorporates prior and forward model misfit. Added could be forward model errors.
     double Xi;
 
     // Maybe implement some extra functions for vector arithmetic
     std::vector<double> q_difference;
-    q_difference = VectorDifference(q->q, q->mean_q);
-    Xi = 0.5 * VectorVectorProduct(q_difference, MatrixVectorProduct(q->iCM, q_difference));
+    q_difference = VectorDifference(starting_q->q, starting_q->mean_q);
+    Xi = 0.5 * VectorVectorProduct(q_difference, MatrixVectorProduct(starting_q->iCM, q_difference));
 
     std::vector<double> d_difference;
     std::vector<double> d_forward;
-    d_forward = forwardModel(*q);
+    d_forward = forwardModel(*starting_q);
     d_difference = VectorDifference(d_forward, recT);
-    d_forward.clear();
+    Xi += 0.5 * VectorVectorProduct(d_difference, MatrixVectorProduct(iCD, d_difference));
 
     return Xi;
 }
 
-std::vector<double> data::misfitT1(parameters *q, double ratioStep) {
+std::vector<double> data::misfitT1(parameters *starting_q, double ratioStep) {
     std::vector<double> firstDerivative;
 
     // Doing a Taylor expansion of the first order. This evaluates the derivatives at the starting model,
     // but note that it still would have to be multiplied by (m - m0) for the taylor function
-    for (int i = 0; i < q->Nq; i++) {
-        double current_q;
-        current_q = q->q[i];
+    for (int i = 0; i < starting_q->Nq; i++) {
+        double current_qi;
+        current_qi = starting_q->q[i];
         parameters q_perturbed;
-        q_perturbed.read_input("INPUT/parameters.txt");
-        q_perturbed.q[i] = current_q*ratioStep;
-        firstDerivative.push_back((q_perturbed.t0U - q->t0U)/(current_q*ratioStep));
+        q_perturbed.read_input("INPUT/parameters_synthetics_model.txt");
+        q_perturbed.q[i] = current_qi * ratioStep;
+        firstDerivative.push_back((q_perturbed.t0U - starting_q->t0U) / (current_qi * ratioStep));
     }
     return firstDerivative;
+}
+
+void data::calculateInverseCD(double MeasurementErrorStd) {
+
+    // A faster way of allocating a zero matrix.
+    std::vector<double> row_iCD((unsigned long) recN, 0);
+    iCD.insert(iCD.end(), (unsigned long) recN, row_iCD);
+    row_iCD.clear();
+
+    // Filling the diagonal
+    for (int i = 0; i < recN; i++) {
+        iCD[i][i] = 1/MeasurementErrorStd;
+    }
 }
 
 std::vector<double> VectorDifference(std::vector<double> A, std::vector<double> B) {
@@ -347,3 +360,33 @@ double VectorVectorProduct(std::vector<double> A, std::vector<double> B) {
     return C;
 }
 
+/* Uniformly distributed, double-valued random numbers. ---------------------------*/
+double randf(double min, double max) {
+    return (max - min) * (double) rand() / RAND_MAX + min;
+}
+
+/* Normally distributed, double-valued random numbers. ----------------------------*/
+/* This function implements the Box-Muller transform to obtain a pair of
+ normally distributed random numbers with a given mean and standard deviation. */
+void randn(double mean, double stdv, double *x1, double *x2) {
+    double z1 = (double) rand() / RAND_MAX;
+    double z2 = (double) rand() / RAND_MAX;
+
+    *x1 = sqrt(-2.0 * log(z1)) * cos(2.0 * PI * z2);
+    *x2 = sqrt(-2.0 * log(z1)) * sin(2.0 * PI * z2);
+
+    *x1 = stdv * (*x1) + mean;
+    *x2 = stdv * (*x2) + mean;
+}
+
+double randn(double mean, double stdv) {
+    double x;
+
+    double z1 = (double) rand() / RAND_MAX;
+    double z2 = (double) rand() / RAND_MAX;
+
+    x = sqrt(-2.0 * log(z1)) * cos(2.0 * PI * z2);
+    x = stdv * x + mean;
+
+    return x;
+}

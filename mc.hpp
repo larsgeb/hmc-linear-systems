@@ -3,7 +3,9 @@
 #define mc_hpp
 
 #include <stdio.h>
+#include <vector>
 #include "aux.hpp"
+
 
 #endif /* mc_hpp */
 
@@ -37,12 +39,13 @@ public:
     
     double *p;                                      /**< Current momentum vector. */
     double *p_new;                                  /**< Test momentum vector. */
-    
-    double *m;                                      /**< Mass matrix. */
-    
+
+    double zeroth;
+    std::vector<double> first;
+
     /* Constructor and destructor. ------------------------------------------------*/
     
-    mc(int iterations, int nt, double dt, bool verbose);            /**< Constructor. */
+    mc(int iterations, int nt, double dt, int _Nq, bool verbose);            /**< Constructor. */
     ~mc();                                                          /**< Destructor. */
     
     /* Precomputed matrices for fast misfit & derivative evaluation. --------------*/
