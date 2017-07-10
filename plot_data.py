@@ -23,8 +23,9 @@ travelTime = []
 location = []
 
 for x in range(0, data.__len__()):
-    travelTime.append(float(data[x]))
-    location.append(firRec + x*sepRec)
+    current = data[x].split(' ')
+    travelTime.append(float(current[1]))
+    location.append(float(current[0]))
 
 # ============================================================
 # - Plot data.

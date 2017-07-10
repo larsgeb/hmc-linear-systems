@@ -13,22 +13,22 @@
 #include "aux.hpp"
 
 const double PI = 3.14159265358979323846264338327;
-/*====================================================================================================================*/
-/* Inversion and model parameters class. -----------------------------------------------------------------------------*/
-/*====================================================================================================================*/
+/*=================================================================================*/
+/* Inversion and model parameters class. ------------------------------------------*/
+/*=================================================================================*/
 
 
-/* Constructor. ------------------------------------------------------------------------------------------------------*/
+/* Constructor. -----------------------------------------------------------------------------*/
 parameters::parameters() {
 
 }
 
-/* Destructor. -------------------------------------------------------------------------------------------------------*/
+/* Destructor. --------------------------------------------------------------------*/
 parameters::~parameters() {
 
 }
 
-/* Copy constructor. -------------------------------------------------------------------------------------------------*/
+/* Copy constructor. --------------------------------------------------------------*/
 parameters::parameters(const parameters &a) {
     for (int i = 0; i < a.nLayers; i++) {
         q[i] = a.q[i];
@@ -60,7 +60,7 @@ parameters &parameters::operator=(const parameters &a) {
 
 /* Addition. ---------------------------------------------------------------------------------------------------------*/
 parameters operator+(const parameters &a, const parameters &b) {
-    // add values (in q), takes mean & sigma of a
+    // add values (in m_q), takes mean & sigma of a
     parameters c;
 
     for (int i = 0; i < a.q.size(); i++) {
@@ -157,6 +157,7 @@ void parameters::tExpand(data d, int order, double ratioStep) {
     }
     t0U = d.misfit(this);   // Calculate Xi
     t1U = d.misfitT1(this, ratioStep); // Calculate and evaluate first derivative
+    t2U = d.misfitT2(this, ratioStep); // Calculate and evaluate first derivative
 }
 
 /* Calculate inverse covariance matrix -------------------------------------------------------------------------------*/
@@ -167,7 +168,7 @@ void parameters::calculateInverseCM() {
     row_iCM.clear();
 
     for (int i = 0; i < Nq; i++) {
-        iCM[i][i] = 1/sigma_q[i];
+        iCM[i][i] = 1 / sigma_q[i];
     }
 }
 
@@ -192,7 +193,7 @@ data::data() {
         recZ.push_back(initialLocation + receiverSpacing * i);
     }
 
-    calculateInverseCD(0.002); // Hardcoded measurement error. Update as you see fit.
+    calculateInverseCD(500); // Hardcoded measurement error. Update as you see fit.
     fclose(fid2);
 }
 
@@ -207,7 +208,7 @@ void data::make_synthetics(parameters &q) {
 std::vector<double> data::forwardModel(parameters &q) {
     // This is the forward model code for a simple VSP where first arrivals are calculated from layer thicknesses and speeds.
     // Remember, positive Z is downward
-    // q is filled in the following way: 0 - nLayers: speeds || nLayers+1 - nLayers*2:
+    // m_q is filled in the following way: 0 - nLayers: speeds || nLayers+1 - nLayers*2:
     std::vector<double> travelTime;
     travelTime.clear();
     for (int i = 0; i < recN; i++) {
@@ -263,13 +264,14 @@ double data::misfit(parameters *starting_q) {
     // Maybe implement some extra functions for vector arithmetic
     std::vector<double> q_difference;
     q_difference = VectorDifference(starting_q->q, starting_q->mean_q);
-    Xi = 0.5 * VectorVectorProduct(q_difference, MatrixVectorProduct(starting_q->iCM, q_difference));
+    Xi = 0.5 * VectorVectorProduct(q_difference, MatrixVectorProduct(starting_q->iCM,q_difference));
 
     std::vector<double> d_difference;
     std::vector<double> d_forward;
     d_forward = forwardModel(*starting_q);
     d_difference = VectorDifference(d_forward, recT);
-    Xi += 0.5 * VectorVectorProduct(d_difference, MatrixVectorProduct(iCD, d_difference));
+    Xi += 0.5 *
+          VectorVectorProduct(d_difference, MatrixVectorProduct(iCD, d_difference));
 
     return Xi;
 }
@@ -285,9 +287,32 @@ std::vector<double> data::misfitT1(parameters *starting_q, double ratioStep) {
         parameters q_perturbed;
         q_perturbed.read_input("INPUT/parameters_synthetics_model.txt");
         q_perturbed.q[i] = current_qi * ratioStep;
-        firstDerivative.push_back((q_perturbed.t0U - starting_q->t0U) / (current_qi * ratioStep));
+        firstDerivative.push_back((this->misfit(&q_perturbed) - starting_q->t0U) /
+                                  (current_qi * (1-ratioStep)));
     }
     return firstDerivative;
+}
+
+std::vector<std::vector<double> >
+data::misfitT2(parameters *starting_q, double ratioStep) {
+    std::vector<std::vector<double> > secondDerivative;
+    std::vector<double> startingFirstDerivative;
+
+    startingFirstDerivative = misfitT1(starting_q,ratioStep);
+    for (int j = 0; j < starting_q->Nq; j++) {
+        double current_qi;
+        current_qi = starting_q->q[j];
+        parameters q_perturbed;
+        q_perturbed.read_input("INPUT/parameters_synthetics_model.txt");
+        q_perturbed.q[j] = current_qi * ratioStep;
+        secondDerivative.push_back(VectorDifference(misfitT1(&q_perturbed,ratioStep),
+                            startingFirstDerivative));
+        for (int i = 0; i<starting_q->Nq; i++){
+            secondDerivative[j][i] *= 0.5 / (current_qi * (1-ratioStep));
+        }
+
+    }
+    return secondDerivative;
 }
 
 void data::calculateInverseCD(double MeasurementErrorStd) {
@@ -299,7 +324,7 @@ void data::calculateInverseCD(double MeasurementErrorStd) {
 
     // Filling the diagonal
     for (int i = 0; i < recN; i++) {
-        iCD[i][i] = 1/MeasurementErrorStd;
+        iCD[i][i] = 1 / MeasurementErrorStd;
     }
 }
 
@@ -309,7 +334,8 @@ std::vector<double> VectorDifference(std::vector<double> A, std::vector<double> 
 
     if (A.size() != B.size()) {
         // Get some Exception class to THROW.
-        std::cout << "Vectors are not the same dimension! The code DIDN'T run successfully.";
+        std::cout
+                << "Vectors are not the same dimension! The code DIDN'T run successfully.";
         return C;
     }
 
@@ -321,7 +347,8 @@ std::vector<double> VectorDifference(std::vector<double> A, std::vector<double> 
     return C;
 }
 
-std::vector<double> MatrixVectorProduct(std::vector<std::vector<double>> M, std::vector<double> A) {
+std::vector<double>
+MatrixVectorProduct(std::vector<std::vector<double> > M, std::vector<double> A) {
     std::vector<double> C;
 
     // Using std::vector<>.size() requires casting for clean compilation (seems unnecessary.. But oh well)
@@ -332,7 +359,8 @@ std::vector<double> MatrixVectorProduct(std::vector<std::vector<double>> M, std:
 
     if (columnsM != rowsA) {
         // Get some Exception class to THROW.
-        std::cout << "Vector and matrix are not compatible in dimension! The code DIDN'T run successfully.";
+        std::cout
+                << "Vector and matrix are not compatible in dimension! The code DIDN'T run successfully.";
         return C;
     }
 
@@ -350,7 +378,8 @@ double VectorVectorProduct(std::vector<double> A, std::vector<double> B) {
 
     if (A.size() != B.size()) {
         // Get some Exception class to THROW.
-        std::cout << "Vectors are not compatible in dimension! The code DIDN'T run successfully.";
+        std::cout
+                << "Vectors are not compatible in dimension! The code DIDN'T run successfully.";
         return C;
     }
     C = 0;

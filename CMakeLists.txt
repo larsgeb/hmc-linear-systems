@@ -3,8 +3,8 @@ project(hmc_vsp)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(EXE1 make_data.cpp aux.hpp aux.cpp)
-add_executable(make_data ${EXE1})
+#set(SOURCE_FILES sampling.cpp aux.hpp aux.cpp montecarlo.hpp montecarlo.cpp auxiliary.cpp auxiliary.hpp linearalgebra.cpp linearalgebra.hpp randomnumbers.cpp randomnumbers.hpp samplingNew.cpp)
+#add_executable(sampling ${SOURCE_FILES})
 
-set(SOURCE_FILES sampling.cpp aux.hpp aux.cpp mc.hpp mc.cpp)
-add_executable(sampling ${SOURCE_FILES})
+set(SOURCE_FILES makeSynthetics.cpp auxiliary.cpp)
+add_executable(makeSynthetics ${SOURCE_FILES})

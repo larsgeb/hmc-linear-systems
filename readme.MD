@@ -9,7 +9,7 @@ and misfit function. This could be used as a framework for building any inversio
 
 First generate data using the make_data.cpp file. Compile it against the aux class and you're good to go.
 
-The inversion is done using the sampling.cpp file, which should be compiled against the aux and mc class. These are not
+The inversion is done using the sampling.cpp file, which should be compiled against the aux and montecarlo class. These are not
 finished yet.
 
 ## Settings
