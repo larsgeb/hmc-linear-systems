@@ -250,7 +250,6 @@ void taylorExpansion::calculate1(std::vector<double> expansionPoint) {
     }
 }
 
-// TODO This doesn't work as expected. The values scale with the _stepRatio.
 void taylorExpansion::calculate2(std::vector<double> expansionPoint) {
 
     std::vector<double> zeroRow(_prior._numberParameters, 0);
