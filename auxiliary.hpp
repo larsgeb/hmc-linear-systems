@@ -19,6 +19,9 @@ public:
     // Constructors and destructor
     prior(const char *filename);
     prior(std::vector<double> mean,std::vector<double> std,std::vector<double>);
+
+    prior();
+
     ~prior();
 
     // Member functions
@@ -37,6 +40,9 @@ public:
     std::vector<std::vector<double> > _inverseCD;
 
     void setICDMatrix(double std);
+    void readData(const char *filename);
+
+    double misfit(std::vector<double> in_parameters);
 };
 
 class posterior{
@@ -69,12 +75,11 @@ public:
     posterior _posterior;
 
     // Member functions
-    std::vector<double> gradient();
-    void calculateExpansion();
+    std::vector<double> gradient(std::vector<double> q);
 private:
-    void calculate0();
-    void calculate1();
-    void calculate2();
+    void calculate0(std::vector<double> expansionPoint);
+    std::vector<double> calculate1(std::vector<double> expansionPoint);
+    std::vector<std::vector<double> > calculate2(std::vector<double> expansionPoint);
 };
 
 #endif //HMC_VSP_AUXILIARY_HPP

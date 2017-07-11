@@ -27,6 +27,15 @@ std::vector<double> VectorDifference(std::vector<double> A, std::vector<double> 
     return C;
 }
 
+std::vector<double> VectorScalarProduct(std::vector<double> A, double b){
+    std::vector<double> B;
+    for (int i = 0; i < A.size(); i++) {
+        // Prior misfit
+        B.push_back(A[i]*b);
+    }
+    return B;
+}
+
 std::vector<double> VectorSum(std::vector<double> A, std::vector<double> B) {
 
     std::vector<double> C;

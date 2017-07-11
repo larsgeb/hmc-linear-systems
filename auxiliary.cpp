@@ -11,6 +11,8 @@
  * ----------------------------------------------------------------------------------------------------------------------- */
 prior::~prior() {}
 
+prior::prior() {}
+
 // Setting prior
 prior::prior(const char *filename) {
     readPrior(filename);
@@ -88,6 +90,7 @@ void prior::readPrior(const char *filename) {
     fclose(fid);
 }
 
+
 /* -----------------------------------------------------------------------------------------------------------------------
  * Data class, for generating new data or loading previously generated data. Also calculates inverse data covariance
  * matrix and is able to compute data misfits.
@@ -113,11 +116,31 @@ data::data() {
     fclose(fid2);
 }
 
+double data::misfit(std::vector<double> q) {
+    // Line is a bit long, but it is the difference in observed data and input parameters, forward modelled.
+    std::vector<double> dataDifference = VectorDifference(forwardVSP::forwardModel(q, _depthReceivers),
+                                                          _traveltimeReceivers);
+    return 0.5 * VectorVectorProduct(dataDifference, MatrixVectorProduct(_inverseCD, dataDifference));
+}
+
 void data::setICDMatrix(double std) {
     std::vector<double> zeroRow((unsigned long) _numberReceivers, 0.0);
     for (int i = 0; i < _numberReceivers; i++) {
         _inverseCD.push_back(zeroRow);
         _inverseCD[i][i] = 1 / (std * std);
+    }
+}
+
+void data::readData(const char *filename) {
+    double a;
+    _traveltimeReceivers.clear();
+    _depthReceivers.clear();
+    std::ifstream infile(filename);
+    for (int i = 0; i < _numberReceivers; i++) {
+        infile >> a;
+        _depthReceivers.push_back(a);
+        infile >> a;
+        _traveltimeReceivers.push_back(a);
     }
 }
 
@@ -137,7 +160,7 @@ std::vector<double> forwardVSP::forwardModel(std::vector<double> parameters, std
 
     top.push_back(0.0);
     for (int i = 0; i < numberLayers; i++) {
-        thickness.push_back(parameters[numberLayers+1+i]);
+        thickness.push_back(parameters[numberLayers + 1 + i]);
         base.push_back(top[i] + thickness[i]);
         top.push_back(base[i]);
     }
@@ -152,7 +175,7 @@ std::vector<double> forwardVSP::forwardModel(std::vector<double> parameters, std
             }
         }
         if (locations[i] > base[numberLayers - 1]) {
-            travelTime[i] += (locations[i] - base[numberLayers - 1]) /  parameters[numberLayers-1];
+            travelTime[i] += (locations[i] - base[numberLayers - 1]) / parameters[numberLayers - 1];
         }
     }
     return travelTime;
@@ -171,7 +194,7 @@ void forwardVSP::writeData(const char *filename, std::vector<double> travelTime,
 }
 
 void forwardVSP::generateSynthetics(const char *filename, std::vector<double> locations) {
-    std::vector<double > parameters;
+    std::vector<double> parameters;
 
     FILE *fid;
     char str[1000];
@@ -197,31 +220,79 @@ void forwardVSP::generateSynthetics(const char *filename, std::vector<double> lo
 
     /*- Layer thicknesses --------------------------------------------------------------------------------------------*/
     fgets(str, 1000, fid);
-    for (int i = numberLayers + 1; i < numberLayers * 2 + 1; i++) {
+    for (int i = numberLayers + 1; i < numberParameters; i++) {
         fscanf(fid, "%lg", &temp);
         parameters.push_back(temp);
     }
     fgets(str, 1000, fid);
 
     fclose(fid);
-    forwardVSP::writeData("DATA/synthetics.txt",forwardVSP::forwardModel(parameters,locations),locations);
+    forwardVSP::writeData("DATA/synthetics.txt", forwardVSP::forwardModel(parameters, locations), locations);
 }
 
 /* -----------------------------------------------------------------------------------------------------------------------
  * Taylor expansion class. Contains probability classes by reference.
  * ----------------------------------------------------------------------------------------------------------------------- */
-void taylorExpansion::calculate0() {
+void taylorExpansion::calculate0(std::vector<double> expansionPoint) {
+    _functionValue = _posterior.misfit(expansionPoint, _prior, _data);
+}
+
+std::vector<double> taylorExpansion::calculate1(std::vector<double> expansionPoint) {
+    std::vector<double> firstDerivativeValue;
+    firstDerivativeValue.clear();
+    for (int i = 0; i < _prior._numberParameters; i++) {
+        double currentParameter = expansionPoint[i];
+        std::vector<double> perturbedParameters = expansionPoint;
+        perturbedParameters[i] = currentParameter * _stepRatio;
+        double deltaMisfit = (_posterior.misfit(perturbedParameters, _prior, _data) - _functionValue);
+        firstDerivativeValue.push_back(deltaMisfit / (currentParameter * (1 - _stepRatio)));
+        perturbedParameters.clear();
+    }
+    return firstDerivativeValue;
+}
+// TODO This doesn't work as expected. The values scale with the _stepRatio.
+std::vector<std::vector<double> > taylorExpansion::calculate2(std::vector<double> expansionPoint) {
+    std::vector<std::vector<double> > secondDerivativeValue;
+    secondDerivativeValue.clear();
+    for (int i = 0; i < _prior._numberParameters; i++) {
+        double currentParameter = expansionPoint[i];
+        std::vector<double> perturbedParameters2 = expansionPoint;
+        perturbedParameters2[i] = currentParameter * (2-_stepRatio);
+        std::vector<double> firstDerivativePerturbed = calculate1(perturbedParameters2);
+        std::vector<double> deltaDeltaMisfit = VectorDifference(firstDerivativePerturbed, _firstDerivativeValue);
+        secondDerivativeValue.push_back(VectorScalarProduct(
+                deltaDeltaMisfit,
+                0.5 / (currentParameter * (-1 + _stepRatio))
+        ));
+        firstDerivativePerturbed.clear();
+        deltaDeltaMisfit.clear();
+        perturbedParameters2.clear();
+    }
+    return secondDerivativeValue;
+}
+
+taylorExpansion::taylorExpansion(std::vector<double> parameters, double stepRatio, prior &in_prior, data &in_data,
+                                 posterior &in_posterior) {
+    _stepRatio = stepRatio;
+    _expansionPoint = parameters;
+    _prior = in_prior;
+    _data = in_data;
+    _posterior = in_posterior;
+    calculate0(_expansionPoint);
+    _firstDerivativeValue = calculate1(_expansionPoint);
+    _secondDerivativeValue = calculate2(_expansionPoint);
+}
+
+taylorExpansion::~taylorExpansion() {
 
 }
 
-void taylorExpansion::calculate1() {
-
-}
-
-void taylorExpansion::calculate2() {
-
+std::vector<double> taylorExpansion::gradient(std::vector<double> q) {
+    std::vector<double> gradient;
+    gradient = VectorSum(_firstDerivativeValue,MatrixVectorProduct(_secondDerivativeValue,q));
+    return gradient;
 }
 
 double posterior::misfit(std::vector<double> parameters, prior &in_prior, data &in_data) {
-    return in_prior.misfit(parameters);
+    return in_prior.misfit(parameters) + in_data.misfit(parameters);
 }

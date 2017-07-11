@@ -1,0 +1,8 @@
+Inverse data covariance matrix.
+    I don't intuitively understand what the meaning is of the off-diagonal elements. On-diagonal elements seem to be
+    measurement errors. I see that in the Gaussian it has relevance to the correlation between two quantities, so I assume
+    that it has something to do with if one measurement error is large, we expect another quantity to have a large error too.
+
+Volume preservation in phase space using the leapfrog method
+    In the leapfrog method, do we need to evaluate the gradient of the misfit at the same point in both the half momentum
+    steps to ensure volume preservation? Intuitively I would think so.
