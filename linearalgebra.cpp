@@ -3,11 +3,13 @@
 // Simple Linear Algebra stuff.
 //
 
-#include "linearalgebra.hpp"
+
 #include <vector>
 #include <iostream>
 
 // Linear algebra functions
+
+
 std::vector<double> VectorDifference(std::vector<double> A, std::vector<double> B) {
 
     std::vector<double> C;
@@ -27,11 +29,11 @@ std::vector<double> VectorDifference(std::vector<double> A, std::vector<double> 
     return C;
 }
 
-std::vector<double> VectorScalarProduct(std::vector<double> A, double b){
+std::vector<double> VectorScalarProduct(std::vector<double> A, double b) {
     std::vector<double> B;
     for (int i = 0; i < A.size(); i++) {
         // Prior misfit
-        B.push_back(A[i]*b);
+        B.push_back(A[i] * b);
     }
     return B;
 }
@@ -55,8 +57,7 @@ std::vector<double> VectorSum(std::vector<double> A, std::vector<double> B) {
     return C;
 }
 
-std::vector<double>
-MatrixVectorProduct(std::vector<std::vector<double> > M, std::vector<double> A) {
+std::vector<double> MatrixVectorProduct(std::vector<std::vector<double> > M, std::vector<double> A) {
     std::vector<double> C;
 
     // Using std::vector<>.size() requires casting for clean compilation (seems unnecessary.. But oh well)

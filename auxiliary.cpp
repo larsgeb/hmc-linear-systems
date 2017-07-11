@@ -296,6 +296,10 @@ void taylorExpansion::calculate2(std::vector<double> expansionPoint) {
 
 }
 
+taylorExpansion::taylorExpansion() {
+
+}
+
 taylorExpansion::taylorExpansion(std::vector<double> parameters, double stepRatio, prior &in_prior, data &in_data,
                                  posterior &in_posterior) {
     _stepRatio = stepRatio;

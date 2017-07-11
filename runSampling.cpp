@@ -4,6 +4,8 @@
 
 #include <vector>
 #include "auxiliary.hpp"
+#include "montecarlo.hpp"
+#include "randomnumbers.hpp"
 
 int main() {
 
@@ -17,12 +19,9 @@ int main() {
     // Creating a posterior object (doesn't contain much except of the misfit function)
     posterior posteriorPDF;
 
-    // Do a Taylor expansion of the misfit function to avoid long computations. Based on a simple forward finite
-    // difference scheme.
-    std::vector<double> startModel = priorConstraints._mean;
-    taylorExpansion expansionOfMisfit(startModel, 0.001, priorConstraints, observedData, posteriorPDF);
+    montecarlo mc(priorConstraints._mean, priorConstraints, observedData, posteriorPDF, 100, 5, 500);
 
-    std::vector<double> misfitGrad = expansionOfMisfit.gradient(startModel);
+    mc.propose_hamilton();
 
     return 0;
 }
