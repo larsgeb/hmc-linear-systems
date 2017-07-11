@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iostream>
+#include <cmath>
 #include <fstream>
 #include "auxiliary.hpp"
 #include "linearalgebra.cpp"
@@ -237,38 +238,63 @@ void taylorExpansion::calculate0(std::vector<double> expansionPoint) {
     _functionValue = _posterior.misfit(expansionPoint, _prior, _data);
 }
 
-std::vector<double> taylorExpansion::calculate1(std::vector<double> expansionPoint) {
-    std::vector<double> firstDerivativeValue;
-    firstDerivativeValue.clear();
+void taylorExpansion::calculate1(std::vector<double> expansionPoint) {
+    _firstDerivativeValue.clear();
     for (int i = 0; i < _prior._numberParameters; i++) {
         double currentParameter = expansionPoint[i];
         std::vector<double> perturbedParameters = expansionPoint;
-        perturbedParameters[i] = currentParameter * _stepRatio;
+        perturbedParameters[i] = currentParameter * (1 + _stepRatio);
         double deltaMisfit = (_posterior.misfit(perturbedParameters, _prior, _data) - _functionValue);
-        firstDerivativeValue.push_back(deltaMisfit / (currentParameter * (1 - _stepRatio)));
+        _firstDerivativeValue.push_back(deltaMisfit / (currentParameter * _stepRatio));
         perturbedParameters.clear();
     }
-    return firstDerivativeValue;
 }
+
 // TODO This doesn't work as expected. The values scale with the _stepRatio.
-std::vector<std::vector<double> > taylorExpansion::calculate2(std::vector<double> expansionPoint) {
-    std::vector<std::vector<double> > secondDerivativeValue;
-    secondDerivativeValue.clear();
-    for (int i = 0; i < _prior._numberParameters; i++) {
-        double currentParameter = expansionPoint[i];
-        std::vector<double> perturbedParameters2 = expansionPoint;
-        perturbedParameters2[i] = currentParameter * (2-_stepRatio);
-        std::vector<double> firstDerivativePerturbed = calculate1(perturbedParameters2);
-        std::vector<double> deltaDeltaMisfit = VectorDifference(firstDerivativePerturbed, _firstDerivativeValue);
-        secondDerivativeValue.push_back(VectorScalarProduct(
-                deltaDeltaMisfit,
-                0.5 / (currentParameter * (-1 + _stepRatio))
-        ));
-        firstDerivativePerturbed.clear();
-        deltaDeltaMisfit.clear();
-        perturbedParameters2.clear();
+void taylorExpansion::calculate2(std::vector<double> expansionPoint) {
+
+    std::vector<double> zeroRow(_prior._numberParameters, 0);
+    _secondDerivativeValue.insert(_secondDerivativeValue.end(), _prior._numberParameters, zeroRow);
+
+    for (int dimension1 = 0; dimension1 < (int) _prior._numberParameters; dimension1++) {
+        for (int dimension2 = 0; dimension2 <= dimension1; dimension2++) {
+
+            if (dimension1 == dimension2) {
+                // Finite difference stencil for accuracy 2 for second derivative of one variable
+                double coor1 = expansionPoint[dimension1];
+                double coor2 = coor1;
+                std::vector<double> forwardPoint = expansionPoint;
+                std::vector<double> backwardPoint = expansionPoint;
+                forwardPoint[dimension1] = coor1 * (1 + _stepRatio);
+                backwardPoint[dimension2] = coor2 * (1 - _stepRatio);
+                _secondDerivativeValue[dimension1][dimension2] =
+                        (1 / pow(_stepRatio, 2)) *
+                        (_posterior.misfit(backwardPoint, _prior, _data) - 2 * _functionValue +
+                         _posterior.misfit(forwardPoint, _prior, _data));
+            } else {
+                // Finite difference stencil for accuracy 2 for second derivative of mixed variables
+                std::vector<double> point1 = expansionPoint, point2 = expansionPoint, point3 = expansionPoint, point4 = expansionPoint;
+                point1[dimension1] *= (1 - _stepRatio);
+                point1[dimension2] *= (1 + _stepRatio);
+
+                point2[dimension1] *= (1 + _stepRatio);
+                point2[dimension2] *= (1 + _stepRatio);
+
+                point3[dimension1] *= (1 - _stepRatio);
+                point3[dimension2] *= (1 - _stepRatio);
+
+                point4[dimension1] *= (1 + _stepRatio);
+                point4[dimension2] *= (1 - _stepRatio);
+
+                _secondDerivativeValue[dimension1][dimension2] = (1 / (4 * pow(_stepRatio, 2))) * (_posterior.misfit
+                        (point3, _prior, _data) + _posterior.misfit(point2, _prior, _data) - _posterior.misfit
+                        (point1, _prior, _data) - _posterior.misfit(point4, _prior, _data));
+                _secondDerivativeValue[dimension2][dimension1] = _secondDerivativeValue[dimension1][dimension2];
+            }
+
+        }
     }
-    return secondDerivativeValue;
+
 }
 
 taylorExpansion::taylorExpansion(std::vector<double> parameters, double stepRatio, prior &in_prior, data &in_data,
@@ -279,8 +305,8 @@ taylorExpansion::taylorExpansion(std::vector<double> parameters, double stepRati
     _data = in_data;
     _posterior = in_posterior;
     calculate0(_expansionPoint);
-    _firstDerivativeValue = calculate1(_expansionPoint);
-    _secondDerivativeValue = calculate2(_expansionPoint);
+    calculate1(_expansionPoint);
+    calculate2(_expansionPoint);
 }
 
 taylorExpansion::~taylorExpansion() {
@@ -289,7 +315,9 @@ taylorExpansion::~taylorExpansion() {
 
 std::vector<double> taylorExpansion::gradient(std::vector<double> q) {
     std::vector<double> gradient;
-    gradient = VectorSum(_firstDerivativeValue,MatrixVectorProduct(_secondDerivativeValue,q));
+    gradient =
+            VectorSum(_firstDerivativeValue, VectorScalarProduct(MatrixVectorProduct(_secondDerivativeValue, VectorDifference
+                    (_expansionPoint, q)), 2));
     return gradient;
 }
 

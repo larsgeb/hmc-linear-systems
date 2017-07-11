@@ -78,8 +78,8 @@ public:
     std::vector<double> gradient(std::vector<double> q);
 private:
     void calculate0(std::vector<double> expansionPoint);
-    std::vector<double> calculate1(std::vector<double> expansionPoint);
-    std::vector<std::vector<double> > calculate2(std::vector<double> expansionPoint);
+    void calculate1(std::vector<double> expansionPoint);
+    void calculate2(std::vector<double> expansionPoint);
 };
 
 #endif //HMC_VSP_AUXILIARY_HPP

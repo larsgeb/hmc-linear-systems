@@ -20,8 +20,9 @@ int main() {
     // Do a Taylor expansion of the misfit function to avoid long computations. Based on a simple forward finite
     // difference scheme.
     std::vector<double> startModel = priorConstraints._mean;
-    taylorExpansion expansionOfMisfit(startModel, 1.00000001, priorConstraints, observedData, posteriorPDF);
+    taylorExpansion expansionOfMisfit(startModel, 0.001, priorConstraints, observedData, posteriorPDF);
 
+    std::vector<double> misfitGrad = expansionOfMisfit.gradient(startModel);
 
     return 0;
 }
