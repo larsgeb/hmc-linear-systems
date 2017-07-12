@@ -17,7 +17,7 @@ montecarlo::montecarlo(std::vector<double> startModel, prior &in_prior, data &in
     _prior = in_prior;
     _data = in_data;
     _posterior = in_posterior;
-    _misfitApproximation = taylorExpansion(startModel, 0.001, _prior, _data, _posterior);
+    _misfitApproximation = taylorExpansion(startModel, 0.01, _prior, _data, _posterior);
     _nt = in_nt;
     _dt = in_dt;
     _iterations = in_iterations;
@@ -52,7 +52,8 @@ void montecarlo::propose_metropolis() {
 void montecarlo::propose_hamilton() {
     /* Draw random prior momenta. */
     for (int i = 0; i < _prior._numberParameters; i++)
-        _proposedMomentum[i] = (randn(0.0, sqrt(_prior._massMatrix[i][i]))); // only diagonal implemented!
+//        _proposedMomentum[i] = randn(0.0, 100); // only diagonal implemented!
+        _proposedMomentum[i] = (randn(0.0, 1 / (_prior._massMatrix[i][i]))); // only diagonal implemented!
     /* Integrate Hamilton's equations. */
     leap_frog();
 }
@@ -87,7 +88,7 @@ void montecarlo::leap_frog() {
 
         /* Full step in position. */
         for (int i = 0; i < _prior._numberParameters; i++) {
-            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] * _prior._massMatrix[i][i];
+            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] * sqrt(_prior._massMatrix[i][i]);
         }
 
         // Update misfit to new model position
