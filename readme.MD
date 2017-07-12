@@ -14,6 +14,10 @@ The inversion is done using the runSampling.cpp file, which should be compiled a
 randomnumbers and montecarlo class. These are not finished yet, but the Hamiltonian mechanics is implemented in the
 montecarlo::leap_frog().
 
+```{r, engine='bash', building the sampling script with g++ to the executable sampling}
+g++ runSampling.cpp linearalgebra.cpp randomnumbers.cpp auxiliary.cpp montecarlo.cpp -o sampling
+```
+
 ### Settings
 
 The geometry setup of the receivers as well as the initial starting model/actual model used for synthetics can all be

@@ -5,7 +5,7 @@
 #include <cmath>
 #include <fstream>
 #include "auxiliary.hpp"
-#include "linearalgebra.cpp"
+#include "linearalgebra.hpp"
 
 /* -----------------------------------------------------------------------------------------------------------------------
  * Class for Gaussian Distributed prior information about model parameters for a VSP probabilistic inversion.

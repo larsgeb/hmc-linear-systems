@@ -6,8 +6,6 @@
 #ifndef HMC_VSP_AUXILIARY_HPP
 #define HMC_VSP_AUXILIARY_HPP
 
-const double PI = 3.14159265358979323846264338327;
-
 class prior;
 
 class data;

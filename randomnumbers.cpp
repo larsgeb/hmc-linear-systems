@@ -1,12 +1,10 @@
 //
 // Created by Lars Gebraad on 7/10/17.
 //
-
-#include <vector>
+#include <stdlib.h>
 #include "randomnumbers.hpp"
-#include "auxiliary.hpp"
 #include <math.h>
-#include <iostream>
+
 
 // Random number generators
 /* Uniformly distributed, double-valued random numbers. ---------------------------*/
