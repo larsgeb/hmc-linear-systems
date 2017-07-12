@@ -5,6 +5,8 @@
 #ifndef HMC_VSP_MONTECARLO_HPP
 #define HMC_VSP_MONTECARLO_HPP
 
+#include <libio.h>
+
 class montecarlo {
 public:
     // Constructors and destructors
@@ -38,6 +40,8 @@ public:
     double chi();
 
     double energy();
+
+    void write_sample(_IO_FILE *pfile, double misfit, int iteration);
 };
 
 #endif //HMC_VSP_MONTECARLO_HPP

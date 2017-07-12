@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include "randomnumbers.hpp"
 #include "linearalgebra.hpp"
+#include <stdio.h>
 
 montecarlo::montecarlo(std::vector<double> startModel, prior &in_prior, data &in_data, posterior &in_posterior, int in_nt,
                        double
@@ -28,13 +29,17 @@ montecarlo::montecarlo(std::vector<double> startModel, prior &in_prior, data &in
     _currentModel = startModel;
     _proposedModel = startModel;
 
+    // These shouldn't be initialized yet, but better safe than sorry when using std::vector.push_back().
+    _proposedMomentum.clear();
+    _currentMomentum.clear();
+
     // Assigning a random moment to the momentum vectors
     for (int i = 0; i < _prior._numberParameters; i++) {
         // But this momentum assignment is as of yet only the diagonal.
         _proposedMomentum.push_back(randn(0.0, sqrt(_prior._massMatrix[i][i])));
         _proposedModel[i] = randn(_prior._mean[i], _prior._std[i]);
-//        _currentModel[i] = _proposedModel[i]; Remnant of Andreas' code. Just to assign a random start model. This is
-// specified in the current code, as it allows some control over the Taylor Expansion location.
+        _currentModel[i] = _proposedModel[i];
+        _currentMomentum.push_back(_proposedMomentum[i]);
     }
 }
 
@@ -66,7 +71,7 @@ double montecarlo::chi() {
 double montecarlo::energy() {
     double H = chi();
     for (int i = 0; i < _prior._numberParameters; i++) {
-        H += 0.5 * _proposedMomentum[i] * _proposedMomentum[i] * _prior._massMatrix[i][i];
+        H += 0.5 * _proposedMomentum[i] * _proposedMomentum[i] * pow(_prior._massMatrix[i][i], 2);
     }
     return H;
 }
@@ -102,4 +107,12 @@ void montecarlo::leap_frog() {
         // TODO, no U-Turn criterion
 
     }
+}
+
+void montecarlo::write_sample(FILE *pfile, double misfit, int iteration) {
+    if (iteration == 0) fprintf(pfile, "%d %d\n", (int) _prior._numberParameters, _iterations);
+
+    for (int i = 0; i < (int) _prior._numberParameters; i++) fprintf(pfile, "%lg ", _proposedModel[i]);
+    fprintf(pfile, "%lg ", misfit);
+    fprintf(pfile, "\n");
 }
