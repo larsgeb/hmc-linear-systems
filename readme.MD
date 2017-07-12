@@ -1,18 +1,20 @@
 
-### HMC Inversion of simple (synthetic) VSP data
+## HMC Inversion of simple (synthetic) VSP data
 
 This set of programs are built to incorporate MCMC inversion using Hamiltonian Mechanics. Essentially, any amount of
-parameters and any forward model can be supplied, as long as one can descirbe the measurement errors, data uncertainty
+parameters and any forward model can be supplied, as long as one can describe the measurement errors, data uncertainty
 and misfit function. This could be used as a framework for building any inversion using HMC.
 
-## Install
+### Install
 
-First generate data using the make_data.cpp file. Compile it against the aux class and you're good to go.
+First generate data using the makeSynthetics.cpp file. Compile it against the auxiliary and the linearalgebra class and
+you're good to go.
 
-The inversion is done using the sampling.cpp file, which should be compiled against the aux and montecarlo class. These are not
-finished yet.
+The inversion is done using the runSampling.cpp file, which should be compiled against the auxiliary, linearalgebra,
+randomnumbers and montecarlo class. These are not finished yet, but the Hamiltonian mechanics is implemented in the
+montecarlo::leap_frog().
 
-## Settings
+### Settings
 
 The geometry setup of the receivers as well as the initial starting model/actual model used for synthetics can all be
-edited in the INPUT folder. As of yet, the synthetics model is the same as the starting model.
+edited in the INPUT folder.

@@ -58,7 +58,6 @@ void montecarlo::propose_hamilton() {
 }
 
 double montecarlo::chi() {
-//    double Xi;
     return _posterior.misfit(_proposedModel, _prior, _data);
 }
 
@@ -73,60 +72,33 @@ double montecarlo::energy() {
 
 /* Leap-frog integration of Hamilton's equations. ---------------------------------*/
 void montecarlo::leap_frog() {
-    /* Local variables and setup. -------------------------------------------------*/
-
-//    double angle1, angle2;
-//    std::vector<double> initialModel;
-//    std::vector<double> out;
-//    std::vector<double> p_half;
-//    std::vector<double> p_init;
-//    std::vector<double> p_start;
-
-
-    /* Set initial values. --------------------------------------------------------*/
-//    initialModel = _currentModel;
-/*    for (int i = 0; i < _prior._numberParameters; i++) {
-        p_init.push_back(_proposedMomentum[i]);
-        p_start.push_back(_proposedMomentum[i]);
-        p_half.push_back(0);
-    }*/
 
     _proposedModel = _currentModel;
-    std::vector<double> tempMisfit;
+    std::vector<double> tempMisfitGrad;
     /* March forward. -------------------------------------------------------------*/
     for (int it = 0; it < _nt; it++) {
 
-        tempMisfit = _misfitApproximation.gradient(_proposedModel);
+        tempMisfitGrad = _misfitApproximation.gradient(_proposedModel);
         /* First half step in momentum. */
         for (int i = 0; i < _prior._numberParameters; i++) {
-            _proposedMomentum[i] = _proposedMomentum[i] - 0.5 * _dt * tempMisfit[i];
+            _proposedMomentum[i] = _proposedMomentum[i] - 0.5 * _dt * tempMisfitGrad[i];
         }
-        tempMisfit.clear();
+        tempMisfitGrad.clear();
 
         /* Full step in position. */
         for (int i = 0; i < _prior._numberParameters; i++) {
-            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] * (1 / _data._inverseCD[i][i]);
+            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] * _prior._massMatrix[i][i];
         }
 
         // Update misfit to new model position
-        tempMisfit = _misfitApproximation.gradient(_proposedModel);
+        tempMisfitGrad = _misfitApproximation.gradient(_proposedModel);
         /* Second half step in momentum. */
         for (int i = 0; i < _prior._numberParameters; i++) {
-            _proposedMomentum[i] = _proposedMomentum[i] - 0.5 * _dt * tempMisfit[i];
+            _proposedMomentum[i] = _proposedMomentum[i] - 0.5 * _dt * tempMisfitGrad[i];
         }
-        tempMisfit.clear();
+        tempMisfitGrad.clear();
 
-/*        *//* Check no-U-turn criterion. *//*
-        angle1 = 0.0;
-        angle2 = 0.0;
-        for (int i = 0; i < m_Nq; i++) {
-            angle1 += p_new[i] * (m_q_new.q[i] - m_q.q[i]);
-            angle2 += p_start[i] * (m_q.q[i] - m_q_new.q[i]);
-        }
+        // TODO, no U-Turn criterion
 
-        if (angle1 < 0.0 && angle2 < 0.0) {
-            if (verbose) printf("steps: %d\n", it);
-            break;
-        }*/
     }
 }

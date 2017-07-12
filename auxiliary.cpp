@@ -37,7 +37,7 @@ double prior::misfit(std::vector<double> q) {
             (_massMatrix, parameterDifference));
 }
 
-// Set prior inverse covariance matrix, or mass matrix
+// Set prior inverse covariance matrix, or mass matrix. Only diagonal entries are filled, no correlation is described.
 void prior::setMassMatrix() {
     std::vector<double> zeroRow(_numberParameters, 0.0);
     for (int i = 0; i < _numberParameters; i++) {
@@ -103,17 +103,17 @@ data::data() {
     /* Read VSP setup. */
     fid2 = fopen("INPUT/setup.txt", "r");
 
-    double receiverSpacing, initialLocation, dataError;
+    double receiverSpacing, initialLocation, std;
 
     fgets(str, 1000, fid2);
     fscanf(fid2, "%i %lf %lf %lf", &_numberReceivers, &receiverSpacing,
-           &initialLocation, &dataError);
+           &initialLocation, &std);
 
     for (int i = 0; i < _numberReceivers; i++) {
         _depthReceivers.push_back(initialLocation + receiverSpacing * i);
     }
 
-    setICDMatrix(dataError); // Hardcoded measurement error. Update as you see fit.
+    setICDMatrix(std); // Hardcoded measurement error. Update as you see fit.
     fclose(fid2);
 }
 
@@ -128,11 +128,12 @@ void data::setICDMatrix(double std) {
     std::vector<double> zeroRow((unsigned long) _numberReceivers, 0.0);
     for (int i = 0; i < _numberReceivers; i++) {
         _inverseCD.push_back(zeroRow);
-        _inverseCD[i][i] = 1 / (std * std);
+        _inverseCD[i][i] = 1 / (std * std); // computing inverse variance
     }
 }
 
 void data::readData(const char *filename) {
+    // Read file for observed data
     double a;
     _traveltimeReceivers.clear();
     _depthReceivers.clear();
@@ -196,7 +197,7 @@ void forwardVSP::writeData(const char *filename, std::vector<double> travelTime,
 
 void forwardVSP::generateSynthetics(const char *filename, std::vector<double> locations) {
     std::vector<double> parameters;
-
+    // Load synthetics model file
     FILE *fid;
     char str[1000];
     int numberLayers;
@@ -212,7 +213,7 @@ void forwardVSP::generateSynthetics(const char *filename, std::vector<double> lo
 
     /*- Layer Speeds -------------------------------------------------------------------------------------------------*/
     fgets(str, 1000, fid);
-    // Scan all priori mean layer speeds (number of layers + half space)
+    // Scan all prior mean layer speeds (number of layers + half space)
     for (int i = 0; i < numberLayers + 1; i++) {
         fscanf(fid, "%lg", &temp);
         parameters.push_back(temp);
@@ -228,6 +229,8 @@ void forwardVSP::generateSynthetics(const char *filename, std::vector<double> lo
     fgets(str, 1000, fid);
 
     fclose(fid);
+
+    // Write synthetic data
     forwardVSP::writeData("DATA/synthetics.txt", forwardVSP::forwardModel(parameters, locations), locations);
 }
 
@@ -235,10 +238,13 @@ void forwardVSP::generateSynthetics(const char *filename, std::vector<double> lo
  * Taylor expansion class. Contains probability classes by reference.
  * ----------------------------------------------------------------------------------------------------------------------- */
 void taylorExpansion::calculate0(std::vector<double> expansionPoint) {
+    // Zeroth order Taylor-series term is just the function value at the expansion point
     _functionValue = _posterior.misfit(expansionPoint, _prior, _data);
 }
 
 void taylorExpansion::calculate1(std::vector<double> expansionPoint) {
+    // First order Taylor-series term is the first derivative at the expansion point, a vector containing the derivatives
+    // in all parameter dimensions.
     _firstDerivativeValue.clear();
     for (int i = 0; i < _prior._numberParameters; i++) {
         double currentParameter = expansionPoint[i];
@@ -251,10 +257,15 @@ void taylorExpansion::calculate1(std::vector<double> expansionPoint) {
 }
 
 void taylorExpansion::calculate2(std::vector<double> expansionPoint) {
+    // Second order Taylor-series term is the derivative of the derivative in two directions at the expansion point, a
+    // vector containing the derivatives of the first derivatives is contained in a matrix.
 
+    // Generating a zero matrix of dimension _prior.numberParameters.
     std::vector<double> zeroRow(_prior._numberParameters, 0);
     _secondDerivativeValue.insert(_secondDerivativeValue.end(), _prior._numberParameters, zeroRow);
 
+    // The matrix should be symmetric, which allows for approximately half the actual computation if every element was
+    // computed.
     for (int dimension1 = 0; dimension1 < (int) _prior._numberParameters; dimension1++) {
         for (int dimension2 = 0; dimension2 <= dimension1; dimension2++) {
 
@@ -267,7 +278,7 @@ void taylorExpansion::calculate2(std::vector<double> expansionPoint) {
                 forwardPoint[dimension1] = coor1 * (1 + _stepRatio);
                 backwardPoint[dimension2] = coor2 * (1 - _stepRatio);
                 _secondDerivativeValue[dimension1][dimension2] =
-                        (1 / pow(_stepRatio, 2)) *
+                        0.5 * (1 / pow(_stepRatio, 2)) *
                         (_posterior.misfit(backwardPoint, _prior, _data) - 2 * _functionValue +
                          _posterior.misfit(forwardPoint, _prior, _data));
             } else {
@@ -285,7 +296,7 @@ void taylorExpansion::calculate2(std::vector<double> expansionPoint) {
                 point4[dimension1] *= (1 + _stepRatio);
                 point4[dimension2] *= (1 - _stepRatio);
 
-                _secondDerivativeValue[dimension1][dimension2] = (1 / (4 * pow(_stepRatio, 2))) * (_posterior.misfit
+                _secondDerivativeValue[dimension1][dimension2] = 0.5 * (1 / (4 * pow(_stepRatio, 2))) * (_posterior.misfit
                         (point3, _prior, _data) + _posterior.misfit(point2, _prior, _data) - _posterior.misfit
                         (point1, _prior, _data) - _posterior.misfit(point4, _prior, _data));
                 _secondDerivativeValue[dimension2][dimension1] = _secondDerivativeValue[dimension1][dimension2];
@@ -317,10 +328,12 @@ taylorExpansion::~taylorExpansion() {
 }
 
 std::vector<double> taylorExpansion::gradient(std::vector<double> q) {
+    // The gradient of the Taylor expansion up to second order is the first order term derivatives plus 2 * the derivative
+    // of the second order term evaluated at the current point
     std::vector<double> gradient;
     gradient =
             VectorSum(_firstDerivativeValue, VectorScalarProduct(MatrixVectorProduct(_secondDerivativeValue, VectorDifference
-                    (_expansionPoint, q)), 2));
+                    (q, _expansionPoint)), 2));
     return gradient;
 }
 

@@ -6,3 +6,8 @@ Inverse data covariance matrix.
 Volume preservation in phase space using the leapfrog method
     In the leapfrog method, do we need to evaluate the gradient of the misfit at the same point in both the half momentum
     steps to ensure volume preservation? Intuitively I would think so.
+
+Assigning moment for Monte Carlo proposal
+    Not sure about assigning random moment, now diagonal element of inverse covariance matrix. Correlation could be
+    implemented. The physical meaning (within Hamiltonian Mechanics) of this is not immediately clear to me. Some kind of
+    connection between particles.
