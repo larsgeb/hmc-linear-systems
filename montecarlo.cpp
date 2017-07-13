@@ -11,6 +11,7 @@
 #include "randomnumbers.hpp"
 #include "linearalgebra.hpp"
 #include <stdio.h>
+#include <iostream>
 
 montecarlo::montecarlo(std::vector<double> startModel, prior &in_prior, data &in_data, posterior &in_posterior, int in_nt,
                        double
@@ -57,8 +58,7 @@ void montecarlo::propose_metropolis() {
 void montecarlo::propose_hamilton() {
     /* Draw random prior momenta. */
     for (int i = 0; i < _prior._numberParameters; i++)
-//        _proposedMomentum[i] = randn(0.0, 100); // only diagonal implemented!
-        _proposedMomentum[i] = (randn(0.0, 1 / (_prior._massMatrix[i][i]))); // only diagonal implemented!
+        _proposedMomentum[i] = (randn(0.0, 1 / sqrt(float(_prior._massMatrix[i][i])))); // only diagonal implemented!
     /* Integrate Hamilton's equations. */
     leap_frog();
 }
@@ -71,9 +71,35 @@ double montecarlo::chi() {
 double montecarlo::energy() {
     double H = chi();
     for (int i = 0; i < _prior._numberParameters; i++) {
-        H += 0.5 * _proposedMomentum[i] * _proposedMomentum[i] * pow(_prior._massMatrix[i][i], 2);
+        H += 0.5 * _proposedMomentum[i] * _proposedMomentum[i] * _prior._massMatrix[i][i];
     }
     return H;
+}
+
+void montecarlo::sample(bool hamilton) {
+    double x = (hamilton ? energy() : chi());
+    double x_new;
+    int accepted = 0;
+
+    FILE *pfile;
+    pfile = fopen("OUTPUT/samples.txt", "w");
+    write_sample(pfile, x, 0);
+    for (int it = 1; it < _iterations; it++) {
+        hamilton ? propose_hamilton() : propose_metropolis();
+        x_new = (hamilton ? energy() : chi());
+
+        if ((x_new < x) || (exp(x - x_new) > randf(0.0, 1.0))) {
+            accepted++;
+            x = x_new;
+            _currentModel = _proposedModel;
+            write_sample(pfile, x, it);
+            if (accepted % 50 == 0) _misfitApproximation.updateExpansion(_currentModel);
+        }
+    }
+    fprintf(pfile, "%i ", accepted);
+    fprintf(pfile, "\n");
+    fclose(pfile);
+    std::cout << "Number of accepted models: " << accepted;
 }
 
 /* Leap-frog integration of Hamilton's equations. ---------------------------------*/
@@ -93,7 +119,7 @@ void montecarlo::leap_frog() {
 
         /* Full step in position. */
         for (int i = 0; i < _prior._numberParameters; i++) {
-            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] * sqrt(_prior._massMatrix[i][i]);
+            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i];
         }
 
         // Update misfit to new model position
@@ -107,6 +133,7 @@ void montecarlo::leap_frog() {
         // TODO, no U-Turn criterion
 
     }
+
 }
 
 void montecarlo::write_sample(FILE *pfile, double misfit, int iteration) {

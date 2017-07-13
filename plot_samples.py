@@ -3,6 +3,7 @@ import random as random
 import matplotlib.pylab as pylab
 import matplotlib.pyplot as plt
 
+# plt.xkcd()
 # ============================================================
 # - Setup.
 # ============================================================
@@ -10,8 +11,8 @@ import matplotlib.pyplot as plt
 # - Number of burn-in samples to be ignored.
 nbi = 10
 # - Dimensions of interest.
-dim_1 = 6
-dim_2 = 7
+dim_1 = 0
+dim_2 = 3
 # - Incremental displacement for duplicate points.
 epsilon_1 = 0.0003
 epsilon_2 = 0.0003
@@ -31,9 +32,9 @@ pylab.rcParams.update(params)
 fid = open('OUTPUT/samples.txt')
 dummy = fid.read().strip().split()
 fid.close()
-
+print
 dimension = int(dummy[0])
-iterations = int(dummy[1]) - nbi
+iterations = int(dummy[dummy.__len__() - 1]) - nbi
 
 x = np.zeros(iterations)
 y = np.zeros(iterations)
@@ -62,13 +63,17 @@ for i in range(iterations):
         x_plot[i] += epsilon_1 * random.gauss(0.0, 1.0)
         y_plot[i] += epsilon_2 * random.gauss(0.0, 1.0)
 
-plt.plot(x_plot, y_plot, 'k')
-plt.plot(x_plot, y_plot, 'ro')
-plt.axis('equal')
+plt.plot(x_plot, y_plot, 'k', linewidth=0.05)
+plt.plot(x_plot, y_plot, 'ro', linewidth=0.05, markersize=0.5)
+# plt.axis('equal')
+axes = plt.gca()
+# axes.set_xlim([2315,2316])
+# axes.set_ylim([495,496])
 plt.xlabel('m' + str(dim_1 + 1))
 plt.ylabel('m' + str(dim_2 + 1))
 plt.title('random walk trajectory')
 plt.savefig('OUTPUT/trajectory.png')
+plt.savefig('OUTPUT/trajectory.pdf', format='pdf')
 plt.close()
 # plt.show()
 
@@ -76,11 +81,13 @@ plt.close()
 # - Histograms.
 # ============================================================
 
-xlim = np.max(np.abs(x));
-ylim = np.max(np.abs(y));
+xlimu = np.max(np.abs(x));
+xliml = np.min(np.abs(x));
+ylimu = np.max(np.abs(y));
+yliml = np.min(np.abs(y));
 
 plt.hist(x, bins=20, color='k', normed=True)
-plt.xlim([-xlim, xlim])
+plt.xlim([xliml, xlimu])
 plt.xlabel('m' + str(dim_1 + 1))
 plt.ylabel('posterior marginal')
 plt.savefig('OUTPUT/marginal1.png')
@@ -88,7 +95,7 @@ plt.close()
 # plt.show()
 
 plt.hist(y, bins=20, color='k', normed=True)
-plt.xlim([-ylim, ylim])
+plt.xlim([yliml, ylimu])
 plt.xlabel('m' + str(dim_2 + 1))
 plt.ylabel('posterior marginal')
 plt.savefig('OUTPUT/marginal2.png')

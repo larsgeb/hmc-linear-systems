@@ -95,6 +95,8 @@ public:
     // Member functions
     std::vector<double> gradient(std::vector<double> q);
 
+    void updateExpansion(std::vector<double> in_expansionPoint);
+
 private:
     void calculate0(std::vector<double> expansionPoint);
 

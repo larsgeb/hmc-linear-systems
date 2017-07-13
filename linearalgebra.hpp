@@ -12,7 +12,7 @@ std::vector<double> VectorSum(std::vector<double> A, std::vector<double> B);
 std::vector<double> VectorScalarProduct(std::vector<double> A, double b);
 
 std::vector<double>
-MatrixVectorProduct(std::vector<std::vector<double> > M, std::vector<double> A);
+MatrixVectorProduct(std::vector<std::vector<double>> M, std::vector<double> A);
 
 double VectorVectorProduct(std::vector<double> A, std::vector<double> B);
 

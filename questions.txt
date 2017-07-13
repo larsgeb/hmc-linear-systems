@@ -11,3 +11,9 @@ Assigning moment for Monte Carlo proposal
     Not sure about assigning random moment, now diagonal element of inverse covariance matrix. Correlation could be
     implemented. The physical meaning (within Hamiltonian Mechanics) of this is not immediately clear to me. Some kind of
     connection between particles.
+
+Accepting new models
+    In accepting new models we evaluate if the X has decreased, either misfit or hamiltonian energy. In all simulations, I
+    get a much higher acceptance rate for Hamiltonian proposals if I use the misfit functional only. This seems like the
+    intuitive way to go. Because, why would we care about momentum? It's the speed that the particle has, but it is
+    discarded in the next iterations. I would intuitively say that we only care about how well the parameters fit.

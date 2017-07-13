@@ -41,6 +41,8 @@ public:
 
     double energy();
 
+    void sample(bool hamilton);
+
     void write_sample(_IO_FILE *pfile, double misfit, int iteration);
 };
 
