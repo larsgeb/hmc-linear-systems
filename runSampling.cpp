@@ -21,11 +21,8 @@ int main() {
     posterior posteriorPDF;
 
     // Make montecarlo object for propagating the model through phase space
-    montecarlo mc(priorConstraints._mean, priorConstraints, observedData, posteriorPDF, 500, 0.00001, 50000);
-
+    montecarlo mc(priorConstraints._mean, priorConstraints, observedData, posteriorPDF, 100, 0.0000001, 500);
     bool hamilton = true;
     mc.sample(hamilton);
-
-
     return 0;
 }

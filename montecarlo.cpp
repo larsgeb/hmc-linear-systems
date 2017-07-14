@@ -19,7 +19,7 @@ montecarlo::montecarlo(std::vector<double> startModel, prior &in_prior, data &in
     _prior = in_prior;
     _data = in_data;
     _posterior = in_posterior;
-    _misfitApproximation = taylorExpansion(startModel, 0.01, _prior, _data, _posterior);
+    _misfitApproximation = taylorExpansion(startModel, 0.001, _prior, _data, _posterior);
     _nt = in_nt;
     _dt = in_dt;
     _iterations = in_iterations;
@@ -59,8 +59,12 @@ void montecarlo::propose_hamilton() {
     /* Draw random prior momenta. */
     for (int i = 0; i < _prior._numberParameters; i++)
         _proposedMomentum[i] = (randn(0.0, 1 / sqrt(float(_prior._massMatrix[i][i])))); // only diagonal implemented!
+    // std deviation the square root of mass to assign momenta
+
     /* Integrate Hamilton's equations. */
-    leap_frog();
+    FILE *trajectoryfile;
+    trajectoryfile = fopen("OUTPUT/trajectory.txt", "w");
+    leap_frog(trajectoryfile);
 }
 
 double montecarlo::chi() {
@@ -77,13 +81,13 @@ double montecarlo::energy() {
 }
 
 void montecarlo::sample(bool hamilton) {
-    double x = (hamilton ? energy() : chi());
+    double x = (hamilton ? energy() : chi()); // We evaluate th complete hamiltonian
     double x_new;
     int accepted = 0;
 
-    FILE *pfile;
-    pfile = fopen("OUTPUT/samples.txt", "w");
-    write_sample(pfile, x, 0);
+    FILE *samplesfile;
+    samplesfile = fopen("OUTPUT/samples.txt", "w");
+    write_sample(samplesfile, x, 0);
     for (int it = 1; it < _iterations; it++) {
         hamilton ? propose_hamilton() : propose_metropolis();
         x_new = (hamilton ? energy() : chi());
@@ -92,18 +96,18 @@ void montecarlo::sample(bool hamilton) {
             accepted++;
             x = x_new;
             _currentModel = _proposedModel;
-            write_sample(pfile, x, it);
-            if (accepted % 50 == 0) _misfitApproximation.updateExpansion(_currentModel);
+            write_sample(samplesfile, x, it);
+            if (accepted % 5 == 0) _misfitApproximation.updateExpansion(_currentModel);
         }
     }
-    fprintf(pfile, "%i ", accepted);
-    fprintf(pfile, "\n");
-    fclose(pfile);
+    fprintf(samplesfile, "%i ", accepted);
+    fprintf(samplesfile, "\n");
+    fclose(samplesfile);
     std::cout << "Number of accepted models: " << accepted;
 }
 
 /* Leap-frog integration of Hamilton's equations. ---------------------------------*/
-void montecarlo::leap_frog() {
+void montecarlo::leap_frog(_IO_FILE *trajectoryfile) {
 
     _proposedModel = _currentModel;
     std::vector<double> tempMisfitGrad;
@@ -116,10 +120,10 @@ void montecarlo::leap_frog() {
             _proposedMomentum[i] = _proposedMomentum[i] - 0.5 * _dt * tempMisfitGrad[i];
         }
         tempMisfitGrad.clear();
-
+        write_trajectory(trajectoryfile, it);
         /* Full step in position. */
         for (int i = 0; i < _prior._numberParameters; i++) {
-            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i];
+            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] / sqrt(_prior._massMatrix[i][i]);
         }
 
         // Update misfit to new model position
@@ -142,4 +146,14 @@ void montecarlo::write_sample(FILE *pfile, double misfit, int iteration) {
     for (int i = 0; i < (int) _prior._numberParameters; i++) fprintf(pfile, "%lg ", _proposedModel[i]);
     fprintf(pfile, "%lg ", misfit);
     fprintf(pfile, "\n");
+}
+
+void montecarlo::write_trajectory(FILE *pfile, int iteration) {
+    if (iteration == 0) fprintf(pfile, "%d %i\n", (int) _prior._numberParameters, _nt);
+
+    for (int i = 0; i < (int) _prior._numberParameters; i++) fprintf(pfile, "%.9lg ", _proposedModel[i]);
+    fprintf(pfile, "\n");
+    for (int i = 0; i < (int) _prior._numberParameters; i++) fprintf(pfile, "%.9lg ", _proposedMomentum[i]);
+    fprintf(pfile, "\n");
+
 }

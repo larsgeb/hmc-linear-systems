@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 nbi = 10
 # - Dimensions of interest.
 dim_1 = 0
-dim_2 = 3
+dim_2 = 1
 # - Incremental displacement for duplicate points.
 epsilon_1 = 0.0003
 epsilon_2 = 0.0003
@@ -71,11 +71,11 @@ axes = plt.gca()
 # axes.set_ylim([495,496])
 plt.xlabel('m' + str(dim_1 + 1))
 plt.ylabel('m' + str(dim_2 + 1))
-plt.title('random walk trajectory')
-plt.savefig('OUTPUT/trajectory.png')
-plt.savefig('OUTPUT/trajectory.pdf', format='pdf')
-plt.close()
+plt.title('random walk')
+plt.savefig('OUTPUT/randomWalk.png')
+plt.savefig('OUTPUT/randomWalk.pdf', format='pdf')
 # plt.show()
+plt.close()
 
 # ============================================================
 # - Histograms.

@@ -13,6 +13,7 @@ public:
     montecarlo(std::vector<double> startModel, prior &in_prior, data &in_data, posterior &in_posterior, int in_nt, double
     in_dt, int in_iterations);
 
+
     ~montecarlo();
 
     // Fields
@@ -35,7 +36,7 @@ public:
 
     void propose_hamilton();
 
-    void leap_frog();
+    void leap_frog(_IO_FILE *trajectoryfile);
 
     double chi();
 
@@ -44,6 +45,8 @@ public:
     void sample(bool hamilton);
 
     void write_sample(_IO_FILE *pfile, double misfit, int iteration);
+
+    void write_trajectory(_IO_FILE *pfile, int iteration);
 };
 
 #endif //HMC_VSP_MONTECARLO_HPP
