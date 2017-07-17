@@ -10,8 +10,8 @@
 class montecarlo {
 public:
     // Constructors and destructors
-    montecarlo(std::vector<double> startModel, prior &in_prior, data &in_data, posterior &in_posterior, int in_nt, double
-    in_dt, int in_iterations);
+    montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel
+    in_model, int in_nt, double in_dt, int in_iterations);
 
 
     ~montecarlo();
@@ -19,8 +19,8 @@ public:
     // Fields
     prior _prior;
     data _data;
+    forwardModel _model;
     posterior _posterior;
-    taylorExpansion _misfitApproximation;
     int _nt; // Number of time steps for trajectory
     double _dt; // Time step for trajectory
     int _iterations; // Number of iterations for Monte Carlo sampling

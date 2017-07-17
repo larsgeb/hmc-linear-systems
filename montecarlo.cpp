@@ -13,13 +13,12 @@
 #include <stdio.h>
 #include <iostream>
 
-montecarlo::montecarlo(std::vector<double> startModel, prior &in_prior, data &in_data, posterior &in_posterior, int in_nt,
-                       double
-                       in_dt, int in_iterations) {
+montecarlo::montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel
+in_model, int in_nt, double in_dt, int in_iterations) {
     _prior = in_prior;
     _data = in_data;
+    _model = in_model;
     _posterior = in_posterior;
-    _misfitApproximation = taylorExpansion(startModel, 0.001, _prior, _data, _posterior);
     _nt = in_nt;
     _dt = in_dt;
     _iterations = in_iterations;
@@ -27,8 +26,8 @@ montecarlo::montecarlo(std::vector<double> startModel, prior &in_prior, data &in
     /* Initialise random number generator. ----------------------------------------*/
     srand((unsigned int) time(0));
 
-    _currentModel = startModel;
-    _proposedModel = startModel;
+    _currentModel = _prior._mean;
+    _proposedModel = _prior._mean;
 
     // These shouldn't be initialized yet, but better safe than sorry when using std::vector.push_back().
     _proposedMomentum.clear();
@@ -68,7 +67,7 @@ void montecarlo::propose_hamilton() {
 }
 
 double montecarlo::chi() {
-    return _posterior.misfit(_proposedModel, _prior, _data);
+    return _posterior.misfit(_proposedModel, _prior, _data, _model);
 }
 
 /* Misfit for Hamiltonian Monte Carlo. --------------------------------------------*/
@@ -97,7 +96,7 @@ void montecarlo::sample(bool hamilton) {
             x = x_new;
             _currentModel = _proposedModel;
             write_sample(samplesfile, x, it);
-            if (accepted % 5 == 0) _misfitApproximation.updateExpansion(_currentModel);
+//            if (accepted % 5 == 0) _misfitApproximation.updateExpansion(_currentModel);
         }
     }
     fprintf(samplesfile, "%i ", accepted);
@@ -114,7 +113,7 @@ void montecarlo::leap_frog(_IO_FILE *trajectoryfile) {
     /* March forward. -------------------------------------------------------------*/
     for (int it = 0; it < _nt; it++) {
 
-        tempMisfitGrad = _misfitApproximation.gradient(_proposedModel);
+//        tempMisfitGrad = _misfitApproximation.gradient(_proposedModel);
         /* First half step in momentum. */
         for (int i = 0; i < _prior._numberParameters; i++) {
             _proposedMomentum[i] = _proposedMomentum[i] - 0.5 * _dt * tempMisfitGrad[i];
@@ -127,7 +126,7 @@ void montecarlo::leap_frog(_IO_FILE *trajectoryfile) {
         }
 
         // Update misfit to new model position
-        tempMisfitGrad = _misfitApproximation.gradient(_proposedModel);
+//        tempMisfitGrad = _misfitApproximation.gradient(_proposedModel);
         /* Second half step in momentum. */
         for (int i = 0; i < _prior._numberParameters; i++) {
             _proposedMomentum[i] = _proposedMomentum[i] - 0.5 * _dt * tempMisfitGrad[i];

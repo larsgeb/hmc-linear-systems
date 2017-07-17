@@ -4,6 +4,7 @@
 
 #include <vector>
 #include "auxiliary.hpp"
+#include "linearalgebra.hpp"
 #include "montecarlo.hpp"
 #include "randomnumbers.hpp"
 #include <math.h>
@@ -11,18 +12,28 @@
 int main() {
 
     // Load the observed data
-    data observedData;
-    observedData.readData("DATA/synthetics.txt");
+    data observedData(5);
+    observedData.readData("OUTPUT/synthetics.txt");
 
-    // Load the prior information
-    prior priorConstraints("INPUT/prior_information.txt");
+    // Create prior information (Gaussian distribution)
+    std::vector<double> means{2.5, 2.5, 2.5, 2.5, 2.5};
+    std::vector<double> std{2, 2, 2, 2, 2};
+    prior priorInfo(means, std);
+    means.clear();
+    std.clear();
 
-    // Creating a posterior object (doesn't contain much except of the misfit function)
-    posterior posteriorPDF;
+    // Create design matrix within forwardModel object
+    forwardModel forwardModel1(5);
 
-    // Make montecarlo object for propagating the model through phase space
-    montecarlo mc(priorConstraints._mean, priorConstraints, observedData, posteriorPDF, 100, 0.0000001, 500);
-    bool hamilton = true;
-    mc.sample(hamilton);
+    // Create posterior object
+    posterior posterior1;
+
+    montecarlo mc(priorInfo, observedData, posterior1, forwardModel1, 20, 0.001, 500);
+
+    std::vector<std::vector<double>> A = {{1,2},{3,4},{5,6}};
+    std::vector<std::vector<double>> B = {{1,2,3,4},{5,6,7,8}};
+
+    std::vector<std::vector<double>> P = MatrixMatrixProduct(A,B);
+
     return 0;
 }

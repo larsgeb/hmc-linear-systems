@@ -1,3 +1,0 @@
-#- nrec, nspacing [m], ninit [m], data error standard deviation [s] (for now equidistant) ------
-125 25.0 0.0 0.05
-

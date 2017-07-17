@@ -12,9 +12,9 @@ class data;
 
 class posterior;
 
-class forwardVSP;
+class forwardModel;
 
-class taylorExpansion;
+//class taylorExpansion;
 
 class prior {
 public:
@@ -25,11 +25,9 @@ public:
     std::vector<std::vector<double> > _massMatrix;
 
     // Constructors and destructor
-    prior(const char *filename);
-
-    prior(std::vector<double> mean, std::vector<double> std, std::vector<double>);
-
     prior();
+
+    prior(std::vector<double> mean, std::vector<double> std);
 
     ~prior();
 
@@ -38,41 +36,55 @@ public:
 
 private:
     void setMassMatrix();
-
-    void readPrior(const char *filename);
+//    void readPrior(const char *filename);
 };
 
 class data {
 public:
+    data(int numberData);
+
     data();
 
-    int _numberReceivers;
-    std::vector<double> _depthReceivers;
-    std::vector<double> _traveltimeReceivers;
+    int _numberData;
+    std::vector<double> _observedData;
     std::vector<std::vector<double> > _inverseCD;
+    std::vector<std::vector<double> > _misfitMatrix; // This is the forward model transposed times inverseCD times forward
+    // model. Pre-calculated for speed.
 
     void setICDMatrix(double std);
 
     void readData(const char *filename);
 
-    double misfit(std::vector<double> in_parameters);
+    void writeData(const char *filename);
+
+    double misfit(std::vector<double> in_parameters, forwardModel m);
+
+    void setMisfitMatrix(std::vector<std::vector<double>> designMatrix);
 };
 
 class posterior {
 public:
-    double misfit(std::vector<double> parameters, prior &in_prior, data &in_data);
+    double misfit(std::vector<double> parameters, prior &in_prior, data &in_data, forwardModel m);
 };
 
-class forwardVSP {
+class forwardModel {
 public:
-    static std::vector<double> forwardModel(std::vector<double> parameters, std::vector<double> locations);
+    // Constructors & destructors
+    forwardModel(int numberParameters);
 
-    static void writeData(const char *filename, std::vector<double> travelTime, std::vector<double> locations);
+    forwardModel();
 
-    static void generateSynthetics(const char *filename, std::vector<double> locations);
+    // Fields
+    int _numberParameters;
+    std::vector<std::vector<double>> _designMatrix;
+
+    // Methods
+    void constructDesignMatrix(int numberParameters);
+
+    std::vector<double> calculateData(std::vector<double> parameters);
 };
 
-class taylorExpansion {
+/*class taylorExpansion {
 public:
     taylorExpansion();
 
@@ -103,6 +115,6 @@ private:
     void calculate1(std::vector<double> expansionPoint);
 
     void calculate2(std::vector<double> expansionPoint);
-};
+};*/
 
 #endif //HMC_VSP_AUXILIARY_HPP
