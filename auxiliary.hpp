@@ -12,9 +12,9 @@ class data;
 
 class posterior;
 
-class forwardVSP;
+class forwardModel;
 
-class taylorExpansion;
+//class taylorExpansion;
 
 class prior {
 public:
@@ -22,57 +22,82 @@ public:
     unsigned long _numberParameters;
     std::vector<double> _mean;
     std::vector<double> _std;
+    // Mind that as other masses are assigned, the function prior::misfitGradient should actually use the inverse covariance
+    // matrix, which is not explicitly defined.
     std::vector<std::vector<double> > _massMatrix;
 
     // Constructors and destructor
-    prior(const char *filename);
-
-    prior(std::vector<double> mean, std::vector<double> std, std::vector<double>);
-
     prior();
+
+    prior(std::vector<double> mean, std::vector<double> std);
 
     ~prior();
 
     // Member functions
-    double misfit(std::vector<double> q);
+    double misfit(std::vector<double> parameters);
 
+    std::vector<double> gradientMisfit(std::vector<double> parameters);
 private:
-    void setMassMatrix();
 
-    void readPrior(const char *filename);
+    // Mind that as other masses are assigned, the function prior::misfitGradient should actually use the inverse covariance
+    // matrix, which is not explicitly defined.
+    void setMassMatrix();
 };
 
 class data {
 public:
+    data(int numberData, double measurementError);
+
     data();
 
-    int _numberReceivers;
-    std::vector<double> _depthReceivers;
-    std::vector<double> _traveltimeReceivers;
+    int _numberData;
+    std::vector<double> _observedData;
     std::vector<std::vector<double> > _inverseCD;
+    std::vector<std::vector<double> > _misfitParameterDataMatrix; // This is the forward model transposed times inverseCD
+    std::vector<std::vector<double> > _misfitParameterMatrix; // This is the forward model transposed times inverseCD times forward
+    // model. Pre-calculated for speed.
 
     void setICDMatrix(double std);
 
     void readData(const char *filename);
 
-    double misfit(std::vector<double> in_parameters);
+    void writeData(const char *filename);
+
+    double misfit(std::vector<double> in_parameters, forwardModel m);
+
+    void setMisfitParameterDataMatrix(std::vector<std::vector<double>> designMatrix);
+    void setMisfitParameterMatrix(std::vector<std::vector<double>> designMatrix);
+
+    std::vector<double> gradientMisfit(std::vector<double> parameters);
 };
 
 class posterior {
 public:
-    double misfit(std::vector<double> parameters, prior &in_prior, data &in_data);
+    double misfit(std::vector<double> parameters, prior &in_prior, data &in_data, forwardModel m);
+
+    std::vector<double> gradientMisfit(std::vector<double> parameters, prior &in_prior, data &in_data);
 };
 
-class forwardVSP {
+class forwardModel {
 public:
-    static std::vector<double> forwardModel(std::vector<double> parameters, std::vector<double> locations);
+    // Constructors & destructors
+    forwardModel(int numberParameters);
 
-    static void writeData(const char *filename, std::vector<double> travelTime, std::vector<double> locations);
+    forwardModel();
 
-    static void generateSynthetics(const char *filename, std::vector<double> locations);
+    // Fields
+    int _numberParameters;
+    std::vector<std::vector<double>> _designMatrix;
+
+    // Methods
+    void constructDesignMatrix(int numberParameters);
+
+    std::vector<double> calculateData(std::vector<double> parameters);
 };
 
-class taylorExpansion {
+void printVector(std::vector<double> A);
+
+/*class taylorExpansion {
 public:
     taylorExpansion();
 
@@ -103,6 +128,6 @@ private:
     void calculate1(std::vector<double> expansionPoint);
 
     void calculate2(std::vector<double> expansionPoint);
-};
+};*/
 
 #endif //HMC_VSP_AUXILIARY_HPP
