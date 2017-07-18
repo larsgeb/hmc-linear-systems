@@ -8,8 +8,6 @@
 #include <iostream>
 
 // Linear algebra functions
-
-
 std::vector<double> VectorDifference(std::vector<double> A, std::vector<double> B) {
 
     std::vector<double> C;
@@ -96,4 +94,65 @@ double VectorVectorProduct(std::vector<double> A, std::vector<double> B) {
         C += (A[i] * B[i]);
     }
     return C;
+}
+
+std::vector<double> GetMatrixColumn(std::vector<std::vector<double>> M, int column) {
+    std::vector<double> A;
+    unsigned long rows = M.size();
+    A.clear();
+    for (unsigned long row = 0; row < rows; row++) {
+        A.push_back(M[row][column]);
+    }
+    return A;
+}
+
+std::vector<double> GetMatrixRow(std::vector<std::vector<double>> M, int row) {
+    std::vector<double> A;
+    unsigned long columns = M[0].size();
+    A.clear();
+    for (unsigned long column = 0; column < columns; column++) {
+        A.push_back(M[row][column]);
+    }
+    return A;
+}
+
+std::vector<std::vector<double>> TransposeMatrix(std::vector<std::vector<double>> M) {
+    unsigned long rows = M.size();
+    unsigned long columns = M[0].size();
+    std::vector<std::vector<double>> N;
+
+    N.clear();
+    std::vector<double> zeroRow(rows, 0);
+    N.insert(N.end(), columns, zeroRow);
+
+    for (int row = 0; row < rows; row++) {
+        for (int column = 0; column < columns; column++) {
+            N[column][row] = M[row][column];
+        }
+    }
+    return N;
+}
+
+std::vector<std::vector<double>>
+MatrixMatrixProduct(std::vector<std::vector<double>> M, std::vector<std::vector<double>> N) {
+    std::vector<std::vector<double>> P;
+    unsigned long columnsM = M[0].size();
+    unsigned long rowsM = M.size();
+    unsigned long columnsN = N[0].size();
+    unsigned long rowsN = N.size();
+
+    P.clear();
+    std::vector<double> zeroRow(columnsN, 0);
+    P.insert(P.end(), rowsM, zeroRow);
+
+    for (int rowM = 0; rowM < rowsM; rowM++) {
+        for (int columnN = 0; columnN < columnsN; columnN++) {
+            double sum = 0;
+            for (int innerDim = 0; innerDim < rowsN; innerDim++) {
+                sum += M[rowM][innerDim] * N[innerDim][columnN];
+            }
+            P[rowM][columnN] = sum;
+        }
+    }
+    return P;
 }

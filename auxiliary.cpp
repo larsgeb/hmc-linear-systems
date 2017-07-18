@@ -14,31 +14,39 @@ prior::~prior() {}
 
 prior::prior() {}
 
-// Setting prior
-prior::prior(const char *filename) {
-    readPrior(filename);
-    setMassMatrix();
-}
-
 // Setting prior data manually
-prior::prior(std::vector<double> mean, std::vector<double> std,
-             std::vector<double>) {
+prior::prior(std::vector<double> mean, std::vector<double> std) {
+    _mean.clear();
+    _std.clear();
     _mean = mean;
     _std = std;
     _numberParameters = _mean.size();
-    mean.clear();
-    std.clear();
     setMassMatrix();
 }
 
-double prior::misfit(std::vector<double> q) {
-    std::vector<double> parameterDifference = VectorDifference(q, _mean);
+double prior::misfit(std::vector<double> parameters) {
+    std::vector<double> parameterDifference = VectorDifference(parameters, _mean);
     return 0.5 * VectorVectorProduct(parameterDifference, MatrixVectorProduct
             (_massMatrix, parameterDifference));
 }
 
+std::vector<double> prior::gradientMisfit(std::vector<double> parameters) {
+    std::vector<double> parameters_diff = VectorDifference(parameters, _mean);
+    std::vector<double> gradient;
+    gradient.clear();
+    for (int q = 0; q < parameters.size(); q++) {
+        // Mind that as other masses are assigned, this formula should actually use the inverse covariance matrix, which
+        // is not explicitly defined. TODO Implement the inverse covariance matrix explicitly
+        gradient.push_back(0.5 * (VectorVectorProduct(GetMatrixColumn(_massMatrix, q), parameters_diff) +
+                                  VectorVectorProduct(GetMatrixRow(_massMatrix, q), parameters_diff)));
+    }
+    return gradient;
+}
+
 // Set prior inverse covariance matrix, or mass matrix. Only diagonal entries are filled, no correlation is described.
 void prior::setMassMatrix() {
+    // Mind that as other masses are assigned, the function prior::misfitGradient should actually use the inverse covariance
+    // matrix, which is not explicitly defined.
     std::vector<double> zeroRow(_numberParameters, 0.0);
     for (int i = 0; i < _numberParameters; i++) {
         _massMatrix.push_back(zeroRow);
@@ -46,86 +54,27 @@ void prior::setMassMatrix() {
     }
 }
 
-// Read prior information on model parameters from file
-void prior::readPrior(const char *filename) {
-    FILE *fid;
-    char str[1000];
-
-    fid = fopen(filename, "r");
-
-    int numberLayers;
-    fgets(str, 1000, fid); // Move line
-    fscanf(fid, "%i", &numberLayers);
-    fgets(str, 1000, fid);
-    _numberParameters = (unsigned long) (numberLayers * 2 + 1);
-
-    double temp;
-    /*- Layer Speeds -------------------------------------------------------------------------------------------------*/
-    fgets(str, 1000, fid);
-    // Scan all prior mean layer speeds (number of layers + half space)
-    for (int i = 0; i < numberLayers + 1; i++) {
-        fscanf(fid, "%lg", &temp);
-        _mean.push_back(temp);
-    }
-    fgets(str, 1000, fid);
-    // Scan all prior sigma layer speeds (number of layers + half space)
-    for (int i = 0; i < numberLayers + 1; i++) {
-        fscanf(fid, "%lg", &temp);
-        _std.push_back(temp);
-    }
-    fgets(str, 1000, fid);
-
-    /*- Layer thicknesses --------------------------------------------------------------------------------------------*/
-    fgets(str, 1000, fid);
-    for (int i = numberLayers + 1; i < numberLayers * 2 + 1; i++) {
-        fscanf(fid, "%lg", &temp);
-        _mean.push_back(temp);
-    }
-    fgets(str, 1000, fid);
-    for (int i = numberLayers + 1; i < numberLayers * 2 + 1; i++) {
-        fscanf(fid, "%lg", &temp);
-        _std.push_back(temp);
-    }
-    fgets(str, 1000, fid);
-
-    fclose(fid);
-}
-
 /* -----------------------------------------------------------------------------------------------------------------------
  * Data class, for generating new data or loading previously generated data. Also calculates inverse data covariance
  * matrix and is able to compute data misfits.
  * ----------------------------------------------------------------------------------------------------------------------- */
-data::data() {
-    FILE *fid2;
-    char str[1000];
-
-    /* Read VSP setup. */
-    fid2 = fopen("INPUT/setup.txt", "r");
-
-    double receiverSpacing, initialLocation, std;
-
-    fgets(str, 1000, fid2);
-    fscanf(fid2, "%i %lf %lf %lf", &_numberReceivers, &receiverSpacing,
-           &initialLocation, &std);
-
-    for (int i = 0; i < _numberReceivers; i++) {
-        _depthReceivers.push_back(initialLocation + receiverSpacing * i);
-    }
-
-    setICDMatrix(std); // Hardcoded measurement error. Update as you see fit.
-    fclose(fid2);
+data::data(int numberData, double measurementError) {
+    _numberData = numberData;
+    setICDMatrix(measurementError); // Hardcoded measurement error. Update as you see fit.
 }
 
-double data::misfit(std::vector<double> q) {
-    // Line is a bit long, but it is the difference in observed data and input parameters, forward modelled.
-    std::vector<double> dataDifference = VectorDifference(forwardVSP::forwardModel(q, _depthReceivers),
-                                                          _traveltimeReceivers);
+data::data() {
+
+}
+
+double data::misfit(std::vector<double> q, forwardModel m) {
+    std::vector<double> dataDifference = VectorDifference(m.calculateData(q), _observedData);
     return 0.5 * VectorVectorProduct(dataDifference, MatrixVectorProduct(_inverseCD, dataDifference));
 }
 
 void data::setICDMatrix(double std) {
-    std::vector<double> zeroRow((unsigned long) _numberReceivers, 0.0);
-    for (int i = 0; i < _numberReceivers; i++) {
+    std::vector<double> zeroRow((unsigned long) _numberData, 0.0);
+    for (int i = 0; i < _numberData; i++) {
         _inverseCD.push_back(zeroRow);
         _inverseCD[i][i] = 1 / (std * std); // computing inverse variance
     }
@@ -134,109 +83,81 @@ void data::setICDMatrix(double std) {
 void data::readData(const char *filename) {
     // Read file for observed data
     double a;
-    _traveltimeReceivers.clear();
-    _depthReceivers.clear();
+    _observedData.clear();
     std::ifstream infile(filename);
-    for (int i = 0; i < _numberReceivers; i++) {
+    infile >> _numberData;
+    for (int i = 0; i < _numberData; i++) {
         infile >> a;
-        _depthReceivers.push_back(a);
-        infile >> a;
-        _traveltimeReceivers.push_back(a);
+        _observedData.push_back(a);
     }
+    infile.close();
 }
+
+void data::writeData(const char *filename) {
+    // Write data
+    std::ofstream outfile;
+    outfile.open(filename);
+    outfile << _numberData << " ";
+    for (int i = 0; i < _numberData; i++) {
+        outfile << _observedData[i] << " ";
+    }
+    outfile.close();
+}
+
+void data::setMisfitParameterDataMatrix(std::vector<std::vector<double>> designMatrix) {
+    _misfitParameterDataMatrix = MatrixMatrixProduct(TransposeMatrix(designMatrix), _inverseCD);
+    setMisfitParameterMatrix(designMatrix);
+}
+
+void data::setMisfitParameterMatrix(std::vector<std::vector<double>> designMatrix) {
+    _misfitParameterMatrix = MatrixMatrixProduct(_misfitParameterDataMatrix, designMatrix);
+}
+
+std::vector<double> data::gradientMisfit(std::vector<double> parameters) {
+    std::vector<double> gradient;
+    gradient.clear();
+    for (int q = 0; q < parameters.size(); q++) {
+        // I am -fairly- sure of this matrix equation derivative
+        gradient.push_back(0.5 * (
+                                   VectorVectorProduct(GetMatrixColumn(_misfitParameterMatrix, q), parameters) +
+                                   VectorVectorProduct(GetMatrixRow(_misfitParameterMatrix, q), parameters) +
+                                   - 2 * VectorVectorProduct(GetMatrixRow(_misfitParameterDataMatrix,q),_observedData)
+                           )
+        );
+    }
+    return gradient;
+};
 
 /* -----------------------------------------------------------------------------------------------------------------------
- * Forward model class. Is only used statically.
+ * Forward model class.
  * ----------------------------------------------------------------------------------------------------------------------- */
-std::vector<double> forwardVSP::forwardModel(std::vector<double> parameters, std::vector<double> locations) {
-    // This is the forward model code for a simple VSP where first arrivals are calculated from layer thicknesses and speeds.
-    // Remember, positive Z is downward
-    // parameters is filled in the following way: 0 - nLayers: speeds || nLayers+1 - nLayers*2: thicknesses
-    std::vector<double> travelTime;
-    std::vector<double> top;
-    std::vector<double> base;
-    std::vector<double> thickness;
-    std::vector<double> speed;
-    int numberLayers = (int) ((parameters.size() - 1) / 2);
+void forwardModel::constructDesignMatrix(int numberParameters) {
+    // Make square zero matrix
+    _designMatrix.clear();
+    std::vector<double> zeroRow((unsigned long) numberParameters, 0);
+    _designMatrix.insert(_designMatrix.end(), (unsigned long) numberParameters, zeroRow);
 
-    top.push_back(0.0);
-    for (int i = 0; i < numberLayers; i++) {
-        thickness.push_back(parameters[numberLayers + 1 + i]);
-        base.push_back(top[i] + thickness[i]);
-        top.push_back(base[i]);
+    // Set diagonal entries to 1
+    for (int i = 0; i < numberParameters; i++) {
+        _designMatrix[i][i] = 1;
     }
-    travelTime.clear();
-    for (int i = 0; i < locations.size(); i++) {// Looping through receivers
-        travelTime.push_back(0.0);
-        for (int j = 0; j < numberLayers; j++) {// Looping through layers
-            if (locations[i] >= base[j]) {
-                travelTime[i] += thickness[j] / parameters[j];
-            } else if (locations[i] > top[j]) {
-                travelTime[i] += (locations[i] - top[j]) / parameters[j];
-            }
-        }
-        if (locations[i] > base[numberLayers - 1]) {
-            travelTime[i] += (locations[i] - base[numberLayers - 1]) / parameters[numberLayers - 1];
-        }
-    }
-    return travelTime;
 }
 
-void forwardVSP::writeData(const char *filename, std::vector<double> travelTime, std::vector<double> locations) {
-    FILE *fid;
-
-    fid = fopen(filename, "w");
-
-    for (int i = 0; i < locations.size(); i++) {
-        fprintf(fid, "%.15lg %.15lg", locations[i], travelTime[i]);
-        fprintf(fid, "\n");
-    }
-    fclose(fid);
+forwardModel::forwardModel(int numberParameters) {
+    _numberParameters = numberParameters;
+    constructDesignMatrix(numberParameters);
 }
 
-void forwardVSP::generateSynthetics(const char *filename, std::vector<double> locations) {
-    std::vector<double> parameters;
-    // Load synthetics model file
-    FILE *fid;
-    char str[1000];
-    int numberLayers;
-
-    fid = fopen(filename, "r");
-
-    fgets(str, 1000, fid); // Move line
-    fscanf(fid, "%d", &numberLayers);
-    fgets(str, 1000, fid);
-
-    int numberParameters = numberLayers * 2 + 1;
-    double temp;
-
-    /*- Layer Speeds -------------------------------------------------------------------------------------------------*/
-    fgets(str, 1000, fid);
-    // Scan all prior mean layer speeds (number of layers + half space)
-    for (int i = 0; i < numberLayers + 1; i++) {
-        fscanf(fid, "%lg", &temp);
-        parameters.push_back(temp);
-    }
-    fgets(str, 1000, fid);
-
-    /*- Layer thicknesses --------------------------------------------------------------------------------------------*/
-    fgets(str, 1000, fid);
-    for (int i = numberLayers + 1; i < numberParameters; i++) {
-        fscanf(fid, "%lg", &temp);
-        parameters.push_back(temp);
-    }
-    fgets(str, 1000, fid);
-
-    fclose(fid);
-
-    // Write synthetic data
-    forwardVSP::writeData("DATA/synthetics.txt", forwardVSP::forwardModel(parameters, locations), locations);
+std::vector<double> forwardModel::calculateData(std::vector<double> parameters) {
+    return MatrixVectorProduct(_designMatrix, parameters);
 }
+
+forwardModel::forwardModel() {}
 
 /* -----------------------------------------------------------------------------------------------------------------------
  * Taylor expansion class. Contains probability classes by reference.
  * ----------------------------------------------------------------------------------------------------------------------- */
-void taylorExpansion::calculate0(std::vector<double> expansionPoint) {
+/*void taylorExpansion::calculate0(std::vector<double> expansionPoint) {
     // Zeroth order Taylor-series term is just the function value at the expansion point
     _functionValue = _posterior.misfit(expansionPoint, _prior, _data);
 }
@@ -344,8 +265,18 @@ std::vector<double> taylorExpansion::gradient(std::vector<double> q) {
             VectorSum(_firstDerivativeValue,
                       MatrixVectorProduct(_secondDerivativeValue, VectorDifference(q, _expansionPoint)));
     return gradient;
+}*/
+
+double posterior::misfit(std::vector<double> parameters, prior &in_prior, data &in_data, forwardModel m) {
+    return in_prior.misfit(parameters) + in_data.misfit(parameters, m);
 }
 
-double posterior::misfit(std::vector<double> parameters, prior &in_prior, data &in_data) {
-    return in_prior.misfit(parameters) + in_data.misfit(parameters);
+std::vector<double> posterior::gradientMisfit(std::vector<double> parameters, prior &in_prior, data &in_data) {
+    return VectorSum(in_data.gradientMisfit(parameters), in_prior.gradientMisfit(parameters));
+}
+
+void printVector(std::vector<double> A) {
+    for (int i = 0; i < A.size(); i++) {
+        std::cout << "Component " << i + 1 << ": " << A[i] << std::endl;
+    }
 }
