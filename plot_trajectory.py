@@ -29,26 +29,24 @@ pylab.rcParams.update(params)
 fid = open('OUTPUT/trajectory.txt')
 dummy = fid.read().strip().split()
 fid.close()
-print
 dimensions = int(dummy[0])
-iterations = int(dummy[1]) - 30
+iterations = (dummy.__len__()-2)/(dimensions+1)
 
 # Range from 1 to number of parameters
-dim1 = 9
-dim2 = 2
+dim1 = 0
+dim2 = 1
 
 parameters = [[]]
 for i in range(1, dimensions): parameters.append([])
 dim1_model = []
 dim2_model = []
-dim1_momentum = []
-dim2_momentum = []
+misfit_model = []
 for i in range(1, iterations + 1):
-    dim1_model.append(dummy[1 + dim1 + 2 * (i - 1) * dimensions])
-    dim1_momentum.append(dummy[1 + dim1 + 2 * (i) * dimensions])
-    dim2_model.append(dummy[1 + dim2 + 2 * (i - 1) * dimensions])
-    dim2_momentum.append(dummy[1 + dim2 + 2 * (i) * dimensions])
+    dim1_model.append(dummy[2 + dim1 + (i - 1) * (dimensions+1)])
+    dim2_model.append(dummy[2 + dim2 + (i - 1) * (dimensions+1)])
+    misfit_model.append(dummy[2 + dimensions + (i - 1) * (dimensions+1)])
 
-plt.plot(dim1_model, dim2_model, 'k', linewidth=0.05)
-plt.plot(dim1_model, dim2_model, 'ro', linewidth=0.05, markersize=0.5)
+
+# plt.plot(dim1_model, dim2_model, 'k', linewidth=0.05)
+plt.scatter(dim1_model, dim2_model,c=misfit_model)
 plt.savefig('OUTPUT/trajectory.png')

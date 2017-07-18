@@ -22,6 +22,8 @@ public:
     unsigned long _numberParameters;
     std::vector<double> _mean;
     std::vector<double> _std;
+    // Mind that as other masses are assigned, the function prior::misfitGradient should actually use the inverse covariance
+    // matrix, which is not explicitly defined.
     std::vector<std::vector<double> > _massMatrix;
 
     // Constructors and destructor
@@ -32,23 +34,27 @@ public:
     ~prior();
 
     // Member functions
-    double misfit(std::vector<double> q);
+    double misfit(std::vector<double> parameters);
 
+    std::vector<double> gradientMisfit(std::vector<double> parameters);
 private:
+
+    // Mind that as other masses are assigned, the function prior::misfitGradient should actually use the inverse covariance
+    // matrix, which is not explicitly defined.
     void setMassMatrix();
-//    void readPrior(const char *filename);
 };
 
 class data {
 public:
-    data(int numberData);
+    data(int numberData, double measurementError);
 
     data();
 
     int _numberData;
     std::vector<double> _observedData;
     std::vector<std::vector<double> > _inverseCD;
-    std::vector<std::vector<double> > _misfitMatrix; // This is the forward model transposed times inverseCD times forward
+    std::vector<std::vector<double> > _misfitParameterDataMatrix; // This is the forward model transposed times inverseCD
+    std::vector<std::vector<double> > _misfitParameterMatrix; // This is the forward model transposed times inverseCD times forward
     // model. Pre-calculated for speed.
 
     void setICDMatrix(double std);
@@ -59,12 +65,17 @@ public:
 
     double misfit(std::vector<double> in_parameters, forwardModel m);
 
-    void setMisfitMatrix(std::vector<std::vector<double>> designMatrix);
+    void setMisfitParameterDataMatrix(std::vector<std::vector<double>> designMatrix);
+    void setMisfitParameterMatrix(std::vector<std::vector<double>> designMatrix);
+
+    std::vector<double> gradientMisfit(std::vector<double> parameters);
 };
 
 class posterior {
 public:
     double misfit(std::vector<double> parameters, prior &in_prior, data &in_data, forwardModel m);
+
+    std::vector<double> gradientMisfit(std::vector<double> parameters, prior &in_prior, data &in_data);
 };
 
 class forwardModel {
@@ -83,6 +94,8 @@ public:
 
     std::vector<double> calculateData(std::vector<double> parameters);
 };
+
+void printVector(std::vector<double> A);
 
 /*class taylorExpansion {
 public:

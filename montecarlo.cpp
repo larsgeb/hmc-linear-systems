@@ -57,13 +57,13 @@ void montecarlo::propose_metropolis() {
 void montecarlo::propose_hamilton() {
     /* Draw random prior momenta. */
     for (int i = 0; i < _prior._numberParameters; i++)
-        _proposedMomentum[i] = (randn(0.0, 1 / sqrt(float(_prior._massMatrix[i][i])))); // only diagonal implemented!
-    // std deviation the square root of mass to assign momenta
-
+//        _proposedMomentum[i] = 0;
+        _proposedMomentum[i] = (randn(0.0, float(_prior._massMatrix[i][i]))); // only diagonal implemented!
     /* Integrate Hamilton's equations. */
     FILE *trajectoryfile;
     trajectoryfile = fopen("OUTPUT/trajectory.txt", "w");
     leap_frog(trajectoryfile);
+    fclose(trajectoryfile);
 }
 
 double montecarlo::chi() {
@@ -96,7 +96,6 @@ void montecarlo::sample(bool hamilton) {
             x = x_new;
             _currentModel = _proposedModel;
             write_sample(samplesfile, x, it);
-//            if (accepted % 5 == 0) _misfitApproximation.updateExpansion(_currentModel);
         }
     }
     fprintf(samplesfile, "%i ", accepted);
@@ -109,32 +108,40 @@ void montecarlo::sample(bool hamilton) {
 void montecarlo::leap_frog(_IO_FILE *trajectoryfile) {
 
     _proposedModel = _currentModel;
-    std::vector<double> tempMisfitGrad;
+    std::vector<double> misfitGrad;
+    double angle1, angle2;
     /* March forward. -------------------------------------------------------------*/
     for (int it = 0; it < _nt; it++) {
-
-//        tempMisfitGrad = _misfitApproximation.gradient(_proposedModel);
         /* First half step in momentum. */
+        misfitGrad = _posterior.gradientMisfit(_proposedModel, _prior, _data);
         for (int i = 0; i < _prior._numberParameters; i++) {
-            _proposedMomentum[i] = _proposedMomentum[i] - 0.5 * _dt * tempMisfitGrad[i];
+            _proposedMomentum[i] = _proposedMomentum[i] - 0.5 * _dt * misfitGrad[i];
         }
-        tempMisfitGrad.clear();
+        misfitGrad.clear();
+
         write_trajectory(trajectoryfile, it);
         /* Full step in position. */
         for (int i = 0; i < _prior._numberParameters; i++) {
-            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] / sqrt(_prior._massMatrix[i][i]);
+            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] / (_prior._massMatrix[i][i]);
         }
 
-        // Update misfit to new model position
-//        tempMisfitGrad = _misfitApproximation.gradient(_proposedModel);
-        /* Second half step in momentum. */
+        misfitGrad = _posterior.gradientMisfit(_proposedModel, _prior, _data);
         for (int i = 0; i < _prior._numberParameters; i++) {
-            _proposedMomentum[i] = _proposedMomentum[i] - 0.5 * _dt * tempMisfitGrad[i];
+            _proposedMomentum[i] = _proposedMomentum[i] - 0.5 * _dt * misfitGrad[i];
         }
-        tempMisfitGrad.clear();
+        misfitGrad.clear();
 
         // TODO, no U-Turn criterion
-
+        /* Check no-U-turn criterion. */
+        angle1 = 0.0;
+        angle2 = 0.0;
+        for (int i = 0; i < _prior._numberParameters; i++) {
+            angle1 += _proposedMomentum[i] * (_proposedModel[i] - _currentModel[i]);
+            angle2 += _currentMomentum[i] * (_currentModel[i] - _proposedModel[i]);
+        }
+        if (angle1 < 0.0 && angle2 < 0.0) {
+            break;
+        }
     }
 
 }
@@ -150,9 +157,8 @@ void montecarlo::write_sample(FILE *pfile, double misfit, int iteration) {
 void montecarlo::write_trajectory(FILE *pfile, int iteration) {
     if (iteration == 0) fprintf(pfile, "%d %i\n", (int) _prior._numberParameters, _nt);
 
-    for (int i = 0; i < (int) _prior._numberParameters; i++) fprintf(pfile, "%.9lg ", _proposedModel[i]);
-    fprintf(pfile, "\n");
-    for (int i = 0; i < (int) _prior._numberParameters; i++) fprintf(pfile, "%.9lg ", _proposedMomentum[i]);
+    for (int i = 0; i < (int) _prior._numberParameters; i++) fprintf(pfile, "%.20lg ", _proposedModel[i]);
+    fprintf(pfile, "%.20lg ", _posterior.misfit(_proposedModel, _prior, _data, _model));
     fprintf(pfile, "\n");
 
 }

@@ -24,14 +24,29 @@ prior::prior(std::vector<double> mean, std::vector<double> std) {
     setMassMatrix();
 }
 
-double prior::misfit(std::vector<double> q) {
-    std::vector<double> parameterDifference = VectorDifference(q, _mean);
+double prior::misfit(std::vector<double> parameters) {
+    std::vector<double> parameterDifference = VectorDifference(parameters, _mean);
     return 0.5 * VectorVectorProduct(parameterDifference, MatrixVectorProduct
             (_massMatrix, parameterDifference));
 }
 
+std::vector<double> prior::gradientMisfit(std::vector<double> parameters) {
+    std::vector<double> parameters_diff = VectorDifference(parameters, _mean);
+    std::vector<double> gradient;
+    gradient.clear();
+    for (int q = 0; q < parameters.size(); q++) {
+        // Mind that as other masses are assigned, this formula should actually use the inverse covariance matrix, which
+        // is not explicitly defined. TODO Implement the inverse covariance matrix explicitly
+        gradient.push_back(0.5 * (VectorVectorProduct(GetMatrixColumn(_massMatrix, q), parameters_diff) +
+                                  VectorVectorProduct(GetMatrixRow(_massMatrix, q), parameters_diff)));
+    }
+    return gradient;
+}
+
 // Set prior inverse covariance matrix, or mass matrix. Only diagonal entries are filled, no correlation is described.
 void prior::setMassMatrix() {
+    // Mind that as other masses are assigned, the function prior::misfitGradient should actually use the inverse covariance
+    // matrix, which is not explicitly defined.
     std::vector<double> zeroRow(_numberParameters, 0.0);
     for (int i = 0; i < _numberParameters; i++) {
         _massMatrix.push_back(zeroRow);
@@ -39,58 +54,13 @@ void prior::setMassMatrix() {
     }
 }
 
-// Read prior information on model parameters from file
-/*void prior::readPrior(const char *filename) {
-    FILE *fid;
-    char str[1000];
-
-    fid = fopen(filename, "r");
-
-    int numberLayers;
-    fgets(str, 1000, fid); // Move line
-    fscanf(fid, "%i", &numberLayers);
-    fgets(str, 1000, fid);
-    _numberParameters = (unsigned long) (numberLayers * 2 + 1);
-
-    double temp;
-    *//*- Layer Speeds -------------------------------------------------------------------------------------------------*//*
-    fgets(str, 1000, fid);
-    // Scan all prior mean layer speeds (number of layers + half space)
-    for (int i = 0; i < numberLayers + 1; i++) {
-        fscanf(fid, "%lg", &temp);
-        _mean.push_back(temp);
-    }
-    fgets(str, 1000, fid);
-    // Scan all prior sigma layer speeds (number of layers + half space)
-    for (int i = 0; i < numberLayers + 1; i++) {
-        fscanf(fid, "%lg", &temp);
-        _std.push_back(temp);
-    }
-    fgets(str, 1000, fid);
-
-    *//*- Layer thicknesses --------------------------------------------------------------------------------------------*//*
-    fgets(str, 1000, fid);
-    for (int i = numberLayers + 1; i < numberLayers * 2 + 1; i++) {
-        fscanf(fid, "%lg", &temp);
-        _mean.push_back(temp);
-    }
-    fgets(str, 1000, fid);
-    for (int i = numberLayers + 1; i < numberLayers * 2 + 1; i++) {
-        fscanf(fid, "%lg", &temp);
-        _std.push_back(temp);
-    }
-    fgets(str, 1000, fid);
-
-    fclose(fid);
-}*/
-
 /* -----------------------------------------------------------------------------------------------------------------------
  * Data class, for generating new data or loading previously generated data. Also calculates inverse data covariance
  * matrix and is able to compute data misfits.
  * ----------------------------------------------------------------------------------------------------------------------- */
-data::data(int numberData) {
+data::data(int numberData, double measurementError) {
     _numberData = numberData;
-    setICDMatrix(0.1); // Hardcoded measurement error. Update as you see fit.
+    setICDMatrix(measurementError); // Hardcoded measurement error. Update as you see fit.
 }
 
 data::data() {
@@ -134,9 +104,29 @@ void data::writeData(const char *filename) {
     outfile.close();
 }
 
-void data::setMisfitMatrix(std::vector<std::vector<double>> designMatrix) {
-    _misfitMatrix = MatrixMatrixProduct(TransposeMatrix(designMatrix), MatrixMatrixProduct(_inverseCD, designMatrix));
+void data::setMisfitParameterDataMatrix(std::vector<std::vector<double>> designMatrix) {
+    _misfitParameterDataMatrix = MatrixMatrixProduct(TransposeMatrix(designMatrix), _inverseCD);
+    setMisfitParameterMatrix(designMatrix);
 }
+
+void data::setMisfitParameterMatrix(std::vector<std::vector<double>> designMatrix) {
+    _misfitParameterMatrix = MatrixMatrixProduct(_misfitParameterDataMatrix, designMatrix);
+}
+
+std::vector<double> data::gradientMisfit(std::vector<double> parameters) {
+    std::vector<double> gradient;
+    gradient.clear();
+    for (int q = 0; q < parameters.size(); q++) {
+        // I am -fairly- sure of this matrix equation derivative
+        gradient.push_back(0.5 * (
+                                   VectorVectorProduct(GetMatrixColumn(_misfitParameterMatrix, q), parameters) +
+                                   VectorVectorProduct(GetMatrixRow(_misfitParameterMatrix, q), parameters) +
+                                   - 2 * VectorVectorProduct(GetMatrixRow(_misfitParameterDataMatrix,q),_observedData)
+                           )
+        );
+    }
+    return gradient;
+};
 
 /* -----------------------------------------------------------------------------------------------------------------------
  * Forward model class.
@@ -281,4 +271,12 @@ double posterior::misfit(std::vector<double> parameters, prior &in_prior, data &
     return in_prior.misfit(parameters) + in_data.misfit(parameters, m);
 }
 
-//std::vector<double> posterior::gradientMisfit
+std::vector<double> posterior::gradientMisfit(std::vector<double> parameters, prior &in_prior, data &in_data) {
+    return VectorSum(in_data.gradientMisfit(parameters), in_prior.gradientMisfit(parameters));
+}
+
+void printVector(std::vector<double> A) {
+    for (int i = 0; i < A.size(); i++) {
+        std::cout << "Component " << i + 1 << ": " << A[i] << std::endl;
+    }
+}
