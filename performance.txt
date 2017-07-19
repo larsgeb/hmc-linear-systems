@@ -1,0 +1,2 @@
+Monte-Carlo,    Proposed models 250000  Number of accepted models: 10,  elapsed time: 5.32136
+Hamilton,       Proposed models 1000    Number of accepted models: 960, elapsed time: 4.78613

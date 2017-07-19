@@ -6,17 +6,10 @@
 #include "auxiliary.hpp"
 
 int main() {
-    // Easy as can be.
-    data synthetics(5); // Needed for location of receivers, hardcoded into class
+    data synthetics(5, 1);
     forwardModel model(5);
 
-    std::vector<double> parameters;
-    parameters.push_back(1);
-    parameters.push_back(2);
-    parameters.push_back(3);
-    parameters.push_back(4);
-    parameters.push_back(5);
-
+    std::vector<double> parameters{10, 10, 10, 10, 10};
     synthetics._observedData = model.calculateData(parameters);
     synthetics.writeData("OUTPUT/synthetics.txt");
 

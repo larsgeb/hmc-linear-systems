@@ -42,8 +42,10 @@ dim1_model = []
 dim2_model = []
 misfit_model = []
 for i in range(1, iterations + 1):
-    dim1_model.append(dummy[2 + dim1 + (i - 1) * (dimensions+1)])
-    dim2_model.append(dummy[2 + dim2 + (i - 1) * (dimensions+1)])
+    dim1_model.append(float(dummy[2 + dim1 + (i - 1) * (dimensions+1)]))
+    dim2_model.append(float(dummy[2 + dim2 + (i - 1) * (dimensions+1)]))
+    dim1_model[i-1] = 1/dim1_model[i-1]
+    dim2_model[i-1] = 1/dim2_model[i-1]
     misfit_model.append(dummy[2 + dimensions + (i - 1) * (dimensions+1)])
 
 

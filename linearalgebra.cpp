@@ -7,6 +7,7 @@
 #include <vector>
 #include <iostream>
 
+
 // Linear algebra functions
 std::vector<double> VectorDifference(std::vector<double> A, std::vector<double> B) {
 

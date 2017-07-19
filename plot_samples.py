@@ -47,8 +47,8 @@ chi = 1.0e100
 
 for i in range(iterations):
 
-    x[i] = float(dummy[2 + dim_1 + (i + nbi) * (dimension + 1)])
-    y[i] = float(dummy[2 + dim_2 + (i + nbi) * (dimension + 1)])
+    x[i] = 1/float(dummy[2 + dim_1 + (i + nbi) * (dimension + 1)])
+    y[i] = 1/float(dummy[2 + dim_2 + (i + nbi) * (dimension + 1)])
     x_plot[i] = x[i];
     y_plot[i] = y[i];
 

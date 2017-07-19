@@ -1,11 +1,7 @@
 // Created by Lars Gebraad on 7/10/17.
 
-#include <vector>
-#include <iostream>
-#include <cmath>
-#include <fstream>
+#include <sstream>
 #include "auxiliary.hpp"
-#include "linearalgebra.hpp"
 
 /* -----------------------------------------------------------------------------------------------------------------------
  * Class for Gaussian Distributed prior information about model parameters for a VSP probabilistic inversion.
@@ -80,17 +76,23 @@ void data::setICDMatrix(double std) {
     }
 }
 
-void data::readData(const char *filename) {
+void data::readData(const char *folder, int numberSources, int numberReceivers) {
     // Read file for observed data
-    double a;
     _observedData.clear();
-    std::ifstream infile(filename);
-    infile >> _numberData;
-    for (int i = 0; i < _numberData; i++) {
-        infile >> a;
-        _observedData.push_back(a);
+    for (int source = 0; source < numberSources; source++) {
+        double a;
+        std::stringstream filenameStream;
+        filenameStream << "straight-ray-solver/DATA_synthetic/Recorded_time_source_" << source + 1 << ".txt";
+        std::string filename = filenameStream.str();
+        std::ifstream infile(filename);
+        for (int receiver = 0; receiver < numberReceivers; receiver++) {
+            infile >> a;
+            infile >> a;
+            infile >> a;
+            _observedData.push_back(a);
+        }
+        infile.close();
     }
-    infile.close();
 }
 
 void data::writeData(const char *filename) {
@@ -128,31 +130,7 @@ std::vector<double> data::gradientMisfit(std::vector<double> parameters) {
     return gradient;
 };
 
-/* -----------------------------------------------------------------------------------------------------------------------
- * Forward model class.
- * ----------------------------------------------------------------------------------------------------------------------- */
-void forwardModel::constructDesignMatrix(int numberParameters) {
-    // Make square zero matrix
-    _designMatrix.clear();
-    std::vector<double> zeroRow((unsigned long) numberParameters, 0);
-    _designMatrix.insert(_designMatrix.end(), (unsigned long) numberParameters, zeroRow);
 
-    // Set diagonal entries to 1
-    for (int i = 0; i < numberParameters; i++) {
-        _designMatrix[i][i] = 1;
-    }
-}
-
-forwardModel::forwardModel(int numberParameters) {
-    _numberParameters = numberParameters;
-    constructDesignMatrix(numberParameters);
-}
-
-std::vector<double> forwardModel::calculateData(std::vector<double> parameters) {
-    return MatrixVectorProduct(_designMatrix, parameters);
-}
-
-forwardModel::forwardModel() {}
 
 /* -----------------------------------------------------------------------------------------------------------------------
  * Taylor expansion class. Contains probability classes by reference.

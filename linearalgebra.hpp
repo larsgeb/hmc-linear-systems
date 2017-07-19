@@ -13,7 +13,8 @@ std::vector<double> VectorScalarProduct(std::vector<double> A, double b);
 
 std::vector<double> MatrixVectorProduct(std::vector<std::vector<double>> M, std::vector<double> A);
 
-std::vector<std::vector<double>> MatrixMatrixProduct(std::vector<std::vector<double>> M, std::vector<std::vector<double>> N);
+std::vector<std::vector<double>> MatrixMatrixProduct(std::vector<std::vector<double>> M, std::vector<std::vector<double>>
+N);
 
 std::vector<double> GetMatrixRow(std::vector<std::vector<double>> M, int row);
 

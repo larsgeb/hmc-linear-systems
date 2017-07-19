@@ -58,7 +58,7 @@ void montecarlo::propose_hamilton() {
     /* Draw random prior momenta. */
     for (int i = 0; i < _prior._numberParameters; i++)
 //        _proposedMomentum[i] = 0;
-        _proposedMomentum[i] = (randn(0.0, float(_prior._massMatrix[i][i]))); // only diagonal implemented!
+        _proposedMomentum[i] = (randn(0.0, sqrt(_prior._massMatrix[i][i]))); // only diagonal implemented!
     /* Integrate Hamilton's equations. */
     FILE *trajectoryfile;
     trajectoryfile = fopen("OUTPUT/trajectory.txt", "w");
@@ -74,7 +74,7 @@ double montecarlo::chi() {
 double montecarlo::energy() {
     double H = chi();
     for (int i = 0; i < _prior._numberParameters; i++) {
-        H += 0.5 * _proposedMomentum[i] * _proposedMomentum[i] * _prior._massMatrix[i][i];
+        H += 0.5 * _proposedMomentum[i] * _proposedMomentum[i] / _prior._massMatrix[i][i];
     }
     return H;
 }
@@ -91,12 +91,19 @@ void montecarlo::sample(bool hamilton) {
         hamilton ? propose_hamilton() : propose_metropolis();
         x_new = (hamilton ? energy() : chi());
 
+        double result;
+        result = x-x_new;
+        double result_exponent;
+
+
         if ((x_new < x) || (exp(x - x_new) > randf(0.0, 1.0))) {
             accepted++;
             x = x_new;
             _currentModel = _proposedModel;
             write_sample(samplesfile, x, it);
+            std::cout << "model " << it + 1 << " is accepted" << std::endl;
         }
+        std::cout << "iteration " << it + 1 << " energy " << x_new << std::endl;
     }
     fprintf(samplesfile, "%i ", accepted);
     fprintf(samplesfile, "\n");
