@@ -7,11 +7,8 @@
 #include <math.h>
 #include "auxiliary.hpp"
 #include "montecarlo.hpp"
-#include <stdlib.h>
 #include "randomnumbers.hpp"
-#include "linearalgebra.hpp"
-#include <stdio.h>
-#include <iostream>
+
 
 montecarlo::montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel
 in_model, int in_nt, double in_dt, int in_iterations) {
@@ -92,11 +89,11 @@ void montecarlo::sample(bool hamilton) {
         x_new = (hamilton ? energy() : chi());
 
         double result;
-        result = x-x_new;
+        result = x - x_new;
         double result_exponent;
+        result_exponent = exp(result);
 
-
-        if ((x_new < x) || (exp(x - x_new) > randf(0.0, 1.0))) {
+        if ((x_new < x) || (result_exponent > randf(0.0, 1.0))) {
             accepted++;
             x = x_new;
             _currentModel = _proposedModel;
@@ -138,7 +135,6 @@ void montecarlo::leap_frog(_IO_FILE *trajectoryfile) {
         }
         misfitGrad.clear();
 
-        // TODO, no U-Turn criterion
         /* Check no-U-turn criterion. */
         angle1 = 0.0;
         angle2 = 0.0;

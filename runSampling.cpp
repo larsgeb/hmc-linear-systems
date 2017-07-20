@@ -10,7 +10,7 @@ int main() {
 
     // Load the observed data
     forwardModel forwardModel1(5); // Define number of parameters
-    data observedData(forwardModel1._numberData, 1); // Define number of parameters
+    data observedData(forwardModel1._numberData, 0.001); // Define number of parameters
     observedData.readData("straight-ray-solver/DATA_synthetics", forwardModel1._numberSources,
                           forwardModel1._numberReceivers);
 
@@ -18,8 +18,8 @@ int main() {
     std::vector<double> means;
     std::vector<double> std;
     for (int parameter = 0; parameter < forwardModel1._numberParameters; parameter++) {
-        means.push_back(0.00066666);
-        std.push_back(0.00066666*0.1);
+        means.push_back(0.0015);
+        std.push_back(0.0005);
     }
     prior priorInfo(means, std);
 
@@ -28,23 +28,9 @@ int main() {
     // matrices
     // Create posterior object
     posterior posterior1;
-
-    /* ---- Works well! ---- */
-    // This piece of code investigates the gradient in the neighborhood of expected parameters 1 & 2
-    // Use it in conjunction with plot_gradient.py
-    /*std::ofstream outfile;
-    outfile.open("OUTPUT/gradient.txt");
-    for (double q1 = 0; q1 < 5; q1 += 0.25) {
-        for (double q2 = 0; q2 < 5; q2 += 0.25) {
-            std::vector<double> params{q1, q2, 3, 4, 5};
-            std::vector<double> gradient = mc._posterior.gradientMisfit(params, mc._prior, mc._data);
-            outfile << q1 << " " << q2 << " " << gradient[0] << " " << gradient[1] << std::endl;
-        }
-    }
-    outfile.close();*/
+    montecarlo mc(priorInfo, observedData, posterior1, forwardModel1, 100, 0.1, 1000);
 
     /* ---- The actual sampling ---- */
-    montecarlo mc(priorInfo, observedData, posterior1, forwardModel1, 10, 0.01, 100);
     clock_t start;
     start = clock();
     std::cout << "Metropolis Hastings sampling: " << std::endl;

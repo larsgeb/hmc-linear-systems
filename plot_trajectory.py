@@ -18,8 +18,8 @@ params = {'legend.fontsize': 'x-large',
           'figure.figsize': (8, 8),
           'axes.labelsize': 20,
           'axes.titlesize': 'x-large',
-          'xtick.labelsize': 20,
-          'ytick.labelsize': 20}
+          'xtick.labelsize': 10,
+          'ytick.labelsize': 10}
 pylab.rcParams.update(params)
 
 # ============================================================
@@ -30,7 +30,7 @@ fid = open('OUTPUT/trajectory.txt')
 dummy = fid.read().strip().split()
 fid.close()
 dimensions = int(dummy[0])
-iterations = (dummy.__len__()-2)/(dimensions+1)
+iterations = (dummy.__len__() - 2) / (dimensions + 1)
 
 # Range from 1 to number of parameters
 dim1 = 0
@@ -42,13 +42,38 @@ dim1_model = []
 dim2_model = []
 misfit_model = []
 for i in range(1, iterations + 1):
-    dim1_model.append(float(dummy[2 + dim1 + (i - 1) * (dimensions+1)]))
-    dim2_model.append(float(dummy[2 + dim2 + (i - 1) * (dimensions+1)]))
-    dim1_model[i-1] = 1/dim1_model[i-1]
-    dim2_model[i-1] = 1/dim2_model[i-1]
-    misfit_model.append(dummy[2 + dimensions + (i - 1) * (dimensions+1)])
-
+    dim1_model.append(float(dummy[2 + dim1 + (i - 1) * (dimensions + 1)]))
+    dim2_model.append(float(dummy[2 + dim2 + (i - 1) * (dimensions + 1)]))
+    # dim1_model[i-1] = 1/dim1_model[i-1]
+    # dim2_model[i-1] = 1/dim2_model[i-1]
+    misfit_model.append(dummy[2 + dimensions + (i - 1) * (dimensions + 1)])
 
 # plt.plot(dim1_model, dim2_model, 'k', linewidth=0.05)
-plt.scatter(dim1_model, dim2_model,c=misfit_model)
+plt.scatter(dim1_model, dim2_model, c=misfit_model)
+
+# Plotting gradient
+
+fid = open('OUTPUT/gradient.txt')
+dummy = fid.read().strip().split("\n")
+fid.close()
+
+# parse data
+q1 = []
+q2 = []
+dq1 = []
+dq2 = []
+for line in dummy:
+    splitty = line.split()
+    q1.append(float(splitty[0]))
+    q2.append(float(splitty[1]))
+    dq1.append(float(splitty[2]))
+    dq2.append(float(splitty[3]))
+
+# plt.figure()
+# plt.title('Gradient of q1 and q2')
+Q = plt.quiver(q1, q2, dq1, dq2)
+
+pylab.ylim([0.0004, 0.002])
+pylab.xlim([0.0004, 0.002])
 plt.savefig('OUTPUT/trajectory.png')
+plt.savefig('OUTPUT/trajectory.pdf', format='pdf')
