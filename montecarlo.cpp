@@ -30,10 +30,14 @@ in_model, int in_nt, double in_dt, int in_iterations) {
     _proposedMomentum.clear();
     _currentMomentum.clear();
 
+    // To ensure equal oscillations
+    _massMatrix = MatrixMatrixProduct(TransposeMatrix(_model._designMatrix),_model._designMatrix);
+    _massMatrix = VectorToDiagonal(MatrixTrace(_massMatrix)); // Take only diagonal entries
+
     // Assigning a random moment to the momentum vectors
     for (int i = 0; i < _prior._numberParameters; i++) {
         // But this momentum assignment is as of yet only the diagonal.
-        _proposedMomentum.push_back(randn(0.0, sqrt(_prior._massMatrix[i][i])));
+        _proposedMomentum.push_back(randn(0.0, sqrt(_massMatrix[i][i])));
         _proposedModel[i] = randn(_prior._mean[i], _prior._std[i]);
         _currentModel[i] = _proposedModel[i];
         _currentMomentum.push_back(_proposedMomentum[i]);
@@ -55,7 +59,7 @@ void montecarlo::propose_hamilton() {
     /* Draw random prior momenta. */
     for (int i = 0; i < _prior._numberParameters; i++)
 //        _proposedMomentum[i] = 0;
-        _proposedMomentum[i] = (randn(0.0, sqrt(_prior._massMatrix[i][i]))); // only diagonal implemented!
+        _proposedMomentum[i] = (randn(0.0, sqrt(_massMatrix[i][i]))); // only diagonal implemented!
     /* Integrate Hamilton's equations. */
     FILE *trajectoryfile;
     trajectoryfile = fopen("OUTPUT/trajectory.txt", "w");
@@ -71,7 +75,7 @@ double montecarlo::chi() {
 double montecarlo::energy() {
     double H = chi();
     for (int i = 0; i < _prior._numberParameters; i++) {
-        H += 0.5 * _proposedMomentum[i] * _proposedMomentum[i] / _prior._massMatrix[i][i];
+        H += 0.5 * _proposedMomentum[i] * _proposedMomentum[i] / _massMatrix[i][i];
     }
     return H;
 }
@@ -126,7 +130,7 @@ void montecarlo::leap_frog(_IO_FILE *trajectoryfile) {
         write_trajectory(trajectoryfile, it);
         /* Full step in position. */
         for (int i = 0; i < _prior._numberParameters; i++) {
-            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] / (_prior._massMatrix[i][i]);
+            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] / (_massMatrix[i][i]);
         }
 
         misfitGrad = _posterior.gradientMisfit(_proposedModel, _prior, _data);
@@ -143,6 +147,7 @@ void montecarlo::leap_frog(_IO_FILE *trajectoryfile) {
             angle2 += _currentMomentum[i] * (_currentModel[i] - _proposedModel[i]);
         }
         if (angle1 < 0.0 && angle2 < 0.0) {
+            std::cout << "U-Turn!" << std::endl;
             break;
         }
     }

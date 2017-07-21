@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 # - Number of burn-in samples to be ignored.
 nbi = 1
 # - Dimensions of interest.
-dim_1 = 2
-dim_2 = 1
+dim_1 = 9
+dim_2 = 7
 # - Incremental displacement for duplicate points.
 epsilon_1 = 0.0003
 epsilon_2 = 0.0003

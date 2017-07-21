@@ -18,8 +18,8 @@ int main() {
     std::vector<double> means;
     std::vector<double> std;
     for (int parameter = 0; parameter < forwardModel1._numberParameters; parameter++) {
-        means.push_back(0.0015);
-        std.push_back(0.0005);
+        means.push_back(0.002);
+        std.push_back(0.002);
     }
     prior priorInfo(means, std);
 
@@ -28,7 +28,7 @@ int main() {
     // matrices
     // Create posterior object
     posterior posterior1;
-    montecarlo mc(priorInfo, observedData, posterior1, forwardModel1, 100, 0.1, 1000);
+    montecarlo mc(priorInfo, observedData, posterior1, forwardModel1, 1, 0.0001, 500);
 
     /* ---- The actual sampling ---- */
     clock_t start;

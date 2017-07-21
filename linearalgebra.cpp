@@ -144,6 +144,34 @@ std::vector<std::vector<double>> TransposeMatrix(std::vector<std::vector<double>
     return N;
 }
 
+std::vector<double> MatrixTrace(std::vector<std::vector<double>> M) {
+    if (M.size() != M[0].size()) {
+        // Get some Exception class to THROW.
+        std::cout << "Matrix is not square, and trace doesn't exist. The code DIDN'T run successfully." << std::endl;
+        throw std::exception();
+    }
+    std::vector<double> trace;
+    trace.clear();
+    for (int i = 0; i < M.size(); i++) {
+        trace.push_back(M[i][i]);
+    }
+    return trace;
+}
+
+std::vector<std::vector<double>> VectorToDiagonal(std::vector<double> A) {
+    std::vector<std::vector<double>> M;
+
+    M.clear();
+    std::vector<double> zeroRow(A.size(), 0);
+    M.insert(M.end(), A.size(), zeroRow);
+
+    for (int i = 0; i < A.size(); i++) {
+        M[i][i] = A[i];
+    }
+
+    return M;
+}
+
 std::vector<std::vector<double>>
 MatrixMatrixProduct(std::vector<std::vector<double>> M, std::vector<std::vector<double>> N) {
     std::vector<std::vector<double>> P;

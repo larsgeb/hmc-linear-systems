@@ -9,9 +9,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(SOURCE_FILES makeSynthetics.cpp linearalgebra.cpp toyForwardModel.cpp auxiliary.cpp)
 add_executable(makeSynthetics ${SOURCE_FILES})
 
-set(SOURCE_FILES runSampling.cpp linearalgebra.cpp randomnumbers.cpp toyForwardModel.cpp auxiliary.cpp montecarlo.cpp)
-add_executable(runSamplingToyModel ${SOURCE_FILES})
-
 set(SOURCE_FILES runSampling.cpp linearalgebra.cpp randomnumbers.cpp tomographyForwardModel.cpp auxiliary.cpp montecarlo.cpp)
 add_executable(runSamplingTomography ${SOURCE_FILES})
 

@@ -20,6 +20,10 @@ std::vector<double> GetMatrixRow(std::vector<std::vector<double>> M, int row);
 
 std::vector<std::vector<double>> TransposeMatrix(std::vector<std::vector<double>> M);
 
+std::vector<double> MatrixTrace(std::vector<std::vector<double>> M);
+
+std::vector<std::vector<double>> VectorToDiagonal(std::vector<double>);
+
 std::vector<double> GetMatrixColumn(std::vector<std::vector<double>> M, int column);
 
 double VectorVectorProduct(std::vector<double> A, std::vector<double> B);

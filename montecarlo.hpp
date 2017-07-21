@@ -30,6 +30,7 @@ public:
     std::vector<double> _currentMomentum;
     std::vector<double> _proposedMomentum;
 
+    std::vector<std::vector<double>> _massMatrix;
     // Member functions
 
     void propose_metropolis();

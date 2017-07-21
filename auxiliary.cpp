@@ -23,7 +23,7 @@ prior::prior(std::vector<double> mean, std::vector<double> std) {
 double prior::misfit(std::vector<double> parameters) {
     std::vector<double> parameterDifference = VectorDifference(parameters, _mean);
     return 0.5 * VectorVectorProduct(parameterDifference, MatrixVectorProduct
-            (_massMatrix, parameterDifference));
+            (_inverseCovarianceMatrix, parameterDifference));
 }
 
 std::vector<double> prior::gradientMisfit(std::vector<double> parameters) {
@@ -33,8 +33,8 @@ std::vector<double> prior::gradientMisfit(std::vector<double> parameters) {
     for (int q = 0; q < parameters.size(); q++) {
         // Mind that as other masses are assigned, this formula should actually use the inverse covariance matrix, which
         // is not explicitly defined. TODO Implement the inverse covariance matrix explicitly
-        gradient.push_back(0.5 * (VectorVectorProduct(GetMatrixColumn(_massMatrix, q), parameters_diff) +
-                                  VectorVectorProduct(GetMatrixRow(_massMatrix, q), parameters_diff)));
+        gradient.push_back(0.5 * (VectorVectorProduct(GetMatrixColumn(_inverseCovarianceMatrix, q), parameters_diff) +
+                                  VectorVectorProduct(GetMatrixRow(_inverseCovarianceMatrix, q), parameters_diff)));
     }
     return gradient;
 }
@@ -45,8 +45,8 @@ void prior::setMassMatrix() {
     // matrix, which is not explicitly defined.
     std::vector<double> zeroRow(_numberParameters, 0.0);
     for (int i = 0; i < _numberParameters; i++) {
-        _massMatrix.push_back(zeroRow);
-        _massMatrix[i][i] = 1 / (_std[i] * _std[i]);
+        _inverseCovarianceMatrix.push_back(zeroRow);
+        _inverseCovarianceMatrix[i][i] = 1 / (_std[i] * _std[i]);
     }
 }
 
