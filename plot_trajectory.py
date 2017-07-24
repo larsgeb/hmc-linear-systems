@@ -8,18 +8,18 @@ import matplotlib.pyplot as plt
 # ============================================================
 
 # - Dimensions of interest.
-dim_1 = 1
-dim_2 = 2
+dim_1 = 0
+dim_2 = 1
 # - Incremental displacement for duplicate points.
 epsilon_1 = 0.0003
 epsilon_2 = 0.0003
 
 params = {'legend.fontsize': 'x-large',
-          'figure.figsize': (8, 8),
-          'axes.labelsize': 20,
+          'figure.figsize': (4, 4),
+          'axes.labelsize': 10,
           'axes.titlesize': 'x-large',
-          'xtick.labelsize': 20,
-          'ytick.labelsize': 20}
+          'xtick.labelsize': 10,
+          'ytick.labelsize': 10}
 pylab.rcParams.update(params)
 
 # ============================================================
@@ -30,7 +30,7 @@ fid = open('OUTPUT/trajectory.txt')
 dummy = fid.read().strip().split()
 fid.close()
 dimensions = int(dummy[0])
-iterations = (dummy.__len__()-2)/(dimensions+1)
+iterations = (dummy.__len__() - 2) / (dimensions + 1)
 
 # Range from 1 to number of parameters
 dim1 = 0
@@ -42,11 +42,35 @@ dim1_model = []
 dim2_model = []
 misfit_model = []
 for i in range(1, iterations + 1):
-    dim1_model.append(dummy[2 + dim1 + (i - 1) * (dimensions+1)])
-    dim2_model.append(dummy[2 + dim2 + (i - 1) * (dimensions+1)])
-    misfit_model.append(dummy[2 + dimensions + (i - 1) * (dimensions+1)])
-
+    dim1_model.append(float(dummy[2 + dim1 + (i - 1) * (dimensions + 1)]))
+    dim2_model.append(float(dummy[2 + dim2 + (i - 1) * (dimensions + 1)]))
+    # dim1_model[i-1] = 1/dim1_model[i-1]
+    # dim2_model[i-1] = 1/dim2_model[i-1]
+    misfit_model.append(dummy[2 + dimensions + (i - 1) * (dimensions + 1)])
 
 # plt.plot(dim1_model, dim2_model, 'k', linewidth=0.05)
-plt.scatter(dim1_model, dim2_model,c=misfit_model)
-plt.savefig('OUTPUT/trajectory.png')
+plt.scatter(dim1_model, dim2_model, c=misfit_model, edgecolors='none' )
+
+# Plotting gradient
+#
+# fid = open('OUTPUT/gradient.txt')
+# dummy = fid.read().strip().split("\n")
+# fid.close()
+#
+# # parse data
+# q1 = []
+# q2 = []
+# dq1 = []
+# dq2 = []
+# for line in dummy:
+#     splitty = line.split()
+#     q1.append(float(splitty[0]))
+#     q2.append(float(splitty[1]))
+#     dq1.append(float(splitty[2]))
+#     dq2.append(float(splitty[3]))
+# Q = plt.quiver(q1, q2, dq1, dq2)
+
+plt.xlabel('q' + str(dim_1 + 1))
+plt.ylabel('q' + str(dim_2 + 1))
+# plt.gca().set_aspect('equal', adjustable='box')
+plt.savefig('OUTPUT/trajectory.pdf', format='pdf')

@@ -7,6 +7,7 @@
 #include <vector>
 #include <iostream>
 
+
 // Linear algebra functions
 std::vector<double> VectorDifference(std::vector<double> A, std::vector<double> B) {
 
@@ -14,9 +15,8 @@ std::vector<double> VectorDifference(std::vector<double> A, std::vector<double> 
 
     if (A.size() != B.size()) {
         // Get some Exception class to THROW.
-        std::cout
-                << "Vectors are not the same dimension! The code DIDN'T run successfully.";
-        return C;
+        std::cout << "Vectors are not the same dimension! The code DIDN'T run successfully." << std::endl;
+        throw std::exception();
     }
 
     std::vector<double> q_difference;
@@ -42,9 +42,8 @@ std::vector<double> VectorSum(std::vector<double> A, std::vector<double> B) {
 
     if (A.size() != B.size()) {
         // Get some Exception class to THROW.
-        std::cout
-                << "Vectors are not the same dimension! The code DIDN'T run successfully.";
-        return C;
+        std::cout << "Vectors are not the same dimension! The code DIDN'T run successfully." << std::endl;
+        throw std::exception();
     }
 
     std::vector<double> q_difference;
@@ -66,9 +65,8 @@ std::vector<double> MatrixVectorProduct(std::vector<std::vector<double> > M, std
 
     if (columnsM != rowsA) {
         // Get some Exception class to THROW.
-        std::cout
-                << "Vector and matrix are not compatible in dimension! The code DIDN'T run successfully.";
-        return C;
+        std::cout << "Vector and matrix are not compatible in dimension! The code DIDN'T run successfully." << std::endl;
+        throw std::exception();
     }
 
     for (int i = 0; i < rowsM; i++) {
@@ -85,9 +83,8 @@ double VectorVectorProduct(std::vector<double> A, std::vector<double> B) {
 
     if (A.size() != B.size()) {
         // Get some Exception class to THROW.
-        std::cout
-                << "Vectors are not compatible in dimension! The code DIDN'T run successfully.";
-        return C;
+        std::cout << "Vectors are not compatible in dimension! The code DIDN'T run successfully." << std::endl;
+        throw std::exception();
     }
     C = 0;
     for (int i = 0; i < A.size(); i++) {
@@ -99,6 +96,13 @@ double VectorVectorProduct(std::vector<double> A, std::vector<double> B) {
 std::vector<double> GetMatrixColumn(std::vector<std::vector<double>> M, int column) {
     std::vector<double> A;
     unsigned long rows = M.size();
+
+    if (column > M[0].size()) {
+        // Get some Exception class to THROW.
+        std::cout << "Matrix index out of range. The code DIDN'T run successfully." << std::endl;
+        throw std::exception();
+    }
+
     A.clear();
     for (unsigned long row = 0; row < rows; row++) {
         A.push_back(M[row][column]);
@@ -109,6 +113,13 @@ std::vector<double> GetMatrixColumn(std::vector<std::vector<double>> M, int colu
 std::vector<double> GetMatrixRow(std::vector<std::vector<double>> M, int row) {
     std::vector<double> A;
     unsigned long columns = M[0].size();
+
+    if (row > M.size()) {
+        // Get some Exception class to THROW.
+        std::cout << "Matrix index out of range. The code DIDN'T run successfully." << std::endl;
+        throw std::exception();
+    }
+
     A.clear();
     for (unsigned long column = 0; column < columns; column++) {
         A.push_back(M[row][column]);
@@ -133,6 +144,34 @@ std::vector<std::vector<double>> TransposeMatrix(std::vector<std::vector<double>
     return N;
 }
 
+std::vector<double> MatrixTrace(std::vector<std::vector<double>> M) {
+    if (M.size() != M[0].size()) {
+        // Get some Exception class to THROW.
+        std::cout << "Matrix is not square, and trace doesn't exist. The code DIDN'T run successfully." << std::endl;
+        throw std::exception();
+    }
+    std::vector<double> trace;
+    trace.clear();
+    for (int i = 0; i < M.size(); i++) {
+        trace.push_back(M[i][i]);
+    }
+    return trace;
+}
+
+std::vector<std::vector<double>> VectorToDiagonal(std::vector<double> A) {
+    std::vector<std::vector<double>> M;
+
+    M.clear();
+    std::vector<double> zeroRow(A.size(), 0);
+    M.insert(M.end(), A.size(), zeroRow);
+
+    for (int i = 0; i < A.size(); i++) {
+        M[i][i] = A[i];
+    }
+
+    return M;
+}
+
 std::vector<std::vector<double>>
 MatrixMatrixProduct(std::vector<std::vector<double>> M, std::vector<std::vector<double>> N) {
     std::vector<std::vector<double>> P;
@@ -140,6 +179,12 @@ MatrixMatrixProduct(std::vector<std::vector<double>> M, std::vector<std::vector<
     unsigned long rowsM = M.size();
     unsigned long columnsN = N[0].size();
     unsigned long rowsN = N.size();
+
+    if (columnsM != rowsN) {
+        // Get some Exception class to THROW.
+        std::cout << "Matrices are not compatible in dimension. The code DIDN'T run successfully." << std::endl;
+        throw std::exception();
+    }
 
     P.clear();
     std::vector<double> zeroRow(columnsN, 0);

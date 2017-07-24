@@ -24,7 +24,7 @@ public:
     std::vector<double> _std;
     // Mind that as other masses are assigned, the function prior::misfitGradient should actually use the inverse covariance
     // matrix, which is not explicitly defined.
-    std::vector<std::vector<double> > _massMatrix;
+    std::vector<std::vector<double> > _inverseCovarianceMatrix;
 
     // Constructors and destructor
     prior();
@@ -41,7 +41,7 @@ private:
 
     // Mind that as other masses are assigned, the function prior::misfitGradient should actually use the inverse covariance
     // matrix, which is not explicitly defined.
-    void setMassMatrix();
+    void setInverseCovarianceMatrix();
 };
 
 class data {

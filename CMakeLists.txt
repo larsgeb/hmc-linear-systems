@@ -11,3 +11,6 @@ add_executable(makeSynthetics ${SOURCE_FILES})
 
 set(SOURCE_FILES runSampling.cpp linearalgebra.cpp randomnumbers.cpp auxiliary.cpp montecarlo.cpp)
 add_executable(runSampling ${SOURCE_FILES})
+
+set(SOURCE_FILES generateGradient.cpp linearalgebra.cpp randomnumbers.cpp auxiliary.cpp montecarlo.cpp)
+add_executable(generateGradient ${SOURCE_FILES})

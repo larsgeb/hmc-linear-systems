@@ -7,8 +7,8 @@
 #include "auxiliary.hpp"
 #include "linearalgebra.hpp"
 
-/* -----------------------------------------------------------------------------------------------------------------------
- * Class for Gaussian Distributed prior information about model parameters for a VSP probabilistic inversion.
+/* ----------------------------------------------------------------------------------------------------------------------- *
+ * Class for Gaussian Distributed prior information about model parameters for a VSP probabilistic inversion.              *
  * ----------------------------------------------------------------------------------------------------------------------- */
 prior::~prior() {}
 
@@ -21,13 +21,13 @@ prior::prior(std::vector<double> mean, std::vector<double> std) {
     _mean = mean;
     _std = std;
     _numberParameters = _mean.size();
-    setMassMatrix();
+    setInverseCovarianceMatrix();
 }
 
 double prior::misfit(std::vector<double> parameters) {
     std::vector<double> parameterDifference = VectorDifference(parameters, _mean);
     return 0.5 * VectorVectorProduct(parameterDifference, MatrixVectorProduct
-            (_massMatrix, parameterDifference));
+            (_inverseCovarianceMatrix, parameterDifference));
 }
 
 std::vector<double> prior::gradientMisfit(std::vector<double> parameters) {
@@ -37,20 +37,18 @@ std::vector<double> prior::gradientMisfit(std::vector<double> parameters) {
     for (int q = 0; q < parameters.size(); q++) {
         // Mind that as other masses are assigned, this formula should actually use the inverse covariance matrix, which
         // is not explicitly defined. TODO Implement the inverse covariance matrix explicitly
-        gradient.push_back(0.5 * (VectorVectorProduct(GetMatrixColumn(_massMatrix, q), parameters_diff) +
-                                  VectorVectorProduct(GetMatrixRow(_massMatrix, q), parameters_diff)));
+        gradient.push_back(0.5 * (VectorVectorProduct(GetMatrixColumn(_inverseCovarianceMatrix, q), parameters_diff) +
+                                  VectorVectorProduct(GetMatrixRow(_inverseCovarianceMatrix, q), parameters_diff)));
     }
     return gradient;
 }
 
 // Set prior inverse covariance matrix, or mass matrix. Only diagonal entries are filled, no correlation is described.
-void prior::setMassMatrix() {
-    // Mind that as other masses are assigned, the function prior::misfitGradient should actually use the inverse covariance
-    // matrix, which is not explicitly defined.
+void prior::setInverseCovarianceMatrix() {
     std::vector<double> zeroRow(_numberParameters, 0.0);
     for (int i = 0; i < _numberParameters; i++) {
-        _massMatrix.push_back(zeroRow);
-        _massMatrix[i][i] = 1 / (_std[i] * _std[i]);
+        _inverseCovarianceMatrix.push_back(zeroRow);
+        _inverseCovarianceMatrix[i][i] = 1 / (_std[i] * _std[i]);
     }
 }
 

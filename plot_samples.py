@@ -21,8 +21,8 @@ params = {'legend.fontsize': 'x-large',
           'figure.figsize': (8, 8),
           'axes.labelsize': 20,
           'axes.titlesize': 'x-large',
-          'xtick.labelsize': 20,
-          'ytick.labelsize': 20}
+          'xtick.labelsize': 10,
+          'ytick.labelsize': 10}
 pylab.rcParams.update(params)
 
 # ============================================================
@@ -32,17 +32,14 @@ pylab.rcParams.update(params)
 fid = open('OUTPUT/samples.txt')
 dummy = fid.read().strip().split()
 fid.close()
-print
 dimension = int(dummy[0])
 iterations = int(dummy[dummy.__len__() - 1]) - nbi
-
 x = np.zeros(iterations)
 y = np.zeros(iterations)
-
 x_plot = np.zeros(iterations)
 y_plot = np.zeros(iterations)
 
-q_opt = np.zeros(iterations)
+q_opt = np.zeros(dimension)
 chi = 1.0e100
 
 for i in range(iterations):
@@ -51,7 +48,6 @@ for i in range(iterations):
     y[i] = float(dummy[2 + dim_2 + (i + nbi) * (dimension + 1)])
     x_plot[i] = x[i];
     y_plot[i] = y[i];
-
     chi_test = float(dummy[2 + (dimension) + (i + nbi) * (dimension + 1)])
     if (chi_test < chi):
         chi = chi_test
@@ -76,7 +72,6 @@ plt.savefig('OUTPUT/randomWalk.png')
 plt.savefig('OUTPUT/randomWalk.pdf', format='pdf')
 # plt.show()
 plt.close()
-
 # ============================================================
 # - Histograms.
 # ============================================================
@@ -85,7 +80,6 @@ xlimu = np.max(np.abs(x));
 xliml = np.min(np.abs(x));
 ylimu = np.max(np.abs(y));
 yliml = np.min(np.abs(y));
-
 plt.hist(x, bins=20, color='k', normed=True)
 plt.xlim([xliml, xlimu])
 plt.xlabel('m' + str(dim_1 + 1))
@@ -93,7 +87,6 @@ plt.ylabel('posterior marginal')
 plt.savefig('OUTPUT/marginal1.png')
 plt.close()
 # plt.show()
-
 plt.hist(y, bins=20, color='k', normed=True)
 plt.xlim([yliml, ylimu])
 plt.xlabel('m' + str(dim_2 + 1))
@@ -101,7 +94,6 @@ plt.ylabel('posterior marginal')
 plt.savefig('OUTPUT/marginal2.png')
 plt.close()
 # plt.show()
-
 plt.hist2d(x, y, bins=20, normed=True, cmap='binary')
 # plt.axis('equal')
 plt.xlabel('m' + str(dim_1 + 1))
@@ -111,16 +103,13 @@ plt.colorbar()
 plt.savefig('OUTPUT/marginal_2D.png')
 plt.close()
 # plt.show()
-
 # ============================================================
 # - Assess convergence.
 # ============================================================
-
 n = range(10, iterations, 10)
 
 hist_final, bin = np.histogram(x, bins=20, density=True)
 diff = np.zeros(len(n))
-
 k = 0
 for i in n:
     hist, bin = np.histogram(x[0:i], bins=20, density=True)
@@ -154,7 +143,6 @@ plt.close()
 
 mean_x = np.mean(x)
 mean_y = np.mean(y)
-
 cov_xx = 0.0
 cov_yy = 0.0
 cov_xy = 0.0
@@ -167,6 +155,5 @@ for i in range(iterations - nbi):
 cov_xx = cov_xx / (iterations)
 cov_yy = cov_yy / (iterations)
 cov_xy = cov_xy / (iterations)
-
 print 'mean_x=', mean_x, 'mean_y=', mean_y
 print 'std_xx=', np.sqrt(cov_xx), 'std_yy=', np.sqrt(cov_yy), 'cov_xy=', cov_xy
