@@ -1,0 +1,83 @@
+% !TeX root = thoughts.tex
+\section{Recap of probabilistic inversion and Hamiltonian Mechanics}
+
+\paragraph{Probabilistic inversion and classical sampling}
+In probabilistic inversion one does not require regularization, in contrast to deterministic inversion. Instead, one explores the model space by quantifying uncertainties and calculating probabilities for any model. In a sense, this can be considered as the `complete' solution. It is defined using Bayes' Theorem as follows;
+
+\begin{gather}
+	p(\mathbf{q}|\mathbf{d}) = p(\mathbf{d}|\mathbf{q})\;p(\mathbf{q}) / p(\mathbf{d})
+\end{gather}
+Generally, we ignore the data evidence ($p(\mathbf{d})$) as it only provides scaling of the posterior.
+
+If the prior is normally distributed in model space, we can define it by
+
+\begin{gather}
+	p(\mathbf{q}) = k \cdot \exp{\left( -\frac{1}{2} \left[ \mathbf{q} -\mathbf{q_0}\right]^T \MatrixVariable{C}_M ^{-1}\left[ \mathbf{q} -  \mathbf{q_0}\right]\right)}
+\end{gather}
+where $k$ is a scaling constant (i.e. for normalization), $\mathbf{q_0}$ the mean of the prior distribution and $\MatrixVariable{C}_M ^{-1}$ the inverse parameter covariance matrix. This inverse parameter covariance matrix is given by
+\begin{gather}
+	\left[ \MatrixVariable{C}_M^{-1} \right]_{ij} = r_{ij} \sigma_i \sigma_j
+\end{gather}
+with $r_{ij}$ the correlation between parameters $q_i$ and $q_j$ and $\sigma_i$ the standard deviation of parameter $q_i$.
+
+The prior in data space, $p(\mathbf{d}|\mathbf{q}) $, can be seen as the likelihood to see data based on a selected model. This generally incorporates a forward model, measurement uncertainties and forward modeling uncertainties. Because the quantification of forward modeling uncertainties is generally very hard to estimate usually the actual implementation of this is ignored. With only the forward model and measurement uncertainties (normally distributed) the prior in data space is as follows:
+\begin{gather}
+	p(\mathbf{d}|\mathbf{q}) =  k \cdot \exp{\left( -\frac{1}{2} \left[ G\left(\mathbf{q}\right) -\mathbf{d_0}\right]^T \MatrixVariable{C}_D ^{-1}\left[G\left(\mathbf{q}\right) -  \mathbf{d_0}\right]\right)}
+\end{gather}
+with $k$ again a scaling constant, $\MatrixVariable{C}_D$ the data covariance matrix, $d_0$ the observed data and $G\left(\mathbf{q}\right)$ the forward modeled data based on parameters $q$ and forward model $G$. This forward model $G$ can be any non-linear model, but \gls{HMC} inversion algorithms are greatly simplified if they are actually linear systems, as will be illustrated later.
+
+When these prior data functions are combined one obtains the (improperly scaled) posterior. The negative exponent of the posterior is generally called the misfit and has a special role in many inversions. In deterministic inversion, the aim is usually to find the global minimum of this function. In probabilistic inversion,one tries to map the entire misfit by (pseudo) random sampling. The misfit is given by
+
+\begin{gather}
+	\chi(\mathbf{q}) = \frac{1}{2} \left[ \mathbf{q} -\mathbf{q_0}\right]^T \MatrixVariable{C}_M ^{-1}\left[ \mathbf{q} -  \mathbf{q_0}\right] + \frac{1}{2} \left[ G\left(\mathbf{q}\right) -\mathbf{d_0}\right]^T \MatrixVariable{C}_D ^{-1}\left[G\left(\mathbf{q}\right) -  \mathbf{d_0}\right].
+\end{gather}
+
+Exploring this misfit is typically done based on prior information. The Metropolis-Hastings algorithm draws new models entirely from the prior in model space, and accepts either by having a lower misfit or randomly based on the exponential increase in misfit if the proposed model has a larger misfit.
+
+If the prior model is far off or has large uncertainties, classical samplers might have a hard time finding proper acceptable models. An example which will be expanded on in the first section is a linear model where prior data is off by double the forward modeled value, which on 10,000 samples lead to less than 100 accepted models. These acceptance rates are very wasteful of computing power. On the other side, drawing new models is computationally cheap relative to the more intensive \gls{HMC} sampling.
+
+\paragraph{Hamiltonian Mechanics and sampling} One way to propose more acceptable models is to use \gls{HMC} sampling. In this algorithm, the model is considered as a particle in $n$-dimensional space, where n denotes the number of inversion parameters. By not assigning new parameters but momenta in each dimension and propagating the model for a certain amount of time one proposes new models.
+
+The propagation is based on Hamilton's Equations. These two equations interrelate energy of a system to it's position and momentum.\index{Hamilton's equations} Hamilton's equations for a trajectory of a particle are given in this $n$-dimensional space as;
+
+\begin{gather}
+	\frac{d q_i}{dt} = \frac{\partial H}{\partial p_i},\label{eq:ham1}\\
+	\frac{d p_i}{dt} = - \frac{\partial H}{\partial q_i}\label{eq:ham2}.
+\end{gather}
+In these equations, $q_i$ is the position in dimension $i$, $p_i$ is the momentum in dimension $i$ (given by $p_i = \mu_i \frac{d q_i}{dt}$). $H$ stands for the Hamiltonian, which in physical Hamiltonian Mechanics is the sum of potential en kinetic energy.
+
+The trick to \gls{HMC} sampling is to consider the misfit functional $\chi$ as a gravitational potential. This allows us to propagate our model over model space as if it were a particle moving under the influence of gravity defined by the posterior distribution. The actual definitions for potential and kinetic energy then become:
+
+\begin{gather}
+	K(\mathbf{p}) = \frac{1}{2} \sum_{i=1}^{n} \frac{p_i^2}{\mu_i},\\
+	U(\mathbf{q}) = \chi(\mathbf{q}).
+\end{gather}
+
+There are already many interesting options, remarks and conclusions to draw from this framework, but as it is usually nicely illustrated using a few examples, we will come to that later. Noteworthy however that a simplification is done on the calculation of momenta. In a later analysis, I extend this definition. See also the note about equation \eqref{eq:hamsimple1}.
+
+One thing which is useful to note now is that the derivatives on the right hand sides of equations \eqref{eq:ham1} and \eqref{eq:ham2} now simplify, for the Hamiltonian derivative with respect to momenta only depends on kinetic energy, while the derivative with respect to position only depends on potential energy. The simplified representation is:
+
+\begin{gather}
+\frac{d q_i}{dt} = \frac{p_i}{\mu_i},\label{eq:hamsimple1}\\
+\frac{d p_i}{dt} = - \left[\nabla_{q} \chi \right]_i\label{eq:hamsimple2}.
+\end{gather}
+An extension on this with a \index{Mass matrix}non-diagonal mass matrix will allows us to `link' parameters together in the propagation. This will be analyzed later on. Typically, however, for simple cases one chooses a diagonal positive definite mass matrix, which leads to equation \eqref{eq:hamsimple1}.
+
+\index{Model propagation}The propagation of models is done using a leapfrog scheme, in which one splits up each time step in three separate calculations. First the momentum is propagated half an original time step, then the model parameters are propagated a full step, after which the momentum catches up again. Since I will not alter much on this side of the algorithm, for specifics I refer to section~5.2.3.3 of \cite{neal2011mcmc}.
+
+\index{Acceptance rate}Acceptance of a new proposition works almost equal with \gls{HMC} as it does with the Metropolis-Hastings algorithm. The difference is that one does not compare misfit magnitudes, but the actual Hamiltonian, or energy of the system. Mathematically, this can be expressed as
+\begin{gather}
+	\min\left( 1, \frac{\exp\left[-H(\mathbf{q_\tau},\mathbf{p_\tau}) \right]}{\exp\left[-H(\mathbf{q},\mathbf{p}) \right]} \right).
+\end{gather}
+I like this better in words. As we explore model space, we assign new momenta in each iteration. This will result in a different energy of the system. If the Hamiltonian (the system's energy) has decreased from the previous sample, than it is accepted unconditionally (because $\exp (H - H_\tau)>1$). If, however, energy has increased, it has a chance of $\exp \left(H - H_\tau\right)$ to be accepted. This can be expressed as exploration of energy levels.
+
+\index{Measure of exploration}What is noteworthy is that through the conservation of energy the Hamiltonian will not change over the course of the trajectory. This allows two things; a quality control to ensure that propagation of the model is performed correctly. Moreover, the chance of accepting a model is completely defined as soon as the momentum is assigned. This is very important, as it now also follows that propagation time doesn't influence the acceptance rate \textit{at all}. As one will see, trajectory length is more a tuning parameter which determines the algorithm's measure of exploration.
+
+\index{Mass matrix}Mass matrices can be chosen in two ways. A standard, non-optimized option would be to choose the unit matrix. A simple analysis given in Andreas Fichtner's reader also reveal that parameters with different forward model derivatives oscillate non-equally during a trajectory. A mitigation is to assign the mass matrix according to the forward model. The mass matrix that would result in equal oscillations would be 
+\begin{gather}\label{eq:massMatrixForward}
+\MatrixVariable{M} = \MatrixVariable{G}^T \MatrixVariable{G}
+\end{gather}
+where just taking the trace of this matrix would `unlink' the parameters again and make oscillations roughly equal.
+
+\index{Momenta!Drawing} Momenta are drawn from the mass matrix diagonal (correlation is assumed to be non-existent). By using the square root of the mass as standard deviation and zero mean, $n$ momenta are drawn corresponding to $n$ parameters.
+

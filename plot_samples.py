@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 # ============================================================
 
 # - Number of burn-in samples to be ignored.
-nbi = 1
+nbi = 2
 # - Dimensions of interest.
 dim_1 = 9
 dim_2 = 7

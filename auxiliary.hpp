@@ -50,7 +50,7 @@ private:
 
     // Mind that as other masses are assigned, the function prior::misfitGradient should actually use the inverse covariance
     // matrix, which is not explicitly defined.
-    void setMassMatrix();
+    void setInverseCovarianceMatrix();
 };
 
 class data {

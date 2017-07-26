@@ -30,4 +30,5 @@ for line in dummy:
 plt.figure()
 plt.title('Gradient of q1 and q2')
 Q = plt.quiver(q1, q2, dq1, dq2)
+plt.gca().set_aspect('equal', adjustable='box')
 plt.show()
