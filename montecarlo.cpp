@@ -7,8 +7,11 @@
 #include <math.h>
 #include "auxiliary.hpp"
 #include "montecarlo.hpp"
+#include <stdlib.h>
 #include "randomnumbers.hpp"
-
+#include "linearalgebra.hpp"
+#include <stdio.h>
+#include <iostream>
 
 montecarlo::montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel
 in_model, int in_nt, double in_dt, int in_iterations) {
@@ -31,8 +34,9 @@ in_model, int in_nt, double in_dt, int in_iterations) {
     _currentMomentum.clear();
 
     // To ensure equal oscillations
-    _massMatrix = MatrixMatrixProduct(TransposeMatrix(_model._designMatrix),_model._designMatrix);
+    _massMatrix = MatrixMatrixProduct(TransposeMatrix(_model._designMatrix), _model._designMatrix);
     _massMatrix = VectorToDiagonal(MatrixTrace(_massMatrix)); // Take only diagonal entries
+
 
     // Assigning a random moment to the momentum vectors
     for (int i = 0; i < _prior._numberParameters; i++) {
@@ -57,10 +61,13 @@ void montecarlo::propose_metropolis() {
 /* Proposal based on the solution of Hamilton's equation. -------------------------*/
 void montecarlo::propose_hamilton() {
     /* Draw random prior momenta. */
-    for (int i = 0; i < _prior._numberParameters; i++)
+    for (int i = 0; i < _prior._numberParameters; i++) {
 //        _proposedMomentum[i] = 0;
-        _proposedMomentum[i] = (randn(0.0, sqrt(_massMatrix[i][i]))); // only diagonal implemented!
+        _proposedMomentum[i] = randn(0.0, sqrt(_massMatrix[i][i])); // only diagonal implemented!
+    }
     /* Integrate Hamilton's equations. */
+
+    // TODO only call this for last iterations, to save a lot of time
     FILE *trajectoryfile;
     trajectoryfile = fopen("OUTPUT/trajectory.txt", "w");
     leap_frog(trajectoryfile);
@@ -102,9 +109,9 @@ void montecarlo::sample(bool hamilton) {
             x = x_new;
             _currentModel = _proposedModel;
             write_sample(samplesfile, x, it);
-            std::cout << "model " << it + 1 << " is accepted" << std::endl;
+//            std::cout << "model " << it + 1 << " is accepted" << std::endl;
         }
-        std::cout << "iteration " << it + 1 << " energy " << x_new << std::endl;
+//        std::cout << "iteration " << it + 1 << " energy " << x_new << std::endl;
     }
     fprintf(samplesfile, "%i ", accepted);
     fprintf(samplesfile, "\n");
@@ -116,10 +123,15 @@ void montecarlo::sample(bool hamilton) {
 void montecarlo::leap_frog(_IO_FILE *trajectoryfile) {
 
     _proposedModel = _currentModel;
+    _currentMomentum  =_proposedMomentum;
+
     std::vector<double> misfitGrad;
     double angle1, angle2;
     /* March forward. -------------------------------------------------------------*/
     for (int it = 0; it < _nt; it++) {
+//        Use this to validate that Hamiltonian is preserved (hint, for stepsize 0.05 there's already a large round-off error
+//        std::cout << energy() << std::endl;
+
         /* First half step in momentum. */
         misfitGrad = _posterior.gradientMisfit(_proposedModel, _prior, _data);
         for (int i = 0; i < _prior._numberParameters; i++) {
@@ -127,6 +139,7 @@ void montecarlo::leap_frog(_IO_FILE *trajectoryfile) {
         }
         misfitGrad.clear();
 
+        // TODO only call this for last iterations, to save a lot of time
         write_trajectory(trajectoryfile, it);
         /* Full step in position. */
         for (int i = 0; i < _prior._numberParameters; i++) {
@@ -140,14 +153,11 @@ void montecarlo::leap_frog(_IO_FILE *trajectoryfile) {
         misfitGrad.clear();
 
         /* Check no-U-turn criterion. */
-        angle1 = 0.0;
-        angle2 = 0.0;
-        for (int i = 0; i < _prior._numberParameters; i++) {
-            angle1 += _proposedMomentum[i] * (_proposedModel[i] - _currentModel[i]);
-            angle2 += _currentMomentum[i] * (_currentModel[i] - _proposedModel[i]);
-        }
-        if (angle1 < 0.0 && angle2 < 0.0) {
-            std::cout << "U-Turn!" << std::endl;
+        angle1 = VectorVectorProduct(_proposedMomentum, VectorDifference(_currentModel,_proposedModel));
+        angle2 = VectorVectorProduct(_currentMomentum, VectorDifference(_proposedModel,_currentModel));
+
+        if (angle1 > 0.0 && angle2 > 0.0) {
+//            std::cout << "U-Turn!" << std::endl;
             break;
         }
     }

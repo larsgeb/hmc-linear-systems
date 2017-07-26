@@ -6,10 +6,16 @@
 #include "auxiliary.hpp"
 
 int main() {
-    data synthetics(5, 1);
-    forwardModel model(5);
+    // Easy as can be.
+    data synthetics(2,1); // Needed for location of receivers, hardcoded into class
+    forwardModel model(2); // Creates identity matrix, update afterwards using model._designMatrix[i][j]
 
-    std::vector<double> parameters{10, 10, 10, 10, 10};
+    model._designMatrix[1][1] = 2;
+
+    std::vector<double> parameters;
+    parameters.push_back(1);
+    parameters.push_back(3);
+
     synthetics._observedData = model.calculateData(parameters);
     synthetics.writeData("OUTPUT/synthetics.txt");
 

@@ -1,10 +1,14 @@
 // Created by Lars Gebraad on 7/10/17.
 
-#include <sstream>
+#include <vector>
+#include <iostream>
+#include <cmath>
+#include <fstream>
 #include "auxiliary.hpp"
+#include "linearalgebra.hpp"
 
-/* -----------------------------------------------------------------------------------------------------------------------
- * Class for Gaussian Distributed prior information about model parameters for a VSP probabilistic inversion.
+/* ----------------------------------------------------------------------------------------------------------------------- *
+ * Class for Gaussian Distributed prior information about model parameters for a VSP probabilistic inversion.              *
  * ----------------------------------------------------------------------------------------------------------------------- */
 prior::~prior() {}
 
@@ -17,7 +21,7 @@ prior::prior(std::vector<double> mean, std::vector<double> std) {
     _mean = mean;
     _std = std;
     _numberParameters = _mean.size();
-    setMassMatrix();
+    setInverseCovarianceMatrix();
 }
 
 double prior::misfit(std::vector<double> parameters) {
@@ -40,9 +44,7 @@ std::vector<double> prior::gradientMisfit(std::vector<double> parameters) {
 }
 
 // Set prior inverse covariance matrix, or mass matrix. Only diagonal entries are filled, no correlation is described.
-void prior::setMassMatrix() {
-    // Mind that as other masses are assigned, the function prior::misfitGradient should actually use the inverse covariance
-    // matrix, which is not explicitly defined.
+void prior::setInverseCovarianceMatrix() {
     std::vector<double> zeroRow(_numberParameters, 0.0);
     for (int i = 0; i < _numberParameters; i++) {
         _inverseCovarianceMatrix.push_back(zeroRow);
@@ -76,23 +78,17 @@ void data::setICDMatrix(double std) {
     }
 }
 
-void data::readData(const char *folder, int numberSources, int numberReceivers) {
+void data::readData(const char *filename) {
     // Read file for observed data
+    double a;
     _observedData.clear();
-    for (int source = 0; source < numberSources; source++) {
-        double a;
-        std::stringstream filenameStream;
-        filenameStream << "straight-ray-solver/DATA_synthetic/Recorded_time_source_" << source + 1 << ".txt";
-        std::string filename = filenameStream.str();
-        std::ifstream infile(filename);
-        for (int receiver = 0; receiver < numberReceivers; receiver++) {
-            infile >> a;
-            infile >> a;
-            infile >> a;
-            _observedData.push_back(a);
-        }
-        infile.close();
+    std::ifstream infile(filename);
+    infile >> _numberData;
+    for (int i = 0; i < _numberData; i++) {
+        infile >> a;
+        _observedData.push_back(a);
     }
+    infile.close();
 }
 
 void data::writeData(const char *filename) {
@@ -130,7 +126,31 @@ std::vector<double> data::gradientMisfit(std::vector<double> parameters) {
     return gradient;
 };
 
+/* -----------------------------------------------------------------------------------------------------------------------
+ * Forward model class.
+ * ----------------------------------------------------------------------------------------------------------------------- */
+void forwardModel::constructDesignMatrix(int numberParameters) {
+    // Make square zero matrix
+    _designMatrix.clear();
+    std::vector<double> zeroRow((unsigned long) numberParameters, 0);
+    _designMatrix.insert(_designMatrix.end(), (unsigned long) numberParameters, zeroRow);
 
+    // Set diagonal entries to 1
+    for (int i = 0; i < numberParameters; i++) {
+        _designMatrix[i][i] = 1;
+    }
+}
+
+forwardModel::forwardModel(int numberParameters) {
+    _numberParameters = numberParameters;
+    constructDesignMatrix(numberParameters);
+}
+
+std::vector<double> forwardModel::calculateData(std::vector<double> parameters) {
+    return MatrixVectorProduct(_designMatrix, parameters);
+}
+
+forwardModel::forwardModel() {}
 
 /* -----------------------------------------------------------------------------------------------------------------------
  * Taylor expansion class. Contains probability classes by reference.

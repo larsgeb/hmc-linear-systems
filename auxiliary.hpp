@@ -6,21 +6,13 @@
 #ifndef HMC_VSP_AUXILIARY_HPP
 #define HMC_VSP_AUXILIARY_HPP
 
-#include <vector>
-#include <iostream>
-#include <cmath>
-#include <fstream>
-#include "auxiliary.hpp"
-#include "linearalgebra.hpp"
-
-// Update this include for the wanted forward model, along with the constructors
-#include "tomographyForwardModel.hpp"
-
 class prior;
 
 class data;
 
 class posterior;
+
+class forwardModel;
 
 //class taylorExpansion;
 
@@ -45,12 +37,11 @@ public:
     double misfit(std::vector<double> parameters);
 
     std::vector<double> gradientMisfit(std::vector<double> parameters);
-
 private:
 
     // Mind that as other masses are assigned, the function prior::misfitGradient should actually use the inverse covariance
     // matrix, which is not explicitly defined.
-    void setMassMatrix();
+    void setInverseCovarianceMatrix();
 };
 
 class data {
@@ -68,14 +59,13 @@ public:
 
     void setICDMatrix(double std);
 
-    void readData(const char *folder, int numberSources, int numberReceivers);
+    void readData(const char *filename);
 
     void writeData(const char *filename);
 
     double misfit(std::vector<double> in_parameters, forwardModel m);
 
     void setMisfitParameterDataMatrix(std::vector<std::vector<double>> designMatrix);
-
     void setMisfitParameterMatrix(std::vector<std::vector<double>> designMatrix);
 
     std::vector<double> gradientMisfit(std::vector<double> parameters);
@@ -86,6 +76,23 @@ public:
     double misfit(std::vector<double> parameters, prior &in_prior, data &in_data, forwardModel m);
 
     std::vector<double> gradientMisfit(std::vector<double> parameters, prior &in_prior, data &in_data);
+};
+
+class forwardModel {
+public:
+    // Constructors & destructors
+    forwardModel(int numberParameters);
+
+    forwardModel();
+
+    // Fields
+    int _numberParameters;
+    std::vector<std::vector<double>> _designMatrix;
+
+    // Methods
+    void constructDesignMatrix(int numberParameters);
+
+    std::vector<double> calculateData(std::vector<double> parameters);
 };
 
 void printVector(std::vector<double> A);

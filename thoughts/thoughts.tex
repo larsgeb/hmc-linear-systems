@@ -1,0 +1,73 @@
+\documentclass[]{scrartcl}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage{graphicx} % Required to insert images
+\usepackage{listings} % Required for insertion of code
+\usepackage{courier} % Required for the courier font
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+\usepackage[toc,acronym,nomain]{glossaries}
+\usepackage[numbered]{matlab-prettifier}
+\usepackage{filecontents}
+\usepackage{multicol}
+\usepackage{makeidx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[hidelinks]{hyperref}
+
+\usepackage{natbib}
+\bibliographystyle{abbrvnat}
+
+\newcommand{\MatrixVariable}[1]{\ensuremath{\underline{#1}}}%
+
+\makeatletter
+\renewenvironment{theindex}
+{\section*{\indexname}%
+	\@mkboth{\MakeUppercase\indexname}%
+	{\MakeUppercase\indexname}%
+	\thispagestyle{plain}\parindent\z@
+	\parskip\z@ \@plus .3\p@\relax
+	\columnseprule \z@
+	\columnsep 35\p@
+	\let\item\@idxitem}
+{}
+\makeatother
+
+\makeglossaries
+\makeindex
+
+
+\title{Hamiltonian Monte Carlo sampling in linear and non-linear geophysical systems}
+\author{Lars Gebraad}
+
+\begin{document}
+\newacronym{HMC}{HMC}{Hamiltonian Monte Carlo}
+\maketitle
+
+\begin{abstract}
+
+In this document I will collect my thoughts, findings and other remarks on \gls{HMC} sampling of posterior probability distributions. \gls{HMC} sampling finds it's usefulness in proposing new models; as prior information becomes poorer classical methods of exploring model space suffer from increasing performance loss. For example, Metropolis-Hastings sampling draws new models just from the prior distribution, which, if largely incorrect, will lead to almost no useful exploration of the model space. 
+
+It is not understood how well \gls{HMC} scales with increasing dimension. Performance should decrease quite drastically, as models need to be propagated using Hamiltonian Mechanics, but the acceptance rate will also most likely be affected. One of the aims of this work is to explore how sampling of simple linear models and more complex non-linear systems scales with increasing dimensions. Tuning parameters such as assigning masses and momenta are also investigated.
+
+As of yet, three types of physical models are considered. First os a simple low dimensional arbitrary linear model, where we can control the input and forward model. The second model is based upon a straight ray tomography MATLAB program which is a more complicated, but still linear, system. Lastly, a vertical seismic profile with variable layer speed and thickness is highlighted.
+
+The notation used might be a bit of a mix between \cite{neal2011mcmc} and Andreas Fichtner's preliminary probabilistic inversion document, but I will try to be coherent and assign recognizable variable symbols.
+
+\end{abstract}
+\glsresetall
+\clearpage
+\input{recap.tex}
+\clearpage
+\input{simple_linear.tex}
+\clearpage
+
+\clearpage
+
+\bibliography{sources.bib}
+\printglossary
+\printindex
+
+\end{document}
