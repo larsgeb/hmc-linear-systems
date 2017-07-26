@@ -37,9 +37,6 @@ in_model, int in_nt, double in_dt, int in_iterations) {
     _massMatrix = MatrixMatrixProduct(TransposeMatrix(_model._designMatrix), _model._designMatrix);
     _massMatrix = VectorToDiagonal(MatrixTrace(_massMatrix)); // Take only diagonal entries
 
-    // Naive hardcoded, TODO don't leave this in the final code!
-    _massMatrix[0][0] = 1;
-    _massMatrix[1][1] = 1;
 
     // Assigning a random moment to the momentum vectors
     for (int i = 0; i < _prior._numberParameters; i++) {
@@ -112,9 +109,9 @@ void montecarlo::sample(bool hamilton) {
             x = x_new;
             _currentModel = _proposedModel;
             write_sample(samplesfile, x, it);
-            std::cout << "model " << it + 1 << " is accepted" << std::endl;
+//            std::cout << "model " << it + 1 << " is accepted" << std::endl;
         }
-        std::cout << "iteration " << it + 1 << " energy " << x_new << std::endl;
+//        std::cout << "iteration " << it + 1 << " energy " << x_new << std::endl;
     }
     fprintf(samplesfile, "%i ", accepted);
     fprintf(samplesfile, "\n");
@@ -146,7 +143,7 @@ void montecarlo::leap_frog(_IO_FILE *trajectoryfile) {
         write_trajectory(trajectoryfile, it);
         /* Full step in position. */
         for (int i = 0; i < _prior._numberParameters; i++) {
-            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] * (_massMatrix[i][i]);
+            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] / (_massMatrix[i][i]);
         }
 
         misfitGrad = _posterior.gradientMisfit(_proposedModel, _prior, _data);
@@ -160,7 +157,7 @@ void montecarlo::leap_frog(_IO_FILE *trajectoryfile) {
         angle2 = VectorVectorProduct(_currentMomentum, VectorDifference(_proposedModel,_currentModel));
 
         if (angle1 > 0.0 && angle2 > 0.0) {
-            std::cout << "U-Turn!" << std::endl;
+//            std::cout << "U-Turn!" << std::endl;
             break;
         }
     }

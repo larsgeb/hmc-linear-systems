@@ -10,6 +10,7 @@
 #include <math.h>
 #include <iostream>
 #include <fstream>
+#include <ctime>
 
 int main() {
 
@@ -23,22 +24,24 @@ int main() {
     prior priorInfo(means, std);
 
     // Create design matrix within forwardModel object
-    forwardModel model(2); // Creates identity matrix, update afterwards using model._designMatrix[i][j]
+    forwardModel model(2);
 
     model._designMatrix[1][1] = 2;
-//    model._designMatrix[2][2] = 3;
-//    model._designMatrix[3][3] = 4;
-//    model._designMatrix[4][4] = 5;
 
     observedData.setMisfitParameterDataMatrix(model._designMatrix); // Check this result with a few awkwardly sized
     // matrices
     // Create posterior object
     posterior posterior1;
 
-    montecarlo mc(priorInfo, observedData, posterior1, model, 10, 0.05, 1000);
+    // Maximum stepsize is approximately smallest constrained dimension of mass
+    // matrix, i.e. the square root of the smallest mass.
+    montecarlo mc(priorInfo, observedData, posterior1, model, 50, 0.05, 20);
 
     /* ---- The actual sampling ---- */
+    std::clock_t start;
+    start = std::clock();
     mc.sample(true);
+    std::cout << std::endl << "Time: " << (std::clock() - start) / (double) (CLOCKS_PER_SEC) << " s" << std::endl;
 
     return 0;
 }

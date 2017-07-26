@@ -36,8 +36,8 @@ int main() {
         // Use it in conjunction with plot_gradient.py
         std::ofstream outfile;
         outfile.open("OUTPUT/gradient.txt");
-        for (double q1 = 0.25; q1 <= 2; q1 += 0.125) {
-            for (double q2 = 2.5; q2 <= 3.5; q2 += 0.125) {
+        for (double q1 = 0.4; q1 <= 2.0; q1 += 0.1) {
+            for (double q2 = 2.5; q2 <= 3.4; q2 += 0.1) {
                 means[0] = q1;
                 means[1] = q2;
                 std::vector<double> gradient = mc._posterior.gradientMisfit(means, mc._prior, mc._data);

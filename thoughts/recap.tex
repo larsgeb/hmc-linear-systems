@@ -63,7 +63,7 @@ One thing which is useful to note now is that the derivatives on the right hand 
 \end{gather}
 An extension on this with a \index{Mass matrix}non-diagonal mass matrix will allows us to `link' parameters together in the propagation. This will be analyzed later on. Typically, however, for simple cases one chooses a diagonal positive definite mass matrix, which leads to equation \eqref{eq:hamsimple1}.
 
-\index{Model propagation}The propagation of the model is done using a leapfrog scheme, in which one splits up each time step in three separate calculations. First the momentum is propagated half an original time step, then the model parameters are propagated a full step, after which the momentum catches up again. Since I will not alter much on this side of the algorithm, for specifics I refer to section~5.2.3.3 of \cite{neal2011mcmc}.
+\index{Model propagation}The propagation of models is done using a leapfrog scheme, in which one splits up each time step in three separate calculations. First the momentum is propagated half an original time step, then the model parameters are propagated a full step, after which the momentum catches up again. Since I will not alter much on this side of the algorithm, for specifics I refer to section~5.2.3.3 of \cite{neal2011mcmc}.
 
 \index{Acceptance rate}Acceptance of a new proposition works almost equal with \gls{HMC} as it does with the Metropolis-Hastings algorithm. The difference is that one does not compare misfit magnitudes, but the actual Hamiltonian, or energy of the system. Mathematically, this can be expressed as
 \begin{gather}
@@ -71,12 +71,13 @@ An extension on this with a \index{Mass matrix}non-diagonal mass matrix will all
 \end{gather}
 I like this better in words. As we explore model space, we assign new momenta in each iteration. This will result in a different energy of the system. If the Hamiltonian (the system's energy) has decreased from the previous sample, than it is accepted unconditionally (because $\exp (H - H_\tau)>1$). If, however, energy has increased, it has a chance of $\exp \left(H - H_\tau\right)$ to be accepted. This can be expressed as exploration of energy levels.
 
-What is noteworthy is that through the conservation of energy the Hamiltonian will not change over the course of the trajectory. This allows two things; a quality control to ensure that propagation of the model is performed correctly. Moreover, the chance of accepting a model is completely defined as soon as the momentum is assigned. This is very important, as it now also follows that propagation time doesn't influence the acceptance rate \textit{at all}. As one will see, trajectory length is more a tuning parameter which determines the algorithm's \index{Measure of exploration}measure of exploration.
+\index{Measure of exploration}What is noteworthy is that through the conservation of energy the Hamiltonian will not change over the course of the trajectory. This allows two things; a quality control to ensure that propagation of the model is performed correctly. Moreover, the chance of accepting a model is completely defined as soon as the momentum is assigned. This is very important, as it now also follows that propagation time doesn't influence the acceptance rate \textit{at all}. As one will see, trajectory length is more a tuning parameter which determines the algorithm's measure of exploration.
 
 \index{Mass matrix}Mass matrices can be chosen in two ways. A standard, non-optimized option would be to choose the unit matrix. A simple analysis given in Andreas Fichtner's reader also reveal that parameters with different forward model derivatives oscillate non-equally during a trajectory. A mitigation is to assign the mass matrix according to the forward model. The mass matrix that would result in equal oscillations would be 
-\begin{gather}
+\begin{gather}\label{eq:massMatrixForward}
 \MatrixVariable{M} = \MatrixVariable{G}^T \MatrixVariable{G}
 \end{gather}
 where just taking the trace of this matrix would `unlink' the parameters again and make oscillations roughly equal.
 
-\index{Drawing momenta} Momenta are drawn from the mass matrix diagonal (correlation is assumed to be non-existent). By using the square root of the mass as standard deviation and zero mean, $n$ momenta are drawn corresponding to $n$ parameters.
+\index{Momenta!Drawing} Momenta are drawn from the mass matrix diagonal (correlation is assumed to be non-existent). By using the square root of the mass as standard deviation and zero mean, $n$ momenta are drawn corresponding to $n$ parameters.
+
