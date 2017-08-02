@@ -9,20 +9,20 @@ import matplotlib.pyplot as plt
 # ============================================================
 
 # - Number of burn-in samples to be ignored.
-nbi = 2
+nbi = 50
 # - Dimensions of interest.
-dim_1 = 0
-dim_2 = 1
+dim_1 = 9
+dim_2 = 8
 # - Incremental displacement for duplicate points.
 epsilon_1 = 0.0003
 epsilon_2 = 0.0003
 
 params = {'legend.fontsize': 'x-large',
-          'figure.figsize': (8, 8),
-          'axes.labelsize': 20,
+          'figure.figsize': (16, 12),
+          'axes.labelsize': 16,
           'axes.titlesize': 'x-large',
-          'xtick.labelsize': 10,
-          'ytick.labelsize': 10}
+          'xtick.labelsize': 16,
+          'ytick.labelsize': 16}
 pylab.rcParams.update(params)
 
 # ============================================================
@@ -36,6 +36,11 @@ dimension = int(dummy[0])
 iterations = int(dummy[dummy.__len__() - 1]) - nbi
 x = np.zeros(iterations)
 y = np.zeros(iterations)
+
+qs = []
+for parameter in range(0, dimension):
+    qs.append([])
+
 x_plot = np.zeros(iterations)
 y_plot = np.zeros(iterations)
 
@@ -46,8 +51,12 @@ for i in range(iterations):
 
     x[i] = float(dummy[2 + dim_1 + (i + nbi) * (dimension + 1)])
     y[i] = float(dummy[2 + dim_2 + (i + nbi) * (dimension + 1)])
-    x_plot[i] = x[i];
-    y_plot[i] = y[i];
+    x_plot[i] = x[i]
+    y_plot[i] = y[i]
+
+    for parameter in range(0, dimension):
+        qs[parameter].append(float(dummy[2 + parameter + (i + nbi) * (dimension + 1)]))
+
     chi_test = float(dummy[2 + (dimension) + (i + nbi) * (dimension + 1)])
     if (chi_test < chi):
         chi = chi_test
@@ -61,41 +70,42 @@ for i in range(iterations):
 
 plt.plot(x_plot, y_plot, 'k', linewidth=0.05)
 plt.plot(x_plot, y_plot, 'ro', linewidth=0.05, markersize=0.5)
-# plt.axis('equal')
+#plt.gca().set_aspect('equal', adjustable='box')
 axes = plt.gca()
 # axes.set_xlim([2315,2316])
 # axes.set_ylim([495,496])
-plt.xlabel('m' + str(dim_1 + 1))
-plt.ylabel('m' + str(dim_2 + 1))
-plt.title('random walk')
+plt.xlabel('parameter ' + str(dim_1 + 1))
+plt.ylabel('parameter ' + str(dim_2 + 1))
+# plt.title('random walk')
+plt.gcf().subplots_adjust(bottom=0.15)
 plt.savefig('OUTPUT/randomWalk.png')
-plt.savefig('OUTPUT/randomWalk.pdf', format='pdf')
+# plt.savefig('OUTPUT/randomWalk.pdf', format='pdf')
 # plt.show()
 plt.close()
 # ============================================================
 # - Histograms.
 # ============================================================
 
-xlimu = np.max(np.abs(x));
-xliml = np.min(np.abs(x));
-ylimu = np.max(np.abs(y));
-yliml = np.min(np.abs(y));
-plt.hist(x, bins=20, color='k', normed=True)
+xlimu = np.max(np.abs(x))
+xliml = np.min(np.abs(x))
+ylimu = np.max(np.abs(y))
+yliml = np.min(np.abs(y))
+plt.hist(x, bins=40, color='k', normed=True)
 plt.xlim([xliml, xlimu])
 plt.xlabel('m' + str(dim_1 + 1))
 plt.ylabel('posterior marginal')
 plt.savefig('OUTPUT/marginal1.png')
 plt.close()
 # plt.show()
-plt.hist(y, bins=20, color='k', normed=True)
+plt.hist(y, bins=40, color='k', normed=True)
 plt.xlim([yliml, ylimu])
 plt.xlabel('m' + str(dim_2 + 1))
 plt.ylabel('posterior marginal')
 plt.savefig('OUTPUT/marginal2.png')
 plt.close()
 # plt.show()
-plt.hist2d(x, y, bins=20, normed=True, cmap='binary')
-# plt.axis('equal')
+plt.hist2d(x, y, bins=40, normed=True, cmap='binary')
+plt.axis('equal')
 plt.xlabel('m' + str(dim_1 + 1))
 plt.ylabel('m' + str(dim_2 + 1))
 plt.title('2D posterior marginal')
@@ -108,11 +118,11 @@ plt.close()
 # ============================================================
 n = range(10, iterations, 10)
 
-hist_final, bin = np.histogram(x, bins=20, density=True)
+hist_final, bin = np.histogram(x, bins=40, density=True)
 diff = np.zeros(len(n))
 k = 0
 for i in n:
-    hist, bin = np.histogram(x[0:i], bins=20, density=True)
+    hist, bin = np.histogram(x[0:i], bins=40, density=True)
     diff[k] = np.sqrt(np.sum((hist - hist_final) ** 2.0))
     k = k + 1
 
@@ -122,12 +132,12 @@ plt.ylabel('difference to final')
 plt.savefig('OUTPUT/convergence1.png')
 plt.close()
 
-hist_final, bin = np.histogram(y, bins=20, density=True)
+hist_final, bin = np.histogram(y, bins=40, density=True)
 diff = np.zeros(len(n))
 
 k = 0
 for i in n:
-    hist, bin = np.histogram(y[0:i], bins=20, density=True)
+    hist, bin = np.histogram(y[0:i], bins=40, density=True)
     diff[k] = np.sqrt(np.sum((hist - hist_final) ** 2.0))
     k = k + 1
 
@@ -157,3 +167,14 @@ cov_yy = cov_yy / (iterations)
 cov_xy = cov_xy / (iterations)
 print 'mean_x=', mean_x, 'mean_y=', mean_y
 print 'std_xx=', np.sqrt(cov_xx), 'std_yy=', np.sqrt(cov_yy), 'cov_xy=', cov_xy
+
+for parameter in range(0, dimension):
+    mean_x = np.mean(qs[parameter])
+    cov_xx = 0.0
+
+    for i in range(iterations - nbi):
+        cov_xx += (mean_x - qs[parameter][i]) * (mean_x - qs[parameter][i])
+
+    cov_xx = cov_xx / iterations
+    print 'Mean %i=' % (parameter + 1), mean_x
+    print 'Covariance %i=' % (parameter + 1), np.sqrt(cov_xx)

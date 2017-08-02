@@ -46,7 +46,7 @@ private:
 
 class data {
 public:
-    data(int numberData, double measurementError);
+    data(int numberData, double standardDeviation);
 
     data();
 
@@ -69,6 +69,8 @@ public:
     void setMisfitParameterMatrix(std::vector<std::vector<double>> designMatrix);
 
     std::vector<double> gradientMisfit(std::vector<double> parameters);
+
+    void setICDMatrix_percentual(double percentage);
 };
 
 class posterior {

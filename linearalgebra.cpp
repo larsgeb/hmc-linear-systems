@@ -28,12 +28,10 @@ std::vector<double> VectorDifference(std::vector<double> A, std::vector<double> 
 }
 
 std::vector<double> VectorScalarProduct(std::vector<double> A, double b) {
-    std::vector<double> B;
-    for (int i = 0; i < A.size(); i++) {
-        // Prior misfit
-        B.push_back(A[i] * b);
+    for (double &i : A) {
+        i = i * b;
     }
-    return B;
+    return A;
 }
 
 std::vector<double> VectorSum(std::vector<double> A, std::vector<double> B) {
@@ -127,7 +125,7 @@ std::vector<double> GetMatrixRow(std::vector<std::vector<double>> M, int row) {
     return A;
 }
 
-std::vector<std::vector<double>> TransposeMatrix(std::vector<std::vector<double>> M) {
+std::vector<std::vector<double>> TransposeMatrix(std::vector<std::vector<double> > M) {
     unsigned long rows = M.size();
     unsigned long columns = M[0].size();
     std::vector<std::vector<double>> N;
@@ -200,4 +198,66 @@ MatrixMatrixProduct(std::vector<std::vector<double>> M, std::vector<std::vector<
         }
     }
     return P;
+}
+
+std::vector<std::vector<double>> MatrixMatrixSum(std::vector<std::vector<double>> M, std::vector<std::vector<double>> N) {
+    std::vector<std::vector<double>> S;
+
+    unsigned long columnsM = M[0].size();
+    unsigned long rowsM = M.size();
+    unsigned long columnsN = N[0].size();
+    unsigned long rowsN = N.size();
+
+    if (columnsM != columnsN || rowsM != rowsN) {
+        // Get some Exception class to THROW.
+        std::cout << "Matrices are not compatible in dimension. The code DIDN'T run successfully." << std::endl;
+        throw std::exception();
+    }
+
+    S.clear();
+    std::vector<double> zeroRow(columnsN, 0);
+    S.insert(S.end(), rowsN, zeroRow);
+
+    for (int rowM = 0; rowM < rowsM; rowM++) {
+        for (int columnM = 0; columnM < columnsM; columnM++) {
+            S[rowM][columnM] = M[rowM][columnM] + N[rowM][columnM];
+        }
+    }
+
+    return S;
+}
+
+std::vector<std::vector<double>> operator+(std::vector<std::vector<double>> M, std::vector<std::vector<double>> N) {
+    // Just a simple wrapper. Doesn't need much memory because of std::move
+    return MatrixMatrixSum(std::move(M), std::move(N));
+}
+
+std::vector<std::vector<double>> operator*(std::vector<std::vector<double>> M, std::vector<std::vector<double>> N) {
+    // Just a simple wrapper. Doesn't need much memory because of std::move
+    return MatrixMatrixProduct(std::move(M), std::move(N));
+}
+
+double operator*(std::vector<double> A, std::vector<double> B) {
+    return VectorVectorProduct(std::move(A), std::move(B));
+}
+
+std::vector<double> operator*(std::vector<std::vector<double>> M, std::vector<double> A) {
+    // Just a simple wrapper. Doesn't need much memory because of std::move
+    return MatrixVectorProduct(std::move(M), std::move(A));
+}
+
+std::vector<double> operator+(std::vector<double> A, std::vector<double> B) {
+    return VectorSum(std::move(A), std::move(B));
+}
+
+std::vector<double> operator-(std::vector<double> A, std::vector<double> B) {
+    return VectorDifference(std::move(A), std::move(B));
+}
+
+std::vector<double> operator*(double b, std::vector<double> A) {
+    return VectorScalarProduct(std::move(A), b);
+}
+
+std::vector<double> operator*(std::vector<double> A, double b) {
+    return VectorScalarProduct(std::move(A), b);
 }

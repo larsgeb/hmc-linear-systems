@@ -4,44 +4,48 @@
 
 #include <vector>
 #include "auxiliary.hpp"
-#include "linearalgebra.hpp"
 #include "montecarlo.hpp"
-#include "randomnumbers.hpp"
-#include <math.h>
 #include <iostream>
 #include <fstream>
 #include <ctime>
 
 int main() {
 
+    int numberParameters = 10;
+
     // Load the observed data
-    data observedData(2, 0.5); // Define number of parameters
+    data observedData(10, 1); // Define number of observables
     observedData.readData("OUTPUT/synthetics.txt");
+    observedData.setICDMatrix_percentual(10.0);
 
     // Create prior information (Gaussian distribution)
-    std::vector<double> means{2, 2};
-    std::vector<double> std{1, 1};
-    prior priorInfo(means, std);
+    std::vector<double> means;
+    std::vector<double> std;
 
     // Create design matrix within forwardModel object
-    forwardModel model(2);
+    forwardModel model(numberParameters);
 
-    model._designMatrix[1][1] = 2;
+    for (int i = 0; i < numberParameters; i++) {
+        model._designMatrix[i][i] = (i + 1) * (i + 1);
+        means.push_back(50);
+        std.push_back(50);
+    }
 
-    observedData.setMisfitParameterDataMatrix(model._designMatrix); // Check this result with a few awkwardly sized
-    // matrices
+    prior priorInfo(means, std);
+
+    observedData.setMisfitParameterDataMatrix(model._designMatrix);
+
     // Create posterior object
     posterior posterior1;
 
-    // Maximum stepsize is approximately smallest constrained dimension of mass
+    // Maximum step size is approximately smallest constrained dimension of mass
     // matrix, i.e. the square root of the smallest mass.
-    montecarlo mc(priorInfo, observedData, posterior1, model, 50, 0.05, 20);
+    montecarlo mc(priorInfo, observedData, posterior1, model, 10, 0.05, 1000);
 
     /* ---- The actual sampling ---- */
     std::clock_t start;
     start = std::clock();
     mc.sample(true);
     std::cout << std::endl << "Time: " << (std::clock() - start) / (double) (CLOCKS_PER_SEC) << " s" << std::endl;
-
     return 0;
 }

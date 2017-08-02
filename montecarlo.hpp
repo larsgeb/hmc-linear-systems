@@ -35,9 +35,9 @@ public:
 
     void propose_metropolis();
 
-    void propose_hamilton();
+    void propose_hamilton(int &uturns);
 
-    void leap_frog(_IO_FILE *trajectoryfile);
+    void leap_frog(_IO_FILE *trajectoryfile, int &uturns);
 
     double chi();
 

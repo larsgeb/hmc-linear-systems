@@ -8,11 +8,8 @@ import matplotlib.pyplot as plt
 # ============================================================
 
 # - Dimensions of interest.
-dim_1 = 0
-dim_2 = 1
-# - Incremental displacement for duplicate points.
-epsilon_1 = 0.0003
-epsilon_2 = 0.0003
+dim1 = 0
+dim2 = 4
 
 params = {'legend.fontsize': 'x-large',
           'figure.figsize': (4, 4),
@@ -32,9 +29,6 @@ fid.close()
 dimensions = int(dummy[0])
 iterations = (dummy.__len__() - 2) / (dimensions + 1)
 
-# Range from 1 to number of parameters
-dim1 = 0
-dim2 = 1
 
 parameters = [[]]
 for i in range(1, dimensions): parameters.append([])
@@ -51,28 +45,28 @@ for i in range(1, iterations + 1):
 plt.plot(dim1_model, dim2_model, 'k', linewidth=1, zorder=1)
 plt.scatter(dim1_model, dim2_model, c=misfit_model, edgecolors='none', zorder=2, s=20)
 
-# Plotting gradient
-fid = open('OUTPUT/gradient.txt')
-dummy = fid.read().strip().split("\n")
-fid.close()
+# # Plotting gradient
+# fid = open('OUTPUT/gradient.txt')
+# dummy = fid.read().strip().split("\n")
+# fid.close()
+#
+# # parse data
+# q1 = []
+# q2 = []
+# dq1 = []
+# dq2 = []
+# for line in dummy:
+#     splitty = line.split()
+#     q1.append(float(splitty[0]))
+#     q2.append(float(splitty[1]))
+#     dq1.append(float(splitty[2]))
+#     dq2.append(float(splitty[3]))
+# Q = plt.quiver(q1, q2, dq1, dq2)
 
-# parse data
-q1 = []
-q2 = []
-dq1 = []
-dq2 = []
-for line in dummy:
-    splitty = line.split()
-    q1.append(float(splitty[0]))
-    q2.append(float(splitty[1]))
-    dq1.append(float(splitty[2]))
-    dq2.append(float(splitty[3]))
-Q = plt.quiver(q1, q2, dq1, dq2)
-
-plt.xlabel('q' + str(dim_1 + 1))
-plt.ylabel('q' + str(dim_2 + 1))
-plt.gca().set_aspect('equal', adjustable='box')
-plt.xlim([0.5, 2.0])
-plt.ylim([2.65, 3.4])
+plt.xlabel('q' + str(dim1 + 1))
+plt.ylabel('q' + str(dim2 + 1))
+# plt.gca().set_aspect('equal', adjustable='box')
+# plt.xlim([0.5, 2.0])
+# plt.ylim([2.65, 3.4])
 plt.savefig('OUTPUT/trajectory.pdf', format='pdf')
 # plt.savefig('OUTPUT/trajectory.png')
