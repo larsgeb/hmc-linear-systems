@@ -19,6 +19,8 @@ std::vector<std::vector<double>> TransposeMatrix(std::vector<std::vector<double>
 
 std::vector<double> MatrixTrace(std::vector<std::vector<double>> M);
 
+std::vector<std::vector<double>> InvertMatrix(std::vector<std::vector<double>> M);
+
 std::vector<std::vector<double>> VectorToDiagonal(std::vector<double>);
 
 double VectorVectorProduct(std::vector<double> A, std::vector<double> B);

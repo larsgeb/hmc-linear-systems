@@ -10,9 +10,11 @@
 class montecarlo {
 public:
     // Constructors and destructors
-    montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel
-    in_model, int in_nt, double in_dt, int in_iterations);
+    montecarlo(prior &in_prior, data &in_data, forwardModel in_model, int in_nt, double in_dt, int in_iterations,
+               bool generalisedMomentum);
 
+    montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel in_model, int in_nt, double in_dt,
+               int in_iterations, bool generalisedMomentum);
 
     ~montecarlo();
 
@@ -24,6 +26,7 @@ public:
     int _nt; // Number of time steps for trajectory
     double _dt; // Time step for trajectory
     int _iterations; // Number of iterations for Monte Carlo sampling
+    bool _generalisedMomentum;
 
     std::vector<double> _currentModel;
     std::vector<double> _proposedModel;
@@ -31,6 +34,13 @@ public:
     std::vector<double> _proposedMomentum;
 
     std::vector<std::vector<double>> _massMatrix;
+    std::vector<std::vector<double>> _inverseMassMatrix; // needed to write Hamilton's equations in vector form
+
+    // Precomputed misfit functions
+    std::vector<std::vector<double>> _A;
+    std::vector<double> _bT; // Because I haven't coded up the actual left multiplication of vector-matrices
+    double _c;
+
     // Member functions
 
     void propose_metropolis();
@@ -48,6 +58,10 @@ public:
     void write_sample(_IO_FILE *pfile, double misfit, int iteration);
 
     void write_trajectory(_IO_FILE *pfile, int iteration);
+
+    double precomp_misfit();
+
+    std::vector<double> precomp_misfitGrad();
 };
 
 #endif //HMC_VSP_MONTECARLO_HPP

@@ -3,23 +3,21 @@
 // Creates synthetic data based on setup.txt (for receivers) and parameters_synthetics_model.txt (for model).
 //
 #include <vector>
+#include <iostream>
 #include "auxiliary.hpp"
 
 int main() {
-    int numberParameters = 10;
-
     // Easy as can be.
-    data synthetics(numberParameters, 1); // Needed for location of receivers, hardcoded into class
-    forwardModel model(numberParameters); // Creates identity matrix, update afterwards using model._designMatrix[i][j]
-    
+    forwardModel model("INPUT/matrix.txt");
+
     std::vector<double> parameters;
-    parameters.reserve(static_cast<unsigned long>(numberParameters));
-    for (int i = 0; i < numberParameters; i++) {
-        model._designMatrix[i][i] = (i+1)*(i+1);
-        parameters.push_back(double(i+1));
+    for (int i = 0; i < model._numberParameters; i++) {
+        parameters.push_back(10.0 * double(i + 1));
     }
 
+    data synthetics;
     synthetics._observedData = model.calculateData(parameters);
+    synthetics._numberData = static_cast<int>(synthetics._observedData.size());
     synthetics.writeData("OUTPUT/synthetics.txt");
 
     return 0;

@@ -1,0 +1,7 @@
+# Linear forward model. Line 4: number of rows (data points), number of columns (parameters). then every row of matrix on a
+# new line, with its elements separated by spaces. Decimals are denoted with a dot.
+# The first three lines of matrix.txt are always ignored, no matter the characters (up to 500 characters per line).
+3 4
+1 0 0 1
+0 1 0 0
+0 0 1 0

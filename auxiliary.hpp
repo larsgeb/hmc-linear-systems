@@ -14,50 +14,54 @@ class posterior;
 
 class forwardModel;
 
-//class taylorExpansion;
-
 class prior {
 public:
     // Fields
     unsigned long _numberParameters;
     std::vector<double> _mean;
     std::vector<double> _std;
-    // Mind that as other masses are assigned, the function prior::misfitGradient should actually use the inverse covariance
-    // matrix, which is not explicitly defined.
     std::vector<std::vector<double> > _inverseCovarianceMatrix;
 
     // Constructors and destructor
     prior();
 
-    prior(std::vector<double> mean, std::vector<double> std);
+    // Constructor needed for prior information
+    explicit prior(std::vector<double> mean, std::vector<double> std);
+
+    // Copy constructor
+    prior(const prior &);
 
     ~prior();
 
     // Member functions
+    // Explicit misfit, without pre-computation
     double misfit(std::vector<double> parameters);
 
+    // Explicit misfit gradient, without pre-computation
     std::vector<double> gradientMisfit(std::vector<double> parameters);
-private:
 
-    // Mind that as other masses are assigned, the function prior::misfitGradient should actually use the inverse covariance
-    // matrix, which is not explicitly defined.
+private:
     void setInverseCovarianceMatrix();
 };
 
 class data {
 public:
-    data(int numberData, double standardDeviation);
 
     data();
+
+    explicit data(const char *filename);
+
+    data(const char *filename, double percentage);
 
     int _numberData;
     std::vector<double> _observedData;
     std::vector<std::vector<double> > _inverseCD;
-    std::vector<std::vector<double> > _misfitParameterDataMatrix; // This is the forward model transposed times inverseCD
-    std::vector<std::vector<double> > _misfitParameterMatrix; // This is the forward model transposed times inverseCD times forward
-    // model. Pre-calculated for speed.
+    std::vector<std::vector<double> > _misfitParameterDataMatrix;
+    std::vector<std::vector<double> > _misfitParameterMatrix;
 
     void setICDMatrix(double std);
+
+    void setICDMatrix_percentual(double percentage);
 
     void readData(const char *filename);
 
@@ -66,15 +70,19 @@ public:
     double misfit(std::vector<double> in_parameters, forwardModel m);
 
     void setMisfitParameterDataMatrix(std::vector<std::vector<double>> designMatrix);
+
     void setMisfitParameterMatrix(std::vector<std::vector<double>> designMatrix);
 
     std::vector<double> gradientMisfit(std::vector<double> parameters);
-
-    void setICDMatrix_percentual(double percentage);
 };
 
+/* ----------------------------------------------------------------------------------------------------------------------- *
+ * Class is redundant when pre-computation is used within the monte carlo class.
+ * ----------------------------------------------------------------------------------------------------------------------- */
 class posterior {
 public:
+    posterior() = default;
+
     double misfit(std::vector<double> parameters, prior &in_prior, data &in_data, forwardModel m);
 
     std::vector<double> gradientMisfit(std::vector<double> parameters, prior &in_prior, data &in_data);
@@ -82,54 +90,25 @@ public:
 
 class forwardModel {
 public:
-    // Constructors & destructors
-    forwardModel(int numberParameters);
-
-    forwardModel();
-
     // Fields
     int _numberParameters;
     std::vector<std::vector<double>> _designMatrix;
 
-    // Methods
-    void constructDesignMatrix(int numberParameters);
+    // Constructors & destructors
+    // Constructor which creates a unit forward model of dimensions nP x nP
+    explicit forwardModel(int numberParameters);
+
+    explicit forwardModel(const char *filename);
+
+    forwardModel();
+
+    // Member functions
+    void constructUnitDesignMatrix(int numberParameters);
 
     std::vector<double> calculateData(std::vector<double> parameters);
 };
 
+
 void printVector(std::vector<double> A);
-
-/*class taylorExpansion {
-public:
-    taylorExpansion();
-
-    // Constructor and destructor
-    taylorExpansion(std::vector<double> parameters, double stepRatio, prior &in_prior, data &in_data, posterior
-    &in_posterior);
-
-    ~taylorExpansion();
-
-    // Fields
-    double _stepRatio;
-    std::vector<double> _expansionPoint;
-    double _functionValue;
-    std::vector<double> _firstDerivativeValue;
-    std::vector<std::vector<double> > _secondDerivativeValue;
-    prior _prior;
-    data _data;
-    posterior _posterior;
-
-    // Member functions
-    std::vector<double> gradient(std::vector<double> q);
-
-    void updateExpansion(std::vector<double> in_expansionPoint);
-
-private:
-    void calculate0(std::vector<double> expansionPoint);
-
-    void calculate1(std::vector<double> expansionPoint);
-
-    void calculate2(std::vector<double> expansionPoint);
-};*/
 
 #endif //HMC_VSP_AUXILIARY_HPP

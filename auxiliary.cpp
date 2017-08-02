@@ -53,13 +53,25 @@ void prior::setInverseCovarianceMatrix() {
     }
 }
 
+// Copy constructor
+prior::prior(const prior &in_prior) {
+    _mean = in_prior._mean;
+    _std = in_prior._std;
+    _inverseCovarianceMatrix = in_prior._inverseCovarianceMatrix;
+    _numberParameters = in_prior._numberParameters;
+}
+
 /* -----------------------------------------------------------------------------------------------------------------------
  * Data class, for generating new data or loading previously generated data. Also calculates inverse data covariance
  * matrix and is able to compute data misfits.
  * ----------------------------------------------------------------------------------------------------------------------- */
-data::data(int numberData, double standardDeviation) {
-    _numberData = numberData;
-    setICDMatrix(standardDeviation);
+data::data(const char *filename) {
+    readData(filename);
+}
+
+data::data(const char *filename, double percentage) {
+    readData(filename);
+    setICDMatrix_percentual(percentage);
 }
 
 data::data() = default;
@@ -94,6 +106,12 @@ void data::readData(const char *filename) {
     double a;
     _observedData.clear();
     std::ifstream infile(filename);
+
+    // Ignore first two lines
+    infile.ignore(500,'\n');
+    infile.ignore(500,'\n');
+    infile.ignore(500,'\n');
+
     infile >> _numberData;
     for (int i = 0; i < _numberData; i++) {
         infile >> a;
@@ -106,7 +124,12 @@ void data::writeData(const char *filename) {
     // Write data
     std::ofstream outfile;
     outfile.open(filename);
-    outfile << _numberData << " ";
+
+    outfile << "# Data generated from hardcoded class, which reads from matrix.txt" << std::endl;
+    outfile << "# Line 4: number of data points. Line 5: data in sequential order." << std::endl;
+    outfile << "# The first three lines are always ignored, no matter the characters (up to 500 characters per line)." << std::endl;
+
+    outfile << _numberData << std::endl;
     for (int i = 0; i < _numberData; i++) {
         outfile << _observedData[i] << " ";
     }
@@ -138,7 +161,7 @@ std::vector<double> data::gradientMisfit(std::vector<double> parameters) {
 /* -----------------------------------------------------------------------------------------------------------------------
  * Forward model class.
  * ----------------------------------------------------------------------------------------------------------------------- */
-void forwardModel::constructDesignMatrix(int numberParameters) {
+void forwardModel::constructUnitDesignMatrix(int numberParameters) {
     // Make square zero matrix
     _designMatrix.clear();
     std::vector<double> zeroRow((unsigned long) numberParameters, 0);
@@ -152,11 +175,38 @@ void forwardModel::constructDesignMatrix(int numberParameters) {
 
 forwardModel::forwardModel(int numberParameters) {
     _numberParameters = numberParameters;
-    constructDesignMatrix(numberParameters);
+    constructUnitDesignMatrix(numberParameters);
 }
 
 std::vector<double> forwardModel::calculateData(std::vector<double> parameters) {
     return (_designMatrix * std::move(parameters));
+}
+
+forwardModel::forwardModel(const char *filename) {
+    // Read file for observed data
+    double element;
+    std::vector<double> row;
+    int numberData;
+    _designMatrix.clear();
+
+    std::ifstream infile(filename);
+
+    // Ignore first two lines
+    infile.ignore(500,'\n');
+    infile.ignore(500,'\n');
+    infile.ignore(500,'\n');
+
+    infile >> numberData;
+    infile >> _numberParameters;
+    for (int i = 0; i < numberData; i++) {
+        for (int j = 0; j < _numberParameters; j++) {
+            infile >> element;
+            row.push_back(element);
+        }
+        _designMatrix.push_back(row);
+        row.clear();
+    }
+    infile.close();
 }
 
 forwardModel::forwardModel() = default;

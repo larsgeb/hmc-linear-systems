@@ -14,15 +14,15 @@
 #include <stdio.h>
 #include <iostream>
 
-montecarlo::montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel
-in_model, int in_nt, double in_dt, int in_iterations) {
+montecarlo::montecarlo(prior &in_prior, data &in_data, forwardModel in_model, int in_nt, double in_dt, int in_iterations,
+                       bool generalisedMomentum) {
     _prior = in_prior;
     _data = in_data;
     _model = std::move(in_model);
-    _posterior = in_posterior;
     _nt = in_nt;
     _dt = in_dt;
     _iterations = in_iterations;
+    _generalisedMomentum = generalisedMomentum;
 
     /* Initialise random number generator. ----------------------------------------*/
     srand((unsigned int) time(nullptr));
@@ -37,6 +37,7 @@ in_model, int in_nt, double in_dt, int in_iterations) {
     // To ensure equal oscillations
     _massMatrix = _prior._inverseCovarianceMatrix +
                   (TransposeMatrix(_model._designMatrix) * _data._inverseCD) * _model._designMatrix;
+    _inverseMassMatrix = InvertMatrix(_massMatrix);
 
     // Assigning a random moment to the momentum vectors
     for (int i = 0; i < _prior._numberParameters; i++) {
@@ -46,6 +47,21 @@ in_model, int in_nt, double in_dt, int in_iterations) {
         _currentModel[i] = _proposedModel[i];
         _currentMomentum.push_back(_proposedMomentum[i]);
     }
+
+    // Pre-computing for misfit functional. Note that these quantities DON'T have to be used,
+    // if the misfit functional for the posterior is defined within it's class. This just speeds up computation (~x10).
+    _A = _prior._inverseCovarianceMatrix
+         + TransposeMatrix(_model._designMatrix) * _data._inverseCD * _model._designMatrix;
+    _bT = (_prior._inverseCovarianceMatrix * _prior._mean) +
+          (TransposeMatrix(_model._designMatrix) * _data._inverseCD) * _data._observedData;
+    _c = 0.5 * (_prior._mean * (_prior._inverseCovarianceMatrix * _prior._mean) +
+                _data._observedData * (_data._inverseCD * _data._observedData));
+};
+
+montecarlo::montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel in_model, int in_nt,
+                       double in_dt, int in_iterations, bool generalisedMomentum) :
+        montecarlo::montecarlo(in_prior, in_data, in_model, in_nt, in_dt, in_iterations, generalisedMomentum) {
+    _posterior = in_posterior;
 }
 
 montecarlo::~montecarlo() = default;
@@ -65,7 +81,6 @@ void montecarlo::propose_hamilton(int &uturns) {
     }
     /* Integrate Hamilton's equations. */
 
-    // TODO only call this for last iterations, to save a lot of time
     FILE *trajectoryfile;
     trajectoryfile = fopen("OUTPUT/trajectory.txt", "w");
     leap_frog(trajectoryfile, uturns);
@@ -73,14 +88,27 @@ void montecarlo::propose_hamilton(int &uturns) {
 }
 
 double montecarlo::chi() {
-    return _posterior.misfit(_proposedModel, _prior, _data, _model);
+    return precomp_misfit();
+//    return _posterior.misfit(_proposedModel, _prior, _data, _model);
+}
+
+double montecarlo::precomp_misfit() {
+    return 0.5 * _proposedModel * (_A * _proposedModel) - _bT * _proposedModel + _c;
+}
+
+std::vector<double> montecarlo::precomp_misfitGrad() {
+    return _A * _proposedModel - _bT;
 }
 
 /* Misfit for Hamiltonian Monte Carlo. --------------------------------------------*/
 double montecarlo::energy() {
     double H = chi();
-    for (int i = 0; i < _prior._numberParameters; i++) {
-        H += 0.5 * _proposedMomentum[i] * _proposedMomentum[i] / _massMatrix[i][i];
+    if (_generalisedMomentum) {
+        H += 0.5 * (_proposedMomentum * (_inverseMassMatrix * _proposedMomentum));
+    } else {
+        for (int i = 0; i < _prior._numberParameters; i++) {
+            H += 0.5 * _proposedMomentum[i] * _proposedMomentum[i] / _massMatrix[i][i];
+        }
     }
     return H;
 }
@@ -133,28 +161,28 @@ void montecarlo::leap_frog(_IO_FILE *trajectoryfile, int &uturns) {
 //        std::cout << energy() << std::endl;
 
         /* First half step in momentum. */
-        misfitGrad = _posterior.gradientMisfit(_proposedModel, _prior, _data);
-        for (int i = 0; i < _prior._numberParameters; i++) {
-            _proposedMomentum[i] = _proposedMomentum[i] - 0.5 * _dt * misfitGrad[i];
-        }
+        misfitGrad = precomp_misfitGrad();
+        _proposedMomentum = _proposedMomentum - 0.5 * _dt * misfitGrad;
         misfitGrad.clear();
 
         // TODO only call this for last iterations, to save a lot of time
         write_trajectory(trajectoryfile, it);
-        /* Full step in position. */
-        for (int i = 0; i < _prior._numberParameters; i++) {
-            _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] / (_massMatrix[i][i]);
+        // Full step in position. Linear algebra does not allow for dividing by diagonal of matrix, hence the loop.
+        if (_generalisedMomentum) {
+            _proposedModel = _proposedModel + _dt * (_inverseMassMatrix * _proposedMomentum);
+        } else {
+            for (int i = 0; i < _prior._numberParameters; i++) {
+                _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] / (_massMatrix[i][i]);
+            }
         }
 
-        misfitGrad = _posterior.gradientMisfit(_proposedModel, _prior, _data);
-        for (int i = 0; i < _prior._numberParameters; i++) {
-            _proposedMomentum[i] = _proposedMomentum[i] - 0.5 * _dt * misfitGrad[i];
-        }
+        misfitGrad = precomp_misfitGrad();
+        _proposedMomentum = _proposedMomentum - 0.5 * _dt * misfitGrad;
         misfitGrad.clear();
 
         /* Check no-U-turn criterion. */
-        angle1 = (_proposedMomentum * (_currentModel  - _proposedModel));
-        angle2 = (_currentMomentum  * (_proposedModel - _currentModel));
+        angle1 = _proposedMomentum * (_currentModel - _proposedModel);
+        angle2 = _currentMomentum * (_proposedModel - _currentModel);
 
         if (angle1 > 0.0 && angle2 > 0.0) {
             uturns++;

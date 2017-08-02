@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 # - Number of burn-in samples to be ignored.
 nbi = 50
 # - Dimensions of interest.
-dim_1 = 9
-dim_2 = 8
+dim_1 = 0
+dim_2 = 3
 # - Incremental displacement for duplicate points.
 epsilon_1 = 0.0003
 epsilon_2 = 0.0003
@@ -79,17 +79,17 @@ plt.ylabel('parameter ' + str(dim_2 + 1))
 # plt.title('random walk')
 plt.gcf().subplots_adjust(bottom=0.15)
 plt.savefig('OUTPUT/randomWalk.png')
-# plt.savefig('OUTPUT/randomWalk.pdf', format='pdf')
+plt.savefig('OUTPUT/randomWalk.pdf', format='pdf')
 # plt.show()
 plt.close()
 # ============================================================
 # - Histograms.
 # ============================================================
 
-xlimu = np.max(np.abs(x))
-xliml = np.min(np.abs(x))
-ylimu = np.max(np.abs(y))
-yliml = np.min(np.abs(y))
+xlimu = np.max(x)
+xliml = np.min(x)
+ylimu = np.max(y)
+yliml = np.min(y)
 plt.hist(x, bins=40, color='k', normed=True)
 plt.xlim([xliml, xlimu])
 plt.xlabel('m' + str(dim_1 + 1))
@@ -105,7 +105,7 @@ plt.savefig('OUTPUT/marginal2.png')
 plt.close()
 # plt.show()
 plt.hist2d(x, y, bins=40, normed=True, cmap='binary')
-plt.axis('equal')
+# plt.axis('equal')
 plt.xlabel('m' + str(dim_1 + 1))
 plt.ylabel('m' + str(dim_2 + 1))
 plt.title('2D posterior marginal')
@@ -118,7 +118,7 @@ plt.close()
 # ============================================================
 n = range(10, iterations, 10)
 
-hist_final, bin = np.histogram(x, bins=40, density=True)
+hist_final, bin_hist = np.histogram(x, bins=40, density=True)
 diff = np.zeros(len(n))
 k = 0
 for i in n:

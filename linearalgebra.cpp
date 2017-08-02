@@ -156,6 +156,17 @@ std::vector<double> MatrixTrace(std::vector<std::vector<double>> M) {
     return trace;
 }
 
+std::vector<std::vector<double>> InvertMatrix(std::vector<std::vector<double>> M) {
+    for (int i = 0; i < M.size(); i++) {
+        for (int j = 0; j < M[i].size(); j++) {
+            if (M[i][j] != 0) {
+                M[i][j] = 1 / M[i][j];
+            }
+        }
+    }
+    return M;
+}
+
 std::vector<std::vector<double>> VectorToDiagonal(std::vector<double> A) {
     std::vector<std::vector<double>> M;
 

@@ -10,37 +10,25 @@
 #include <ctime>
 
 int main() {
-
-    int numberParameters = 10;
-
     // Load the observed data
-    data observedData(10, 1); // Define number of observables
-    observedData.readData("OUTPUT/synthetics.txt");
-    observedData.setICDMatrix_percentual(10.0);
-
-    // Create prior information (Gaussian distribution)
-    std::vector<double> means;
-    std::vector<double> std;
+    double percentualCovariance = 5.0;
+    data observedData("OUTPUT/synthetics.txt", percentualCovariance);
 
     // Create design matrix within forwardModel object
-    forwardModel model(numberParameters);
-
-    for (int i = 0; i < numberParameters; i++) {
-        model._designMatrix[i][i] = (i + 1) * (i + 1);
-        means.push_back(50);
-        std.push_back(50);
+    forwardModel model("INPUT/matrix.txt");
+    std::vector<double> means;
+    std::vector<double> std;
+    for (int i = 0; i < model._numberParameters; i++) {
+        means.push_back(10.0 * double(i + 1));
+        std.push_back(10.0 * double(i + 1));
     }
-
     prior priorInfo(means, std);
 
-    observedData.setMisfitParameterDataMatrix(model._designMatrix);
+    // Is unstable as of yet, momentum samples have to be drawn from n-dimensional correlated Gaussian,
+    // for which one needs to LU-decompose the mass matrix. This might be implemented later.
+    bool boolGeneralisedMomentum = false;
 
-    // Create posterior object
-    posterior posterior1;
-
-    // Maximum step size is approximately smallest constrained dimension of mass
-    // matrix, i.e. the square root of the smallest mass.
-    montecarlo mc(priorInfo, observedData, posterior1, model, 10, 0.05, 1000);
+    montecarlo mc(priorInfo, observedData, model, 10, 0.05, 100000, boolGeneralisedMomentum);
 
     /* ---- The actual sampling ---- */
     std::clock_t start;
