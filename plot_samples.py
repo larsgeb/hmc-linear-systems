@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 # ============================================================
 
 # - Number of burn-in samples to be ignored.
-nbi = 50
+nbi = 100
 # - Dimensions of interest.
-dim_1 = 0
-dim_2 = 3
+dim_1 = 21
+dim_2 = 18
 # - Incremental displacement for duplicate points.
 epsilon_1 = 0.0003
 epsilon_2 = 0.0003
@@ -49,8 +49,8 @@ chi = 1.0e100
 
 for i in range(iterations):
 
-    x[i] = float(dummy[2 + dim_1 + (i + nbi) * (dimension + 1)])
-    y[i] = float(dummy[2 + dim_2 + (i + nbi) * (dimension + 1)])
+    x[i] = float(dummy[1 + dim_1 + (i + nbi) * (dimension + 1)])
+    y[i] = float(dummy[1 + dim_2 + (i + nbi) * (dimension + 1)])
     x_plot[i] = x[i]
     y_plot[i] = y[i]
 
@@ -70,12 +70,12 @@ for i in range(iterations):
 
 plt.plot(x_plot, y_plot, 'k', linewidth=0.05)
 plt.plot(x_plot, y_plot, 'ro', linewidth=0.05, markersize=0.5)
-#plt.gca().set_aspect('equal', adjustable='box')
+# plt.gca().set_aspect('equal', adjustable='box')
 axes = plt.gca()
 # axes.set_xlim([2315,2316])
 # axes.set_ylim([495,496])
-plt.xlabel('parameter ' + str(dim_1 + 1))
-plt.ylabel('parameter ' + str(dim_2 + 1))
+plt.xlabel('parameter ' + str(dim_1))
+plt.ylabel('parameter ' + str(dim_2))
 # plt.title('random walk')
 plt.gcf().subplots_adjust(bottom=0.15)
 plt.savefig('OUTPUT/randomWalk.png')
@@ -99,15 +99,15 @@ plt.close()
 # plt.show()
 plt.hist(y, bins=40, color='k', normed=True)
 plt.xlim([yliml, ylimu])
-plt.xlabel('m' + str(dim_2 + 1))
+plt.xlabel('m' + str(dim_2))
 plt.ylabel('posterior marginal')
 plt.savefig('OUTPUT/marginal2.png')
 plt.close()
 # plt.show()
 plt.hist2d(x, y, bins=40, normed=True, cmap='binary')
 # plt.axis('equal')
-plt.xlabel('m' + str(dim_1 + 1))
-plt.ylabel('m' + str(dim_2 + 1))
+plt.xlabel('m' + str(dim_1))
+plt.ylabel('m' + str(dim_2))
 plt.title('2D posterior marginal')
 plt.colorbar()
 plt.savefig('OUTPUT/marginal_2D.png')
@@ -165,8 +165,10 @@ for i in range(iterations - nbi):
 cov_xx = cov_xx / (iterations)
 cov_yy = cov_yy / (iterations)
 cov_xy = cov_xy / (iterations)
+print '---------------------------------------------------------------'
 print 'mean_x=', mean_x, 'mean_y=', mean_y
 print 'std_xx=', np.sqrt(cov_xx), 'std_yy=', np.sqrt(cov_yy), 'cov_xy=', cov_xy
+print '---------------------------------------------------------------'
 
 for parameter in range(0, dimension):
     mean_x = np.mean(qs[parameter])
@@ -176,5 +178,7 @@ for parameter in range(0, dimension):
         cov_xx += (mean_x - qs[parameter][i]) * (mean_x - qs[parameter][i])
 
     cov_xx = cov_xx / iterations
-    print 'Mean %i=' % (parameter + 1), mean_x
+    print 'Mean %d=' % (parameter + 1), np.round(10/mean_x)/10
     print 'Covariance %i=' % (parameter + 1), np.sqrt(cov_xx)
+
+print '---------------------------------------------------------------'
