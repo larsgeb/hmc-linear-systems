@@ -1,10 +1,11 @@
 //
 // Created by Lars Gebraad on 7/10/17.
 //
-#include <stdlib.h>
+#include <cstdlib>
 #include "randomnumbers.hpp"
-#include <math.h>
-
+#include "linearalgebra.hpp"
+#include <cmath>
+#include <utility>
 
 // Random number generators
 /* Uniformly distributed, double-valued random numbers. ---------------------------*/
@@ -36,4 +37,19 @@ double randn(double mean, double stdv) {
     x = stdv * x + mean;
 
     return x;
+}
+
+std::vector<double> randn(std::vector<double> mean, std::vector<std::vector<double>> CholeskyLower_CovarianceMatrix) {
+
+    std::vector<double> sample;
+    std::vector<double> uncorrelated;
+    uncorrelated.reserve(mean.size());
+
+    for (int i = 0; i < mean.size(); ++i) {
+        uncorrelated.push_back(randn(0, 1));
+    }
+    sample = mean + std::move(CholeskyLower_CovarianceMatrix) * uncorrelated;
+
+    double a = sample[0];
+    return sample;
 }
