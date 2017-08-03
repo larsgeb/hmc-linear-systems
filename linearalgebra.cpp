@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <iostream>
+#include <cmath>
 
 
 // Linear algebra functions
@@ -271,4 +272,32 @@ std::vector<double> operator*(double b, std::vector<double> A) {
 
 std::vector<double> operator*(std::vector<double> A, double b) {
     return VectorScalarProduct(std::move(A), b);
+}
+
+std::vector<std::vector<double>> CholeskyDecompose(std::vector<std::vector<double>> A) {
+    std::vector<std::vector<double>> L;
+    unsigned long rowsA = A.size();
+    L.clear();
+    std::vector<double> zeroRow(rowsA, 0);
+    L.insert(L.end(), rowsA, zeroRow);
+
+    L[0][0] = sqrt(A[0][0]);
+
+    for (int row = 1; row < rowsA; ++row) {
+        for (int column = 0; column <= row; ++column) {
+
+            double sum = 0;
+            for (int k = 0; k < column; k++) {
+                sum += L[row][k]*L[column][k];
+            }
+
+            if (column == row) {
+                L[row][column] = sqrt(A[row][column] - sum);
+            } else {
+                L[row][column] = (1/L[column][column]) * (A[row][column] - sum);
+            }
+        }
+    }
+
+    return L;
 }
