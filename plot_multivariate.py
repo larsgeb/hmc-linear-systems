@@ -22,10 +22,8 @@ params = {'legend.fontsize': 'x-large',
           'ytick.labelsize': 16}
 pylab.rcParams.update(params)
 
-# ============================================================
-# - Read samples and plot trajectory.
-# ============================================================
-
+# If there's other stuff on the line, like misfit values
+trailingElements = 1
 fid = open('OUTPUT/samples.txt')
 dummy = fid.read().strip().split()
 fid.close()
@@ -37,7 +35,7 @@ for i in range(0, numParameters):
 
 for i in range(0, numSamples):
     for index, parameter in enumerate(parameters):
-        parameter.append(float(dummy[2 + index + (i * (numParameters + 1))]))
+        parameter.append(float(dummy[2 + index + (i * (numParameters + trailingElements))]))
 
 means = []
 for index, parameter in enumerate(parameters):
