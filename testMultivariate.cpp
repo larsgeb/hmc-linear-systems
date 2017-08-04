@@ -11,19 +11,31 @@
 #include <ctime>
 
 int main() {
-    std::vector<double> meanC{0, 0};
-    std::vector<std::vector<double>> covC{{4,  -4},
-                                          {-4, 68}};
+    std::vector<double> meanC{1,2,3,4,5,6,7,8};
+    std::vector<std::vector<double>> covC{{4,  -4, 0,  0,  0,  0,  0,  -1},
+                                          {-4, 68, 0,  0,  0,  0,  0,  0},
+                                          {0,  0,  4,  -4, 0,  0,  0,  0},
+                                          {0,  0,  -4, 68, 0,  0,  0,  0},
+                                          {0,  0,  0,  0,  4,  -4, 0,  0},
+                                          {0,  0,  0,  0,  -4, 68, 0,  0},
+                                          {0,  0,  0,  0,  0,  0,  4,  -4},
+                                          {-1,  0,  0,  0,  0,  0,  -4, 68}};
 
     std::vector<std::vector<double>> Cholesky_covC = CholeskyDecompose(covC);
 
     std::ofstream outfile;
     outfile.open("OUTPUT/multivariate.txt");
 
+    int samples = 100000;
 
-    for (int i = 0; i < 10000000; ++i) {
-        std::vector<double> C = randn(meanC, Cholesky_covC);
-        outfile << C[0] << "  " << C[1] << std::endl;
+    outfile << meanC.size() << " " << samples << std::endl;
+
+    for (int i = 0; i < samples; ++i) {
+        std::vector<double> C = randn(Cholesky_covC);
+        for (double j : C) {
+            outfile << j << "  ";
+        }
+        outfile << std::endl;
     }
 
     outfile.close();

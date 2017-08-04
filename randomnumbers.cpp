@@ -13,20 +13,6 @@ double randf(double min, double max) {
     return (max - min) * (double) rand() / RAND_MAX + min;
 }
 
-/* Normally distributed, double-valued random numbers. ----------------------------*/
-/* This function implements the Box-Muller transform to obtain a pair of
- normally distributed random numbers with a given mean and standard deviation. */
-void randn(double mean, double stdv, double *x1, double *x2) {
-    double z1 = (double) rand() / RAND_MAX;
-    double z2 = (double) rand() / RAND_MAX;
-
-    *x1 = sqrt(-2.0 * log(z1)) * cos(2.0 * PI * z2);
-    *x2 = sqrt(-2.0 * log(z1)) * sin(2.0 * PI * z2);
-
-    *x1 = stdv * (*x1) + mean;
-    *x2 = stdv * (*x2) + mean;
-}
-
 double randn(double mean, double stdv) {
     double x;
 
@@ -39,17 +25,27 @@ double randn(double mean, double stdv) {
     return x;
 }
 
+
+std::vector<double> randn(std::vector<double> means, std::vector<double> std) {
+    std::vector<double> samples;
+    samples.reserve(means.size());
+    for (int i = 0; i < means.size(); i++){
+        samples.push_back(randn(means[i],std[i]));
+    }
+    return samples;
+}
+
 std::vector<double> randn(std::vector<double> mean, std::vector<std::vector<double>> CholeskyLower_CovarianceMatrix) {
+    return mean + randn(std::move(CholeskyLower_CovarianceMatrix));
+}
 
-    std::vector<double> sample;
+std::vector<double> randn(std::vector<std::vector<double>> CholeskyLower_CovarianceMatrix) {
+    // Assumes zero mean
     std::vector<double> uncorrelated;
-    uncorrelated.reserve(mean.size());
-
-    for (int i = 0; i < mean.size(); ++i) {
+    uncorrelated.reserve(CholeskyLower_CovarianceMatrix.size());
+    for (int i = 0; i < CholeskyLower_CovarianceMatrix.size(); ++i) {
         uncorrelated.push_back(randn(0, 1));
     }
-    sample = mean + std::move(CholeskyLower_CovarianceMatrix) * uncorrelated;
+    return std::move(CholeskyLower_CovarianceMatrix) * uncorrelated;
 
-    double a = sample[0];
-    return sample;
 }

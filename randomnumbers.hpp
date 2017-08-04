@@ -9,11 +9,10 @@
 
 const double PI = 3.14159265358979323846264338327;
 
-void randn(double mean, double stdv, double *x1, double *x2);
-
 double randn(double mean, double stdv);
-
+std::vector<double> randn(std::vector<double> means, std::vector<double> std);
 std::vector<double> randn(std::vector<double> mean, std::vector<std::vector<double>> CholeskyLower_CovarianceMatrix);
+std::vector<double> randn( std::vector<std::vector<double>> CholeskyLower_CovarianceMatrix);
 
 double randf(double min, double max);
 
