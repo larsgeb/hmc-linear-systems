@@ -19,7 +19,7 @@ int main() {
                                           {0,  0,  0,  0,  4,  -4, 0,  0},
                                           {0,  0,  0,  0,  -4, 68, 0,  0},
                                           {0,  0,  0,  0,  0,  0,  4,  -4},
-                                          {-1,  0,  0,  0,  0,  0,  -4, 68}};
+                                          {-1,  0,  0,  0,  0,  0,  -4, 10}};
 
     std::vector<std::vector<double>> Cholesky_covC = CholeskyDecompose(covC);
 
@@ -31,7 +31,7 @@ int main() {
     outfile << meanC.size() << " " << samples << std::endl;
 
     for (int i = 0; i < samples; ++i) {
-        std::vector<double> C = randn(Cholesky_covC);
+        std::vector<double> C = randn_Cholesky(Cholesky_covC);
         for (double j : C) {
             outfile << j << "  ";
         }

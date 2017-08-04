@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # - Read data.
 # ============================================================
 
-fid = open('DATA/synthetics.txt')
+fid = open('DATA/tomography_synthetics.txt')
 data = fid.read().strip().split('\n')
 fid.close()
 fid = open('INPUT/setup.txt')

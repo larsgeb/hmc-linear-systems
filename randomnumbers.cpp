@@ -6,6 +6,7 @@
 #include "linearalgebra.hpp"
 #include <cmath>
 #include <utility>
+#include <vector>
 
 // Random number generators
 /* Uniformly distributed, double-valued random numbers. ---------------------------*/
@@ -26,20 +27,28 @@ double randn(double mean, double stdv) {
 }
 
 
-std::vector<double> randn(std::vector<double> means, std::vector<double> std) {
+std::vector<double> randn(std::vector<double> means, std::vector<double> stdv) {
     std::vector<double> samples;
-    samples.reserve(means.size());
-    for (int i = 0; i < means.size(); i++){
-        samples.push_back(randn(means[i],std[i]));
+    samples = means + randn(std::move(stdv));
+    return samples;
+}
+
+std::vector<double> randn(std::vector<double> stdv) {
+    // Zero mean
+    std::vector<double> samples;
+    samples.reserve(stdv.size());
+    for (double i : stdv) {
+        samples.push_back(randn(0, i));
     }
     return samples;
 }
 
-std::vector<double> randn(std::vector<double> mean, std::vector<std::vector<double>> CholeskyLower_CovarianceMatrix) {
-    return mean + randn(std::move(CholeskyLower_CovarianceMatrix));
+std::vector<double>
+randn_Cholesky(std::vector<double> mean, std::vector<std::vector<double>> CholeskyLower_CovarianceMatrix) {
+    return mean + randn_Cholesky(std::move(CholeskyLower_CovarianceMatrix));
 }
 
-std::vector<double> randn(std::vector<std::vector<double>> CholeskyLower_CovarianceMatrix) {
+std::vector<double> randn_Cholesky(std::vector<std::vector<double>> CholeskyLower_CovarianceMatrix) {
     // Assumes zero mean
     std::vector<double> uncorrelated;
     uncorrelated.reserve(CholeskyLower_CovarianceMatrix.size());
@@ -48,4 +57,13 @@ std::vector<double> randn(std::vector<std::vector<double>> CholeskyLower_Covaria
     }
     return std::move(CholeskyLower_CovarianceMatrix) * uncorrelated;
 
+}
+
+std::vector<double> randn(std::vector<std::vector<double>> DiagonalCovarianceMatrix) {
+    std::vector<double> samples;
+    samples.reserve(DiagonalCovarianceMatrix.size());
+    for (int i = 0; i < DiagonalCovarianceMatrix.size(); i++) {
+        samples.push_back(randn(0, sqrt(DiagonalCovarianceMatrix[i][i])));
+    }
+    return samples;
 }

@@ -6,27 +6,28 @@
 #include "auxiliary.hpp"
 #include "montecarlo.hpp"
 #include <iostream>
-#include <fstream>
 #include <ctime>
 
 int main() {
     // Load the observed data
     double percentualCovariance = 10.0;
-    data observedData("INPUT/synthetics.txt", percentualCovariance);
+    data observedData("INPUT/tomography_synthetics.txt", percentualCovariance);
 
     // Create design matrix within forwardModel object
-    forwardModel model("INPUT/forward_matrix_input.txt");
+    forwardModel model("INPUT/tomography_matrix.txt");
     std::vector<double> means;
     std::vector<double> std;
     for (int i = 0; i < model._numberParameters; i++) {
-        means.push_back(1.0 / 1000.0);
-        std.push_back(0.0005);
+        means.push_back(1.0/3500.0);
+        std.push_back(0.001);
     }
     prior priorInfo(means, std);
 
-    bool boolGeneralisedMomentum = false;
+    bool boolGeneralisedMomentumPropose = true;
+    bool boolGeneralisedMomentumKinetic = true;
 
-    montecarlo mc(priorInfo, observedData, model, 10, 0.5, 5000, boolGeneralisedMomentum);
+    montecarlo mc(priorInfo, observedData, model, 10, 0.5, 100000, boolGeneralisedMomentumPropose,
+                  boolGeneralisedMomentumKinetic);
 
     /* ---- The actual sampling ---- */
     std::clock_t start;

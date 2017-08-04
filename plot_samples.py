@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 # ============================================================
 
 # - Number of burn-in samples to be ignored.
-nbi = 100
+nbi = 30
 # - Dimensions of interest.
-dim_1 = 21
-dim_2 = 18
+dim_1 = 1
+dim_2 = 2
 # - Incremental displacement for duplicate points.
 epsilon_1 = 0.0003
 epsilon_2 = 0.0003
@@ -33,7 +33,7 @@ fid = open('OUTPUT/samples.txt')
 dummy = fid.read().strip().split()
 fid.close()
 dimension = int(dummy[0])
-iterations = int(dummy[dummy.__len__() - 1]) - nbi
+iterations = int((dummy.__len__() - 2)/(dimension+1)) - nbi
 x = np.zeros(iterations)
 y = np.zeros(iterations)
 
@@ -47,7 +47,7 @@ y_plot = np.zeros(iterations)
 q_opt = np.zeros(dimension)
 chi = 1.0e100
 
-for i in range(iterations):
+for i in range(0,iterations):
 
     x[i] = float(dummy[1 + dim_1 + (i + nbi) * (dimension + 1)])
     y[i] = float(dummy[1 + dim_2 + (i + nbi) * (dimension + 1)])
@@ -57,14 +57,14 @@ for i in range(iterations):
     for parameter in range(0, dimension):
         qs[parameter].append(float(dummy[2 + parameter + (i + nbi) * (dimension + 1)]))
 
-    chi_test = float(dummy[2 + (dimension) + (i + nbi) * (dimension + 1)])
-    if (chi_test < chi):
+    chi_test = float(dummy[2 + dimension + (i + nbi) * (dimension + 1)])
+    if chi_test < chi:
         chi = chi_test
         print 'chi_min=', chi_test
         for k in range(dimension):
             q_opt[k] = float(dummy[2 + k + (i + nbi) * (dimension + 1)])
 
-    if (i > 0 and x[i] == x[i - 1] and x[i] > 0 and y[i] == y[i - 1]):
+    if i > 0 and x[i] == x[i - 1] and x[i] > 0 and y[i] == y[i - 1]:
         x_plot[i] += epsilon_1 * random.gauss(0.0, 1.0)
         y_plot[i] += epsilon_2 * random.gauss(0.0, 1.0)
 
@@ -79,7 +79,7 @@ plt.ylabel('parameter ' + str(dim_2))
 # plt.title('random walk')
 plt.gcf().subplots_adjust(bottom=0.15)
 plt.savefig('OUTPUT/randomWalk.png')
-plt.savefig('OUTPUT/randomWalk.pdf', format='pdf')
+# plt.savefig('OUTPUT/randomWalk.pdf', format='pdf')
 # plt.show()
 plt.close()
 # ============================================================
@@ -92,7 +92,7 @@ ylimu = np.max(y)
 yliml = np.min(y)
 plt.hist(x, bins=40, color='k', normed=True)
 plt.xlim([xliml, xlimu])
-plt.xlabel('m' + str(dim_1 + 1))
+plt.xlabel('m' + str(dim_1))
 plt.ylabel('posterior marginal')
 plt.savefig('OUTPUT/marginal1.png')
 plt.close()
@@ -106,6 +106,8 @@ plt.close()
 # plt.show()
 plt.hist2d(x, y, bins=40, normed=True, cmap='binary')
 # plt.axis('equal')
+# plt.xlim([-20,40])
+# plt.ylim([10,70])
 plt.xlabel('m' + str(dim_1))
 plt.ylabel('m' + str(dim_2))
 plt.title('2D posterior marginal')
@@ -168,17 +170,4 @@ cov_xy = cov_xy / (iterations)
 print '---------------------------------------------------------------'
 print 'mean_x=', mean_x, 'mean_y=', mean_y
 print 'std_xx=', np.sqrt(cov_xx), 'std_yy=', np.sqrt(cov_yy), 'cov_xy=', cov_xy
-print '---------------------------------------------------------------'
-
-for parameter in range(0, dimension):
-    mean_x = np.mean(qs[parameter])
-    cov_xx = 0.0
-
-    for i in range(iterations - nbi):
-        cov_xx += (mean_x - qs[parameter][i]) * (mean_x - qs[parameter][i])
-
-    cov_xx = cov_xx / iterations
-    print 'Mean %d=' % (parameter + 1), np.round(10/mean_x)/10
-    print 'Covariance %i=' % (parameter + 1), np.sqrt(cov_xx)
-
 print '---------------------------------------------------------------'

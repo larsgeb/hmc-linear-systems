@@ -3,11 +3,9 @@
 // Simple Linear Algebra stuff.
 //
 
-
 #include <vector>
 #include <iostream>
 #include <cmath>
-
 
 // Linear algebra functions
 std::vector<double> VectorDifference(std::vector<double> A, std::vector<double> B) {
@@ -157,11 +155,11 @@ std::vector<double> MatrixTrace(std::vector<std::vector<double>> M) {
     return trace;
 }
 
-std::vector<std::vector<double>> InvertMatrix(std::vector<std::vector<double>> M) {
-    for (int i = 0; i < M.size(); i++) {
-        for (int j = 0; j < M[i].size(); j++) {
-            if (M[i][j] != 0) {
-                M[i][j] = 1 / M[i][j];
+std::vector<std::vector<double>> InvertMatrixElements(std::vector<std::vector<double>> M) {
+    for (std::vector<double> &row : M) {
+        for (double &rowElement : row) {
+            if (rowElement != 0) {
+                rowElement = 1.0/rowElement;
             }
         }
     }
@@ -288,16 +286,54 @@ std::vector<std::vector<double>> CholeskyDecompose(std::vector<std::vector<doubl
 
             double sum = 0;
             for (int k = 0; k < column; k++) {
-                sum += L[row][k]*L[column][k];
+                sum += L[row][k] * L[column][k];
             }
 
             if (column == row) {
                 L[row][column] = sqrt(A[row][column] - sum);
             } else {
-                L[row][column] = (1/L[column][column]) * (A[row][column] - sum);
+                L[row][column] = (1 / L[column][column]) * (A[row][column] - sum);
             }
         }
     }
 
     return L;
+}
+
+std::vector<double> SolveLowerTriangular(std::vector<std::vector<double>> L, std::vector<double> x) {
+    if (L.size() != L[0].size()) {
+        std::cout << "Lower triangular matrix is not square, and solving the triangular system can't be done. The "
+                  << "code DIDN'T  run successfully." << std::endl;
+        throw std::exception();
+    }
+    std::vector<double> y(L.size(), 0.0);
+
+    y[0] = x[0] / L[0][0];
+    for (int i = 1; i < y.size(); ++i) {
+        double sum = 0.0;
+
+        for (int j = 0; j < i; ++j) {
+            sum += L[i][j] * y[j];
+        }
+
+        y[i] = (x[i] - sum) / L[i][i];
+    }
+
+    return y;
+}
+
+std::vector<std::vector<double>> InvertLowerTriangular(std::vector<std::vector<double>> L) {
+    if (L.size() != L[0].size()) {
+        std::cout << "Lower triangular matrix is not square, and inverse doesn't exist. The code DIDN'T run successfully." <<
+                  std::endl;
+        throw std::exception();
+    }
+
+    std::vector<std::vector<double>> iL;
+    for (int i = 0; i < L.size(); ++i) {
+        std::vector<double> RHS(L.size(), 0.0);
+        RHS[i] = 1.0;
+        iL.push_back(SolveLowerTriangular(L, RHS));
+    }
+    return TransposeMatrix(iL);
 }

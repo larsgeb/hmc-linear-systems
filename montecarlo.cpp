@@ -8,122 +8,112 @@
 #include <cmath>
 #include "auxiliary.hpp"
 #include "montecarlo.hpp"
-#include <stdlib.h>
+#include <cstdlib>
 #include "randomnumbers.hpp"
 #include "linearalgebra.hpp"
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 
 montecarlo::montecarlo(prior &in_prior, data &in_data, forwardModel in_model, int in_nt, double in_dt, int in_iterations,
-                       bool generalisedMomentum) {
+                       bool useGeneralisedMomentumPropose, bool useGeneralisedMomentumKinetic) {
     _prior = in_prior;
     _data = in_data;
     _model = std::move(in_model);
     _nt = in_nt;
     _dt = in_dt;
     _iterations = in_iterations;
-    _generalisedMomentum = generalisedMomentum;
+    _useGeneralisedMomentumKinetic = useGeneralisedMomentumKinetic;
+    _useGeneralisedMomentumPropose = useGeneralisedMomentumPropose;
 
     /* Initialise random number generator. ----------------------------------------*/
     srand((unsigned int) time(nullptr));
 
-    _currentModel = _prior._mean;
-    _proposedModel = _prior._mean;
-
-    // These shouldn't be initialized yet, but better safe than sorry when using std::vector.push_back().
-    _proposedMomentum.clear();
-    _currentMomentum.clear();
-
-    // To ensure equal oscillations
+    // Pre-compute mass matrix and other associated quantities
     _massMatrix = _prior._inverseCovarianceMatrix +
                   (TransposeMatrix(_model._designMatrix) * _data._inverseCD) * _model._designMatrix;
-    _inverseMassMatrix = InvertMatrix(_massMatrix);
+    _inverseMassMatrixDiagonal = VectorToDiagonal(MatrixTrace(InvertMatrixElements(_massMatrix)));
 
-    // Assigning a random moment to the momentum vectors
-    for (int i = 0; i < _prior._numberParameters; i++) {
-        // But this momentum assignment is as of yet only the diagonal.
-        _proposedMomentum.push_back(randn(0.0, sqrt(_massMatrix[i][i])));
-        _proposedModel[i] = randn(_prior._mean[i], _prior._std[i]);
-        _currentModel[i] = _proposedModel[i];
-        _currentMomentum.push_back(_proposedMomentum[i]);
-    }
+    // This is where the magic happens
+    _CholeskyLowerMassMatrix = CholeskyDecompose(_massMatrix);
+    std::vector<std::vector<double>> InverseCholeskyLowerMassMatrix = InvertLowerTriangular(_CholeskyLowerMassMatrix);
+    _inverseMassMatrix = TransposeMatrix(InverseCholeskyLowerMassMatrix) * InverseCholeskyLowerMassMatrix;
 
-    // Pre-computing for misfit functional. Note that these quantities DON'T have to be used,
-    // if the misfit functional for the posterior is defined within it's class. This just speeds up computation (~x10).
-    _A = _prior._inverseCovarianceMatrix
-         + TransposeMatrix(_model._designMatrix) * _data._inverseCD * _model._designMatrix;
+    _proposedMomentum = _useGeneralisedMomentumPropose ?
+                        randn_Cholesky(_CholeskyLowerMassMatrix) :
+                        randn(_massMatrix);
+    _proposedModel = randn(_prior._mean, _prior._std);
+    _currentModel = _proposedModel;
+    _currentMomentum = _proposedMomentum;
+
+    _A = _massMatrix;
     _bT = (_prior._inverseCovarianceMatrix * _prior._mean) +
           (TransposeMatrix(_model._designMatrix) * _data._inverseCD) * _data._observedData;
     _c = 0.5 * (_prior._mean * (_prior._inverseCovarianceMatrix * _prior._mean) +
                 _data._observedData * (_data._inverseCD * _data._observedData));
 };
 
-montecarlo::montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel in_model, int in_nt,
-                       double in_dt, int in_iterations, bool generalisedMomentum) :
-        montecarlo::montecarlo(in_prior, in_data, in_model, in_nt, in_dt, in_iterations, generalisedMomentum) {
+montecarlo::montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel &in_model, int in_nt,
+                       double in_dt, int in_iterations, bool useGeneralisedMomentumPropose,
+                       bool useGeneralisedMomentumKinetic) :
+        montecarlo::montecarlo(in_prior, in_data, std::move(in_model), in_nt, in_dt, in_iterations,
+                               useGeneralisedMomentumPropose, useGeneralisedMomentumKinetic) {
     _posterior = in_posterior;
 }
 
 montecarlo::~montecarlo() = default;
 
-/* Propose test model based on prior. ---------------------------------------------*/
 void montecarlo::propose_metropolis() {
     for (int i = 0; i < _prior._numberParameters; i++)
         _proposedModel[i] = randn(_prior._mean[i], _prior._std[i]);
 }
 
-/* Proposal based on the solution of Hamilton's equation. -------------------------*/
-void montecarlo::propose_hamilton(int &uturns) {
+void montecarlo::propose_hamilton(int &uturns, bool writeTrajectory) {
     /* Draw random prior momenta. */
-    for (int i = 0; i < _prior._numberParameters; i++) {
-//        _proposedMomentum[i] = 0;
-        _proposedMomentum[i] = randn(0.0, sqrt(_massMatrix[i][i])); // only diagonal implemented!
-    }
-    /* Integrate Hamilton's equations. */
-
-    FILE *trajectoryfile;
-    trajectoryfile = fopen("OUTPUT/trajectory.txt", "w");
-    leap_frog(trajectoryfile, uturns);
-    fclose(trajectoryfile);
-}
-
-double montecarlo::chi() {
-    return precomp_misfit();
-//    return _posterior.misfit(_proposedModel, _prior, _data, _model);
+    _proposedMomentum = _useGeneralisedMomentumPropose ?
+                        randn_Cholesky(_CholeskyLowerMassMatrix) :
+                        randn(_massMatrix);
+    leap_frog(uturns, writeTrajectory);
 }
 
 double montecarlo::precomp_misfit() {
     return 0.5 * _proposedModel * (_A * _proposedModel) - _bT * _proposedModel + _c;
 }
 
+double montecarlo::kineticEnergy() {
+    return _useGeneralisedMomentumKinetic ?
+           0.5 * (_proposedMomentum * (_inverseMassMatrix * _proposedMomentum)) :
+           0.5 * _proposedMomentum * (_inverseMassMatrixDiagonal * _proposedMomentum);
+}
+
 std::vector<double> montecarlo::precomp_misfitGrad() {
+    // Should actually be left multiply, but matrix is symmetric, so skipped that bit.
     return _A * _proposedModel - _bT;
 }
 
-/* Misfit for Hamiltonian Monte Carlo. --------------------------------------------*/
+double montecarlo::chi() {
+//    return _posterior.misfit(_proposedModel, _prior, _data, _model);
+    return precomp_misfit();
+}
+
 double montecarlo::energy() {
     double H = chi();
-    if (_generalisedMomentum) {
-        H += 0.5 * (_proposedMomentum * (_inverseMassMatrix * _proposedMomentum));
-    } else {
-        for (int i = 0; i < _prior._numberParameters; i++) {
-            H += 0.5 * _proposedMomentum[i] * _proposedMomentum[i] / _massMatrix[i][i];
-        }
-    }
+    H += kineticEnergy();
     return H;
 }
 
 void montecarlo::sample(bool hamilton) {
-    double x = (hamilton ? energy() : chi()); // We evaluate th complete hamiltonian
+    double x = hamilton ? energy() : chi();
     double x_new;
     int accepted = 0;
     int uturns = 0;
 
-    FILE *samplesfile;
-    samplesfile = fopen("OUTPUT/samples.txt", "w");
-    write_sample(samplesfile, x, 0);
+    std::ofstream samplesfile;
+    samplesfile.open("OUTPUT/samples.txt");
+    samplesfile << _prior._numberParameters << " " << _iterations << std::endl;
+
+    write_sample(samplesfile, x);
     for (int it = 1; it < _iterations; it++) {
-        hamilton ? propose_hamilton(uturns) : propose_metropolis();
+        hamilton ? propose_hamilton(uturns, it == _iterations - 1) : propose_metropolis();
         x_new = (hamilton ? energy() : chi());
 
         double result;
@@ -135,46 +125,43 @@ void montecarlo::sample(bool hamilton) {
             accepted++;
             x = x_new;
             _currentModel = _proposedModel;
-            write_sample(samplesfile, x, it);
-//            std::cout << "model " << it + 1 << " is accepted" << std::endl;
+            write_sample(samplesfile, x);
         }
-//        std::cout << "iteration " << it + 1 << " energy " << x_new << std::endl;
     }
-    fprintf(samplesfile, "%i ", accepted);
-    fprintf(samplesfile, "\n");
-    fclose(samplesfile);
+    samplesfile << accepted << std::endl;
+    samplesfile.close();
+
     std::cout << "Number of accepted models: " << accepted << std::endl;
     std::cout << "Number of U-Turn terminations in propagation: " << uturns;
 }
 
 /* Leap-frog integration of Hamilton's equations. ---------------------------------*/
-void montecarlo::leap_frog(_IO_FILE *trajectoryfile, int &uturns) {
+void montecarlo::leap_frog(int &uturns, bool writeTrajectory) {
 
+    // start proposal at current momentum
     _proposedModel = _currentModel;
+    // Acts as starting momentum
     _currentMomentum = _proposedMomentum;
 
     std::vector<double> misfitGrad;
     double angle1, angle2;
-    /* March forward. -------------------------------------------------------------*/
-    for (int it = 0; it < _nt; it++) {
-//        Use this to validate that Hamiltonian is preserved (hint, for stepsize 0.05 there's already a large round-off error
-//        std::cout << energy() << std::endl;
 
-        /* First half step in momentum. */
+    std::ofstream trajectoryfile;
+    if (writeTrajectory) {
+        trajectoryfile.open("OUTPUT/trajectory.txt");
+        trajectoryfile << _prior._numberParameters << " " << _nt << std::endl;
+    }
+
+    for (int it = 0; it < _nt; it++) {
         misfitGrad = precomp_misfitGrad();
         _proposedMomentum = _proposedMomentum - 0.5 * _dt * misfitGrad;
         misfitGrad.clear();
 
-        // TODO only call this for last iterations, to save a lot of time
-        write_trajectory(trajectoryfile, it);
+        if (writeTrajectory) write_sample(trajectoryfile, chi());
         // Full step in position. Linear algebra does not allow for dividing by diagonal of matrix, hence the loop.
-        if (_generalisedMomentum) {
-            _proposedModel = _proposedModel + _dt * (_inverseMassMatrix * _proposedMomentum);
-        } else {
-            for (int i = 0; i < _prior._numberParameters; i++) {
-                _proposedModel[i] = _proposedModel[i] + _dt * _proposedMomentum[i] / (_massMatrix[i][i]);
-            }
-        }
+        _proposedModel = _proposedModel + _dt * (
+                (_useGeneralisedMomentumKinetic ? _inverseMassMatrix : _inverseMassMatrixDiagonal) * _proposedMomentum);
+        // Second branch produces unnecessary overhead (lot of zeros).
 
         misfitGrad = precomp_misfitGrad();
         _proposedMomentum = _proposedMomentum - 0.5 * _dt * misfitGrad;
@@ -189,22 +176,14 @@ void montecarlo::leap_frog(_IO_FILE *trajectoryfile, int &uturns) {
             break;
         }
     }
-
+    if (writeTrajectory) trajectoryfile.close();
 }
 
-void montecarlo::write_sample(FILE *pfile, double misfit, int iteration) {
-    if (iteration == 0) fprintf(pfile, "%d %d\n", (int) _prior._numberParameters, _iterations);
-
-    for (int i = 0; i < (int) _prior._numberParameters; i++) fprintf(pfile, "%lg ", _proposedModel[i]);
-    fprintf(pfile, "%lg ", misfit);
-    fprintf(pfile, "\n");
-}
-
-void montecarlo::write_trajectory(FILE *pfile, int iteration) {
-    if (iteration == 0) fprintf(pfile, "%d %i\n", (int) _prior._numberParameters, _nt);
-
-    for (int i = 0; i < (int) _prior._numberParameters; i++) fprintf(pfile, "%.20lg ", _proposedModel[i]);
-    fprintf(pfile, "%.20lg ", _posterior.misfit(_proposedModel, _prior, _data, _model));
-    fprintf(pfile, "\n");
+void montecarlo::write_sample(std::ofstream &outfile, double misfit) {
+    for (double j : _proposedModel) {
+        outfile << j << "  ";
+    }
+    outfile << misfit;
+    outfile << std::endl;
 
 }
