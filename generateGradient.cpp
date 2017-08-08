@@ -13,8 +13,7 @@ int main() {
         forwardModel forwardModel1(2); // Define number of parameters
         forwardModel1._designMatrix[0][0] = 1;
         forwardModel1._designMatrix[1][1] = 2;
-        data observedData(2, 0.5); // Define number of parameters
-        observedData.readData("OUTPUT/synthetics.txt");
+        data observedData("OUTPUT/tomography_synthetics.txt", 0.5); // Define number of parameters
 
         // Create prior information (Gaussian distribution)
         std::vector<double> means;

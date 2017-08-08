@@ -23,39 +23,53 @@ const double PI = 3.14159265358979323846264338327;
  * @return double, sample from the distribution
  */
 double randn(double mean, double stdv);
-
+/*!
+ * @brief Draws from uncorrelated Gaussians \f$ \mathcal{N} (\boldsymbol \mu,\boldsymbol{\sigma}) \f$ (vectors of mean, standard deviation) using Box-Müller transform. Loops over both vectors and calls randn(double mean, double stdv) every
+ * iteration.
+ * @param mean vector containing \f$ \mu_i \f$
+ * @param stdv vector containing \f$ \sigma_i \f$
+ * @return Vector of samples from the distributions.
+ */
 std::vector<double> randn(std::vector<double> means, std::vector<double> stdv);
-
+/*!
+ * @brief Draws zero-mean samples from uncorrelated Gaussians \f$ \mathcal{N} (\boldsymbol 0,\boldsymbol{\sigma}) \f$
+ * (standard deviation) using Box-Müller transform. Loops over both vectors and calls randn(double mean, double stdv) every
+ * iteration.
+ * @param stdv vector containing \f$ \sigma_i \f$
+ * @return Vector of samples from the distributions.
+ */
 std::vector<double> randn(std::vector<double> stdv);
 /**
- * @brief Drawing non-zero mean samples from a correlated multivariate Gaussian.
- * Invokes randn_Cholesky(std::vector std::vector double CholeskyLower_CovarianceMatrix) and adds mean.
- * @param mean std::vector of doubles containging n means.
- * @param CholeskyLower_CovarianceMatrix std::vector of std::vector of doubles, containing the n x n Lower Cholesky matrix
- * of the n x n covariance matrix, must be square and lower triangular.
- * @return std::vector of doubles containing the non-zero mean correlated samples.
+ * @brief Drawing non-zero mean samples from an \f$ n \f$ dimensional correlated Gaussian.
+ * Invokes randn_Cholesky(std::vector<std::vector<double>> CholeskyLower_CovarianceMatrix) and adds mean.
+ * @param mean vector containing \f$ n \f$ means.
+ * @param CholeskyLower_CovarianceMatrix Matrix containing the n x n Lower Cholesky matrix
+ * of the n x n covariance matrix \f$ \boldsymbol \Sigma \f$, must be square and lower triangular.
+ * @return Vector containing the non-zero mean correlated samples.
  */
 std::vector<double> randn_Cholesky(std::vector<double> mean, std::vector<std::vector<double>>
 CholeskyLower_CovarianceMatrix);
-
 /**
- * @brief Drawing zero mean samples from a correlated multivariate Gaussian. This algorithm uses the lower Cholesky matrix
- * of the (positive definite ermitian) covariance matrix to transform (affine transform) n uncorrelated samples with standard
- * deviation 1 to the right covariances. The mean is assumed zero.
- * @param CholeskyLower_CovarianceMatrix std::vector of std::vector of doubles, containing the n x n Lower Cholesky matrix
- * of the n x n covariance matrix, must be square and lower triangular.
- * @return std::vector of doubles containing the zero mean correlated samples.
+ * @brief Drawing non-zero mean samples from an \f$ n \f$ dimensional correlated Gaussian. This algorithm uses the lower
+ * Cholesky matrix of the (positive definite Hermitian) covariance matrix to transform (affine transform) n uncorrelated
+ * samples with standard deviation 1 to the right covariances. The mean is assumed zero.
+ * @param CholeskyLower_CovarianceMatrix Matrix containing the n x n Lower Cholesky matrix
+ * of the n x n covariance matrix \f$ \boldsymbol \Sigma \f$, must be square and lower triangular.
+ * @return Vector containing the zero mean correlated samples.
  */
 std::vector<double> randn_Cholesky(std::vector<std::vector<double>> CholeskyLower_CovarianceMatrix);
-
 /**
- * @brief Drawing n zero mean samples from an n x n diagonal variance matrix. No correlation between the parameters.
- * @param DiagonalCovarianceMatrix std::vector of a std::vector of doubles, containing on the diagonal the variance, or
- * standard deviation squared.
- * @return std::vector of doubles containing n samples.
+ * @brief Drawing n zero mean samples from \f$ \mathcal{N} (\boldsymbol 0,\boldsymbol{\sigma}) \f$. No correlation is present between the parameters.
+ * @param DiagonalCovarianceMatrix Matrix containing on the diagonal the variance, or standard deviation squared.
+ * @return Vector containing n samples.
  */
 std::vector<double> randn(std::vector<std::vector<double>> DiagonalCovarianceMatrix);
-
+/**
+ * @brief Draw uniformly distributed samples between two numbers.
+ * @param min Minimum of the distribution.
+ * @param max Maximum of the distribution.
+ * @return Sample.
+ */
 double randf(double min, double max);
 
 #endif //HMC_VSP_RANDOMNUMBERS_HPP

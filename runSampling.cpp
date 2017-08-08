@@ -10,7 +10,7 @@
 
 int main() {
     // Load the observed data
-    double percentualCovariance = 10.0;
+    double percentualCovariance = 5.0;
     data observedData("INPUT/tomography_synthetics.txt", percentualCovariance);
 
     // Create design matrix within forwardModel object
@@ -18,15 +18,15 @@ int main() {
     std::vector<double> means;
     std::vector<double> std;
     for (int i = 0; i < model._numberParameters; i++) {
-        means.push_back(1.0/3500.0);
-        std.push_back(0.001);
+        means.push_back(1.0/1500.0);
+        std.push_back(0.0005);
     }
     prior priorInfo(means, std);
 
-    bool boolGeneralisedMomentumPropose = true;
-    bool boolGeneralisedMomentumKinetic = true;
+    bool boolGeneralisedMomentumPropose = false;
+    bool boolGeneralisedMomentumKinetic = false;
 
-    montecarlo mc(priorInfo, observedData, model, 10, 0.5, 100000, boolGeneralisedMomentumPropose,
+    montecarlo mc(priorInfo, observedData, model, 10, 0.1, 1000000, boolGeneralisedMomentumPropose,
                   boolGeneralisedMomentumKinetic);
 
     /* ---- The actual sampling ---- */

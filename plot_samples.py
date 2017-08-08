@@ -79,7 +79,8 @@ plt.ylabel('parameter ' + str(dim_2))
 # plt.title('random walk')
 plt.gcf().subplots_adjust(bottom=0.15)
 plt.savefig('OUTPUT/randomWalk.png')
-# plt.savefig('OUTPUT/randomWalk.pdf', format='pdf')
+# plt.savefig('OUTPUT/randomWalk.pdf'
+# )
 # plt.show()
 plt.close()
 # ============================================================

@@ -13,7 +13,10 @@ class data;
 class posterior;
 
 class forwardModel;
-
+/**
+ * @brief Prior information in parameter space.
+ * \addtogroup Probabilisticinversion classes
+ */
 class prior {
 public:
     // Fields
