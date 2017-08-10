@@ -1,3 +1,8 @@
+/*! \mainpage Hamiltonian Monte Carlo Documentation
+ *
+ * More to be written.
+ *
+ */
 //
 // Created by Lars Gebraad on 7/11/17.
 //

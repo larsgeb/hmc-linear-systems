@@ -1,2 +1,7 @@
 plugins:
   - jekyll-redirect-from
+
+custom_redirects:
+  - from: /
+    to: /html/
+    type: permanent
