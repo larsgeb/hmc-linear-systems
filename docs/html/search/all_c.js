@@ -1,0 +1,19 @@
+var searchData=
+[
+  ['main',['main',['../generateGradient_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;generateGradient.cpp'],['../generateSynthetics_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;generateSynthetics.cpp'],['../runSampling_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;runSampling.cpp'],['../testMultivariate_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;testMultivariate.cpp']]],
+  ['marker',['marker',['../namespaceplot__data.html#aa989c531ea8029f1f00a07f174f67ead',1,'plot_data']]],
+  ['markersize',['markersize',['../namespaceplot__samples.html#a90ad21ab89d27d4738a7a9509ef7cbcc',1,'plot_samples']]],
+  ['matrixmatrixproduct',['MatrixMatrixProduct',['../linearalgebra_8cpp.html#ad0972fd0613212a5f363f740fa8da87b',1,'MatrixMatrixProduct(std::vector&lt; std::vector&lt; double &gt;&gt; M, std::vector&lt; std::vector&lt; double &gt;&gt; N):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#ad0972fd0613212a5f363f740fa8da87b',1,'MatrixMatrixProduct(std::vector&lt; std::vector&lt; double &gt;&gt; M, std::vector&lt; std::vector&lt; double &gt;&gt; N):&#160;linearalgebra.cpp']]],
+  ['matrixmatrixsum',['MatrixMatrixSum',['../linearalgebra_8cpp.html#a22e3e11bc1914c1335383c9c22abaf88',1,'MatrixMatrixSum(std::vector&lt; std::vector&lt; double &gt;&gt; M, std::vector&lt; std::vector&lt; double &gt;&gt; N):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#a22e3e11bc1914c1335383c9c22abaf88',1,'MatrixMatrixSum(std::vector&lt; std::vector&lt; double &gt;&gt; M, std::vector&lt; std::vector&lt; double &gt;&gt; N):&#160;linearalgebra.cpp']]],
+  ['matrixtrace',['MatrixTrace',['../linearalgebra_8cpp.html#a451df8b9bf01cd6a09234161ecf39dd5',1,'MatrixTrace(std::vector&lt; std::vector&lt; double &gt;&gt; M):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#a451df8b9bf01cd6a09234161ecf39dd5',1,'MatrixTrace(std::vector&lt; std::vector&lt; double &gt;&gt; M):&#160;linearalgebra.cpp']]],
+  ['matrixvectorproduct',['MatrixVectorProduct',['../linearalgebra_8cpp.html#aad52ff8219ee9b205d49e26038383978',1,'MatrixVectorProduct(std::vector&lt; std::vector&lt; double &gt; &gt; M, std::vector&lt; double &gt; A):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#a2c0f436b85983ff2f83d8baca22e76e8',1,'MatrixVectorProduct(std::vector&lt; std::vector&lt; double &gt;&gt; M, std::vector&lt; double &gt; A):&#160;linearalgebra.hpp']]],
+  ['maxcov',['maxCov',['../namespaceplot__multivariate.html#a735d60bf81143c990d6aad128ed225c5',1,'plot_multivariate.maxCov()'],['../namespaceplot__multivariate__tomography.html#a8e3f7ec7a0a4745ae91616225a57c796',1,'plot_multivariate_tomography.maxCov()']]],
+  ['mean_5fx',['mean_x',['../namespaceplot__samples.html#a6f825104905f4bc6979d8f6b960c990a',1,'plot_samples']]],
+  ['mean_5fy',['mean_y',['../namespaceplot__samples.html#ac80b739ebe0bbf225eaffc64aeac36bc',1,'plot_samples']]],
+  ['means',['means',['../namespaceplot__multivariate.html#a46adf311bb254395f948ee566681ac08',1,'plot_multivariate.means()'],['../namespaceplot__multivariate__tomography.html#abef449b7e6b0cb53e3fb03b9441f8d8f',1,'plot_multivariate_tomography.means()']]],
+  ['misfit',['misfit',['../classprior.html#a4ce785a3d3f5222043a15ea83f74bfa8',1,'prior::misfit()'],['../classdata.html#aeafbd2b005e39705ac5f96610576da69',1,'data::misfit()'],['../classposterior.html#a33f391b598dbb9e3cd37f3ac0f81971c',1,'posterior::misfit()']]],
+  ['misfit_5fmodel',['misfit_model',['../namespaceplot__trajectory.html#a89c2e8ff75782ce37686f44c04281668',1,'plot_trajectory']]],
+  ['montecarlo',['montecarlo',['../classmontecarlo.html',1,'montecarlo'],['../classmontecarlo.html#a041eed89fd5d88e8c16ff711a6cad2e6',1,'montecarlo::montecarlo()']]],
+  ['montecarlo_2ecpp',['montecarlo.cpp',['../montecarlo_8cpp.html',1,'']]],
+  ['montecarlo_2ehpp',['montecarlo.hpp',['../montecarlo_8hpp.html',1,'']]]
+];
