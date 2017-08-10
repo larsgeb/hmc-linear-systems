@@ -24,7 +24,7 @@ int main() {
     prior priorInfo(means, std);
     bool boolGeneralisedMomentumPropose = true;
     bool boolGeneralisedMomentumKinetic = true;
-    bool boolNormalizeMomentum = true;
+    bool boolNormalizeMomentum = false;
     bool evaluateHamiltonianBeforeLeap = true;
 
     montecarlo mc(priorInfo, observedData, model, 10, 0.1, 100000, boolGeneralisedMomentumPropose,

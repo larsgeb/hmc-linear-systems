@@ -44,3 +44,9 @@ doxygen_docs/DOXYGEN_OUTPUT/
 straight-ray-solver/
 doxygen_docs/html/
 doxygen_docs/latex/
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+runSampling
+*.cbp

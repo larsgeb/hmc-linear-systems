@@ -1,39 +1,51 @@
 
-## HMC Inversion of simple linear models
+
+    Services
+    Documents
+        Untitled Document.md
+
+    Preview as
+    Export as
+    Save to
+    Import from
+
+Document Name
+
+Words: 246
+Markdown
+Toggle Zen Mode
+Preview
+HMC Inversion of simple linear models
 
 This set of programs is built to incorporate MCMC inversion using Hamiltonian Mechanics. Essentially, any amount of
 parameters and any linear forward model matrix can be supplied, as long as one can describe the measurement errors, data
 uncertainty and misfit function. This could be used as a framework for building any inversion using HMC.
+Compilation
 
-### Install
+All build targets can easily be prepared with CMake. Using at least CMake 3.7 allows you to run (from the
+root directory);
 
-First generate data using the makeSynthetics.cpp file. Compile it against the auxiliary and the linearalgebra class and
-you're good to go.
+cmake .
 
-The inversion is done using the runSampling.cpp file, which should be compiled against the auxiliary, linearalgebra,
-randomnumbers and montecarlo class. These are not finished yet, but the Hamiltonian mechanics is implemented in the
-montecarlo::leap_frog().
+This prepares the platform dependent compilation instructions. For example, on Linux one would now run for
+all separate targets:
 
-So, in short:
+make <target>
 
-```{r, engine='bash', building the sampling script with g++ to the executable sampling}
-g++ makeSynthetics.cpp linearalgebra.cpp auxiliary.cpp -o synthetics
+There are several build targets:
 
-```
+    generateSynthetics.
+    This program will read the forward matrix in INPUT/matrix.txt and generate synthetics which are saved in synthetics.txt. Model parameters are as of yet hardcoded.
 
-```{r, engine='bash', building the sampling script with g++ to the executable sampling}
-g++ runSampling.cpp linearalgebra.cpp randomnumbers.cpp auxiliary.cpp montecarlo.cpp -o sampling
+    runSampling.
+    This program will take samples from the posterior distribution described by hardcoded prior information, the forward model from INPUT/matrix.txt and synthetic data INPUT/synthetics.txt (with hardcoded data-covariance). The output are the samples in OUTPUT/samples.txt and the trajectory of the last sample in OUTPUT/trajectory.txt. Some diagnostics are written to the console.
 
-```
+    generateGradient.
+    This programs evaluates misfit gradients on a hardcoded interval, using the same input as runSampling.
 
-Note that the nested templates (and some other compatibility stuff) are compiled only correctly from C++11 onwards. The
-following should work if you get an error:
+    testMultivariate.
+    This program draws from hardcoded multivariate correlated gaussians, writing it’s samples to OUTPUT/multivariate.txt. Used to evaluate the validity of the Cholesky decomposition.
 
-```{r, engine='bash', building the sampling script with g++ to the executable sampling}
-g++ -std=c++11 runSampling.cpp linearalgebra.cpp randomnumbers.cpp auxiliary.cpp montecarlo.cpp -o sampling
-```
+Code documentation
 
-### Settings
-
-The geometry setup of the receivers as well as the initial starting model/actual model used for synthetics can all be
-edited in the INPUT folder.
+Documentation generated using doxygen is found in th docs/ subdirectory, but is also found hosted at my GitHub Pages.

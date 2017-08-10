@@ -135,8 +135,8 @@ void montecarlo::sample(bool hamilton) {
         double result_exponent;
         result_exponent = exp(result);
 
-        if (true) {
-//        if ((x_new < x) || (result_exponent > randf(0.0, 1.0))) {
+//        if (true) {
+        if ((x_new < x) || (result_exponent > randf(0.0, 1.0))) {
 //            double Hamiltonian = energy();
 //            std::cout<< Hamiltonian;
             if (_evaluateHamiltonianBeforeLeap) {
@@ -208,4 +208,9 @@ void montecarlo::write_sample(std::ofstream &outfile, double misfit) {
     outfile << misfit;
     outfile << std::endl;
 
+}
+
+std::vector<double> montecarlo::precomp_misfitGrad(std::vector<double> parameters) {
+    // Should actually be left multiply, but matrix is symmetric, so skipped that bit.
+    return _A * std::move(parameters) - _bT;
 }

@@ -27,7 +27,9 @@ public:
     ~montecarlo();
 
     void sample(bool hamilton);
-    
+
+    std::vector<double> precomp_misfitGrad(std::vector<double> parameters);
+
 private:
     // Fields
     prior _prior;

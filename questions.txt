@@ -1,2 +1,0 @@
-Trajectory length:
-    How to mitigate the 'resonance' in trajectories, where HMC only samples a very specific region of the model space.

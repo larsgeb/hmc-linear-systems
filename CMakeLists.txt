@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.7)
 project(hmc-linear-system)
-#set (CMAKE_CXX_FLAGS "-O4")
+set (CMAKE_CXX_FLAGS "-O4")
 
 set(CMAKE_CXX_STANDARD 11)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(SOURCE_FILES generateSynthetics.cpp linearalgebra.cpp auxiliary.cpp)
 add_executable(generateSynthetics ${SOURCE_FILES})
