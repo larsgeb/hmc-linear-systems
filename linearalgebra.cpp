@@ -159,7 +159,7 @@ std::vector<std::vector<double>> InvertMatrixElements(std::vector<std::vector<do
     for (std::vector<double> &row : M) {
         for (double &rowElement : row) {
             if (rowElement != 0) {
-                rowElement = 1.0/rowElement;
+                rowElement = 1.0 / rowElement;
             }
         }
     }
@@ -336,4 +336,12 @@ std::vector<std::vector<double>> InvertLowerTriangular(std::vector<std::vector<d
         iL.push_back(SolveLowerTriangular(L, RHS));
     }
     return TransposeMatrix(iL);
+}
+
+std::vector<double> operator/(std::vector<double> A, double b) {
+    return VectorScalarProduct(std::move(A), 1.0 / b);
+}
+
+std::vector<double> NormalizeVector(std::vector<double> A) {
+    return A / (sqrt(A * A));
 }

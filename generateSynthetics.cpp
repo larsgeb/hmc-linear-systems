@@ -8,18 +8,18 @@
 
 int main() {
     // Easy as can be.
-    forwardModel model("INPUT/tomography_matrix.txt");
+    forwardModel model("INPUT/matrix.txt");
 
     std::vector<double> parameters;
     for (int i = 0; i < model._numberParameters; i++) {
-        parameters.push_back(1.0/1000.0);
-//        parameters.push_back(10.0 * double(i + 1));
+//        parameters.push_back(1.0/1000.0);
+        parameters.push_back(10.0 * double(i + 1));
     }
 
     data synthetics;
     synthetics._observedData = model.calculateData(parameters);
     synthetics._numberData = static_cast<int>(synthetics._observedData.size());
-    synthetics.writeData("INPUT/tomography_synthetics.txt");
+    synthetics.writeData("INPUT/synthetics.txt");
 
     return 0;
 }

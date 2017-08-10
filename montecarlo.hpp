@@ -12,14 +12,18 @@ class montecarlo {
 public:
     // Constructors and destructors
     montecarlo(prior &in_prior, data &in_data, forwardModel in_model, int in_nt, double in_dt, int in_iterations,
-               bool useGeneralisedMomentumPropose, bool useGeneralisedMomentumKinetic);
+               bool useGeneralisedMomentumPropose, bool useGeneralisedMomentumKinetic, bool normalizeMomentum, bool
+               evaluateHamiltonianBeforeLeap);
 
-    montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel &in_model, int in_nt, double in_dt,
-               int in_iterations, bool useGeneralisedMomentumPropose, bool useGeneralisedMomentumKinetic);
+//    montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel &in_model, int in_nt, double in_dt,
+//               int in_iterations, bool useGeneralisedMomentumPropose, bool useGeneralisedMomentumKinetic, bool normalizeMomentum);
 
 
     ~montecarlo();
 
+    void sample(bool hamilton);
+    
+private:
     // Fields
     prior _prior;
     data _data;
@@ -30,6 +34,8 @@ public:
     int _iterations; // Number of iterations for Monte Carlo sampling
     bool _useGeneralisedMomentumKinetic;
     bool _useGeneralisedMomentumPropose;
+    bool _normalizeMomentum;
+    bool _evaluateHamiltonianBeforeLeap;
 
     std::vector<double> _currentModel;
     std::vector<double> _proposedModel;
@@ -49,15 +55,13 @@ public:
     // Member functions
     void propose_metropolis();
 
-    void propose_hamilton(int &uturns, bool writeTrajectory);
+    void propose_hamilton(int &uturns);
 
     void leap_frog(int &uturns, bool writeTrajectory);
 
     double chi();
 
     double energy();
-
-    void sample(bool hamilton);
 
     void write_sample(std::ofstream &outfile, double misfit);
 

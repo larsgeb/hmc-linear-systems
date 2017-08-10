@@ -124,6 +124,13 @@ std::vector<double> VectorSum(std::vector<double> A, std::vector<double> B);
 std::vector<double> VectorScalarProduct(std::vector<double> A, double b);
 
 /**
+ * @brief Normalizes a vector to unit length.
+ * @param A Any vector \f$ A \f$.
+ * @return Vector \f$ B' \f$ where \f$ \sqrt{\sum_i {B_{i}}^{2} }= 1\f$ and \f$ A \cdot B = |A| |B| = |A|\f$ .
+ */
+std::vector<double> NormalizeVector(std::vector<double> A);
+
+/**
  * @brief Solve linear equation \f$ L y = x\f$ where \f$ L \f$ is a lower triangular \f$ n \times n\f$ matrix and \f$ x
  * \f$ and \f$ y \f$ are \f$ n\f$ dimensional vectors. Uses forward and backward substitution to iteratively solve the
  * system.
@@ -172,6 +179,10 @@ std::vector<double> operator*(double b, std::vector<double> A);
  * @brief Operator form of VectorScalarProduct(), using std library forwarding.
  */
 std::vector<double> operator*(std::vector<double> A, double b);
+/**
+ * @brief Operator form of vector by scalar division. Uses VectorScalarProduct() with std library forwarding.
+ */
+std::vector<double> operator/(std::vector<double> A, double b);
 /**
  * @brief Operator form of VectorSum(), using std library forwarding.
  */

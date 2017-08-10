@@ -15,7 +15,8 @@
 #include <iostream>
 
 montecarlo::montecarlo(prior &in_prior, data &in_data, forwardModel in_model, int in_nt, double in_dt, int in_iterations,
-                       bool useGeneralisedMomentumPropose, bool useGeneralisedMomentumKinetic) {
+                       bool useGeneralisedMomentumPropose, bool useGeneralisedMomentumKinetic, bool normalizeMomentum, bool
+                       evaluateHamiltonianBeforeLeap) {
     _prior = in_prior;
     _data = in_data;
     _model = std::move(in_model);
@@ -24,6 +25,8 @@ montecarlo::montecarlo(prior &in_prior, data &in_data, forwardModel in_model, in
     _iterations = in_iterations;
     _useGeneralisedMomentumKinetic = useGeneralisedMomentumKinetic;
     _useGeneralisedMomentumPropose = useGeneralisedMomentumPropose;
+    _normalizeMomentum = normalizeMomentum;
+    _evaluateHamiltonianBeforeLeap = evaluateHamiltonianBeforeLeap;
 
     /* Initialise random number generator. ----------------------------------------*/
     srand((unsigned int) time(nullptr));
@@ -41,6 +44,7 @@ montecarlo::montecarlo(prior &in_prior, data &in_data, forwardModel in_model, in
     _proposedMomentum = _useGeneralisedMomentumPropose ?
                         randn_Cholesky(_CholeskyLowerMassMatrix) :
                         randn(_massMatrix);
+    _proposedMomentum = _normalizeMomentum ? NormalizeVector(_proposedMomentum) : _proposedMomentum;
     _proposedModel = randn(_prior._mean, _prior._std);
     _currentModel = _proposedModel;
     _currentMomentum = _proposedMomentum;
@@ -52,13 +56,13 @@ montecarlo::montecarlo(prior &in_prior, data &in_data, forwardModel in_model, in
                 _data._observedData * (_data._inverseCD * _data._observedData));
 };
 
-montecarlo::montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel &in_model, int in_nt,
-                       double in_dt, int in_iterations, bool useGeneralisedMomentumPropose,
-                       bool useGeneralisedMomentumKinetic) :
-        montecarlo::montecarlo(in_prior, in_data, std::move(in_model), in_nt, in_dt, in_iterations,
-                               useGeneralisedMomentumPropose, useGeneralisedMomentumKinetic) {
-    _posterior = in_posterior;
-}
+//montecarlo::montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel &in_model, int in_nt,
+//                       double in_dt, int in_iterations, bool useGeneralisedMomentumPropose,
+//                       bool useGeneralisedMomentumKinetic, bool normalizeMomentum) :
+//        montecarlo::montecarlo(in_prior, in_data, std::move(in_model), in_nt, in_dt, in_iterations,
+//                               useGeneralisedMomentumPropose, useGeneralisedMomentumKinetic, normalizeMomentum) {
+//    _posterior = in_posterior;
+//}
 
 montecarlo::~montecarlo() = default;
 
@@ -67,12 +71,13 @@ void montecarlo::propose_metropolis() {
         _proposedModel[i] = randn(_prior._mean[i], _prior._std[i]);
 }
 
-void montecarlo::propose_hamilton(int &uturns, bool writeTrajectory) {
+void montecarlo::propose_hamilton(int &uturns) {
     /* Draw random prior momenta. */
+    double normalizationFactor = sqrt(_proposedMomentum * _proposedMomentum);
     _proposedMomentum = _useGeneralisedMomentumPropose ?
                         randn_Cholesky(_CholeskyLowerMassMatrix) :
                         randn(_massMatrix);
-    leap_frog(uturns, writeTrajectory);
+    _proposedMomentum = _normalizeMomentum ? normalizationFactor * NormalizeVector(_proposedMomentum) : _proposedMomentum;
 }
 
 double montecarlo::precomp_misfit() {
@@ -104,7 +109,7 @@ double montecarlo::energy() {
 void montecarlo::sample(bool hamilton) {
     double x = hamilton ? energy() : chi();
     double x_new;
-    int accepted = 0;
+    int accepted = 1;
     int uturns = 0;
 
     std::ofstream samplesfile;
@@ -113,7 +118,16 @@ void montecarlo::sample(bool hamilton) {
 
     write_sample(samplesfile, x);
     for (int it = 1; it < _iterations; it++) {
-        hamilton ? propose_hamilton(uturns, it == _iterations - 1) : propose_metropolis();
+
+        if (hamilton) {
+            propose_hamilton(uturns);
+            if (!_evaluateHamiltonianBeforeLeap) {
+                leap_frog(uturns, it == _iterations - 1);
+            }
+        } else {
+            propose_metropolis();
+        }
+
         x_new = (hamilton ? energy() : chi());
 
         double result;
@@ -121,7 +135,15 @@ void montecarlo::sample(bool hamilton) {
         double result_exponent;
         result_exponent = exp(result);
 
-        if ((x_new < x) || (result_exponent > randf(0.0, 1.0))) {
+        if (true) {
+//        if ((x_new < x) || (result_exponent > randf(0.0, 1.0))) {
+//            double Hamiltonian = energy();
+//            std::cout<< Hamiltonian;
+            if (_evaluateHamiltonianBeforeLeap) {
+                leap_frog(uturns, it == _iterations - 1);
+            }
+//            Hamiltonian = energy();
+//            std::cout<< Hamiltonian;
             accepted++;
             x = x_new;
             _currentModel = _proposedModel;

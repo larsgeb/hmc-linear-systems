@@ -22,7 +22,8 @@ params = {'legend.fontsize': 'x-large',
           'axes.labelsize': 16,
           'axes.titlesize': 'x-large',
           'xtick.labelsize': 16,
-          'ytick.labelsize': 16}
+          'ytick.labelsize': 16,
+          'agg.path.chunksize': 10000000000}
 pylab.rcParams.update(params)
 
 # ============================================================
@@ -78,11 +79,11 @@ plt.xlabel('parameter ' + str(dim_1))
 plt.ylabel('parameter ' + str(dim_2))
 # plt.title('random walk')
 plt.gcf().subplots_adjust(bottom=0.15)
-plt.savefig('OUTPUT/randomWalk.png')
+# plt.savefig('OUTPUT/randomWalk.png')
 # plt.savefig('OUTPUT/randomWalk.pdf'
 # )
-# plt.show()
-plt.close()
+plt.show()
+# plt.close()
 # ============================================================
 # - Histograms.
 # ============================================================
