@@ -42,4 +42,5 @@ OUTPUT/
 cmake-build-debug/
 doxygen_docs/DOXYGEN_OUTPUT/
 straight-ray-solver/
-
+doxygen_docs/html/
+doxygen_docs/latex/

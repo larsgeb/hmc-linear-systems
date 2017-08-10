@@ -10,7 +10,7 @@ branches:
 env:
   global:
     - GH_REPO_NAME: hmc-linear-systems
-    - DOXYFILE: $TRAVIS_BUILD_DIR/doxygen_docs/configuration
+    - DOXYFILE: $TRAVIS_BUILD_DIR/doxygen_docs/travis-configuration
     - GH_REPO_REF: github.com/larsgeb/hmc-linear-systems.git
 
 # Install dependencies
