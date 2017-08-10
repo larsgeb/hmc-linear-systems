@@ -25,9 +25,16 @@ addons:
 
 # Build your code e.g. by calling make
 language: cpp
-# Generate and deploy documentation
+
+# Generate and deploy documentation, no matter the buil status
 after_success:
   - cd $TRAVIS_BUILD_DIR
   - chmod +x generateDocumentationAndDeploy.sh
   - ./generateDocumentationAndDeploy.sh
+
+after_failure:
+  - cd $TRAVIS_BUILD_DIR
+  - chmod +x generateDocumentationAndDeploy.sh
+  - ./generateDocumentationAndDeploy.sh
+
 
