@@ -24,9 +24,10 @@ addons:
       - graphviz
 
 # Build your code e.g. by calling make
-
+language: cpp
 # Generate and deploy documentation
 after_success:
   - cd $TRAVIS_BUILD_DIR
   - chmod +x generateDocumentationAndDeploy.sh
   - ./generateDocumentationAndDeploy.sh
+
