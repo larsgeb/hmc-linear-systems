@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['hist',['hist',['../namespaceplot__samples.html#a6bf85ac15be893d7b928aa1ad42dc2d0',1,'plot_samples']]],
-  ['hist_5ffinal',['hist_final',['../namespaceplot__samples.html#a290cdf3156b649d7e7d8dbf8cdc08993',1,'plot_samples']]],
-  ['hamiltonian_20monte_20carlo_20documentation',['Hamiltonian Monte Carlo Documentation',['../index.html',1,'']]],
-  ['hmc_20inversion_20of_20simple_20linear_20models',['HMC Inversion of simple linear models',['../md_readme.html',1,'']]]
+  ['invertlowertriangular',['InvertLowerTriangular',['../linearalgebra_8cpp.html#a7a992c16cae0e72fae2e70a6cd1dab03',1,'InvertLowerTriangular(std::vector&lt; std::vector&lt; double &gt;&gt; L):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#a7a992c16cae0e72fae2e70a6cd1dab03',1,'InvertLowerTriangular(std::vector&lt; std::vector&lt; double &gt;&gt; L):&#160;linearalgebra.cpp']]],
+  ['invertmatrixelements',['InvertMatrixElements',['../linearalgebra_8cpp.html#af6ebca5acd83b99acfd9e48c1cceafb2',1,'InvertMatrixElements(std::vector&lt; std::vector&lt; double &gt;&gt; M):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#af6ebca5acd83b99acfd9e48c1cceafb2',1,'InvertMatrixElements(std::vector&lt; std::vector&lt; double &gt;&gt; M):&#160;linearalgebra.cpp']]]
 ];

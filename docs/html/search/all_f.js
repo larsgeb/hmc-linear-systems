@@ -1,26 +1,10 @@
 var searchData=
 [
-  ['parameters',['parameters',['../namespaceplot__multivariate.html#aed04fd44e4c209a80acd1c67190227fc',1,'plot_multivariate.parameters()'],['../namespaceplot__multivariate__tomography.html#ad135750aee2f6c9ed3fce376fc073e7c',1,'plot_multivariate_tomography.parameters()'],['../namespaceplot__trajectory.html#a5da1dc89d93b10adabed7d024f93e348',1,'plot_trajectory.parameters()']]],
-  ['params',['params',['../namespaceplot__gradient.html#abee86774b16d90f1f20011f5a1a5fbcf',1,'plot_gradient.params()'],['../namespaceplot__multivariate.html#ab3c4b36e359778402fd020944e89acd1',1,'plot_multivariate.params()'],['../namespaceplot__multivariate__tomography.html#a3055e098fb272bccef6363da0bf15d2e',1,'plot_multivariate_tomography.params()'],['../namespaceplot__samples.html#a262478aae25c1b0e70eaf3a9fac0d765',1,'plot_samples.params()'],['../namespaceplot__trajectory.html#a6cfdd0b110a3e7869b1567c9fe40175c',1,'plot_trajectory.params()']]],
-  ['pi',['PI',['../randomnumbers_8hpp.html#a952eac791b596a61bba0a133a3bb439f',1,'randomnumbers.hpp']]],
-  ['plot_5fdata',['plot_data',['../namespaceplot__data.html',1,'']]],
-  ['plot_5fdata_2epy',['plot_data.py',['../plot__data_8py.html',1,'']]],
-  ['plot_5fgradient',['plot_gradient',['../namespaceplot__gradient.html',1,'']]],
-  ['plot_5fgradient_2epy',['plot_gradient.py',['../plot__gradient_8py.html',1,'']]],
-  ['plot_5fmultivariate',['plot_multivariate',['../namespaceplot__multivariate.html',1,'']]],
-  ['plot_5fmultivariate_2epy',['plot_multivariate.py',['../plot__multivariate_8py.html',1,'']]],
-  ['plot_5fmultivariate_5ftomography',['plot_multivariate_tomography',['../namespaceplot__multivariate__tomography.html',1,'']]],
-  ['plot_5fmultivariate_5ftomography_2epy',['plot_multivariate_tomography.py',['../plot__multivariate__tomography_8py.html',1,'']]],
-  ['plot_5fsamples',['plot_samples',['../namespaceplot__samples.html',1,'']]],
-  ['plot_5fsamples_2epy',['plot_samples.py',['../plot__samples_8py.html',1,'']]],
-  ['plot_5ftrajectory',['plot_trajectory',['../namespaceplot__trajectory.html',1,'']]],
-  ['plot_5ftrajectory_2epy',['plot_trajectory.py',['../plot__trajectory_8py.html',1,'']]],
-  ['posterior',['posterior',['../classposterior.html',1,'posterior'],['../classposterior.html#acf297c5627c09ed545d87e9f67521f99',1,'posterior::posterior()']]],
-  ['precomp_5fmisfit',['precomp_misfit',['../classmontecarlo.html#a521b75f61c65b68177c8133871ea528e',1,'montecarlo']]],
-  ['precomp_5fmisfitgrad',['precomp_misfitGrad',['../classmontecarlo.html#af88d8ef04e9d865b137275a6662a8a6a',1,'montecarlo']]],
-  ['printmatrixe',['printMatrixE',['../namespaceplot__multivariate.html#a1b9fc4f0a568d0a0f1908e83f460c86e',1,'plot_multivariate.printMatrixE()'],['../namespaceplot__multivariate__tomography.html#a4a78cd002923964260b986d3869989f9',1,'plot_multivariate_tomography.printMatrixE()']]],
-  ['printvector',['printVector',['../auxiliary_8cpp.html#ac24934b7854d73f6c1cce823379f5609',1,'printVector(std::vector&lt; double &gt; A):&#160;auxiliary.cpp'],['../auxiliary_8hpp.html#ac24934b7854d73f6c1cce823379f5609',1,'printVector(std::vector&lt; double &gt; A):&#160;auxiliary.cpp']]],
-  ['prior',['prior',['../classprior.html',1,'prior'],['../classprior.html#a2691154bff54ec91ea2e5ec32fa46579',1,'prior::prior()'],['../classprior.html#a769c53f07338d7fa8c8d2eb031527aab',1,'prior::prior(std::vector&lt; double &gt; mean, std::vector&lt; double &gt; std)'],['../classprior.html#a52033941a7ff4480399604b2f88c4704',1,'prior::prior(const prior &amp;)']]],
-  ['propose_5fhamilton',['propose_hamilton',['../classmontecarlo.html#a4916efbddd7f953ba4f68d0ddc1c7fbe',1,'montecarlo']]],
-  ['propose_5fmetropolis',['propose_metropolis',['../classmontecarlo.html#a598a84191946fca88f58322c8e554497',1,'montecarlo']]]
+  ['randf',['randf',['../randomnumbers_8cpp.html#ad562def2e5d55877532fdb79bf9a22c1',1,'randf(double min, double max):&#160;randomnumbers.cpp'],['../randomnumbers_8hpp.html#ad562def2e5d55877532fdb79bf9a22c1',1,'randf(double min, double max):&#160;randomnumbers.cpp']]],
+  ['randn',['randn',['../randomnumbers_8cpp.html#a596bb62bb40b6c31cc943c1be1e80e03',1,'randn(double mean, double stdv):&#160;randomnumbers.cpp'],['../randomnumbers_8cpp.html#ad103a86a2f0086e83005f5fa8cd6ad0a',1,'randn(std::vector&lt; double &gt; means, std::vector&lt; double &gt; stdv):&#160;randomnumbers.cpp'],['../randomnumbers_8cpp.html#a87a1f9ecb814e84d7d92daf08a8b9639',1,'randn(std::vector&lt; double &gt; stdv):&#160;randomnumbers.cpp'],['../randomnumbers_8cpp.html#ad15dc198a79d19b1a8c3805657ba1f58',1,'randn(std::vector&lt; std::vector&lt; double &gt;&gt; DiagonalCovarianceMatrix):&#160;randomnumbers.cpp'],['../randomnumbers_8hpp.html#a596bb62bb40b6c31cc943c1be1e80e03',1,'randn(double mean, double stdv):&#160;randomnumbers.cpp'],['../randomnumbers_8hpp.html#ad103a86a2f0086e83005f5fa8cd6ad0a',1,'randn(std::vector&lt; double &gt; means, std::vector&lt; double &gt; stdv):&#160;randomnumbers.cpp'],['../randomnumbers_8hpp.html#a87a1f9ecb814e84d7d92daf08a8b9639',1,'randn(std::vector&lt; double &gt; stdv):&#160;randomnumbers.cpp'],['../randomnumbers_8hpp.html#ad15dc198a79d19b1a8c3805657ba1f58',1,'randn(std::vector&lt; std::vector&lt; double &gt;&gt; DiagonalCovarianceMatrix):&#160;randomnumbers.cpp']]],
+  ['randn_5fcholesky',['randn_Cholesky',['../randomnumbers_8cpp.html#aadc951205a8230030e49a32a0e899771',1,'randn_Cholesky(std::vector&lt; double &gt; mean, std::vector&lt; std::vector&lt; double &gt;&gt; CholeskyLower_CovarianceMatrix):&#160;randomnumbers.cpp'],['../randomnumbers_8cpp.html#a6fbc5ea229686c8e0782ba1f29b48998',1,'randn_Cholesky(std::vector&lt; std::vector&lt; double &gt;&gt; CholeskyLower_CovarianceMatrix):&#160;randomnumbers.cpp'],['../randomnumbers_8hpp.html#aadc951205a8230030e49a32a0e899771',1,'randn_Cholesky(std::vector&lt; double &gt; mean, std::vector&lt; std::vector&lt; double &gt;&gt; CholeskyLower_CovarianceMatrix):&#160;randomnumbers.cpp'],['../randomnumbers_8hpp.html#a6fbc5ea229686c8e0782ba1f29b48998',1,'randn_Cholesky(std::vector&lt; std::vector&lt; double &gt;&gt; CholeskyLower_CovarianceMatrix):&#160;randomnumbers.cpp']]],
+  ['randomnumbers_2ecpp',['randomnumbers.cpp',['../randomnumbers_8cpp.html',1,'']]],
+  ['randomnumbers_2ehpp',['randomnumbers.hpp',['../randomnumbers_8hpp.html',1,'']]],
+  ['readdata',['readData',['../classdata.html#af1868902f5606aead0cd2b7a7177bfad',1,'data']]],
+  ['runsampling_2ecpp',['runSampling.cpp',['../runSampling_8cpp.html',1,'']]]
 ];

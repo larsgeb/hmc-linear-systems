@@ -22,17 +22,21 @@ This prepares the platform dependent compilation instructions. For example, on L
 
 There are several build targets:
 1. generateSynthetics.
+
    This program will read the forward matrix in INPUT/matrix.txt and generate synthetics which are saved in synthetics.txt. Model parameters are as of yet hardcoded.
 
 2. runSampling.
+
    This program will take samples from the posterior distribution described by hardcoded prior information, the forward model from INPUT/matrix.txt and synthetic data INPUT/synthetics.txt (with hardcoded data-covariance). The output are the samples in OUTPUT/samples.txt and the trajectory of the last sample in OUTPUT/trajectory.txt. Some diagnostics are written to the console.
 
 3. generateGradient.
+
     This programs evaluates misfit gradients on a hardcoded interval, using the same input as runSampling.
 
 4. testMultivariate.
+
    This program draws from hardcoded multivariate correlated gaussians, writing it's samples to OUTPUT/multivariate.txt. Used to evaluate the validity of the Cholesky decomposition.
 
 ### Code documentation
 
-Documentation generated using doxygen is found in th docs/ subdirectory, but is also found hosted at [my GitHub Pages](larsgeb.github.io).
+Documentation generated using doxygen is found in th docs/ subdirectory, but is also found hosted at [my GitHub Pages](www.larsgeb.github.io).

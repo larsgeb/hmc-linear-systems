@@ -1,9 +1,10 @@
 var searchData=
 [
-  ['q',['Q',['../namespaceplot__gradient.html#a8d3d72df0e82f2de3c34a8aeeff43d58',1,'plot_gradient']]],
-  ['q1',['q1',['../namespaceplot__gradient.html#acd0ed413cadd083aac0d92f3c7893587',1,'plot_gradient']]],
-  ['q2',['q2',['../namespaceplot__gradient.html#a6127c602e567001e35446c2a7fdeece6',1,'plot_gradient']]],
-  ['q_5fopt',['q_opt',['../namespaceplot__samples.html#a4c8f93564bf10fe80c9ae104125a9567',1,'plot_samples']]],
-  ['qs',['qs',['../namespaceplot__samples.html#aa143182230b1a8220f07964ad0886cbe',1,'plot_samples']]],
-  ['questions_2etxt',['questions.txt',['../questions_8txt.html',1,'']]]
+  ['sample',['sample',['../classmontecarlo.html#a70045e250ca9d7074b8dc444d9dba146',1,'montecarlo']]],
+  ['seticdmatrix',['setICDMatrix',['../classdata.html#a293c30eb5ed82fe56791ef2bd423389e',1,'data']]],
+  ['seticdmatrix_5fpercentual',['setICDMatrix_percentual',['../classdata.html#ac809be550eb66a5a94406034f3a2dbcc',1,'data']]],
+  ['setinversecovariancematrix',['setInverseCovarianceMatrix',['../classprior.html#a189600fcd1560804c029d7d426d03281',1,'prior']]],
+  ['setmisfitparameterdatamatrix',['setMisfitParameterDataMatrix',['../classdata.html#aafe23e71c0b5823bedbabf6ac7c5637d',1,'data']]],
+  ['setmisfitparametermatrix',['setMisfitParameterMatrix',['../classdata.html#a2945286d80352859b8e840072bb00b40',1,'data']]],
+  ['solvelowertriangular',['SolveLowerTriangular',['../linearalgebra_8cpp.html#a8407d518eb711c46ddc3e729299fa011',1,'SolveLowerTriangular(std::vector&lt; std::vector&lt; double &gt;&gt; L, std::vector&lt; double &gt; x):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#a8407d518eb711c46ddc3e729299fa011',1,'SolveLowerTriangular(std::vector&lt; std::vector&lt; double &gt;&gt; L, std::vector&lt; double &gt; x):&#160;linearalgebra.cpp']]]
 ];

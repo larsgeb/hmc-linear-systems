@@ -1,8 +1,4 @@
 var searchData=
 [
-  ['edgecolors',['edgecolors',['../namespaceplot__trajectory.html#a9f1de0d2e3c6b49e53d44f366396093c',1,'plot_trajectory']]],
-  ['energy',['energy',['../classmontecarlo.html#a086957a61ce735d0d46d9f8b7cf74a2f',1,'montecarlo']]],
-  ['epsilon_5f1',['epsilon_1',['../namespaceplot__samples.html#afec73d68e9314e941b9f4b5638019b37',1,'plot_samples']]],
-  ['epsilon_5f2',['epsilon_2',['../namespaceplot__samples.html#ae547b948acf34025af5d3c54f790945e',1,'plot_samples']]],
-  ['extent',['extent',['../namespaceplot__multivariate.html#a06429924a60661d406c4f25b4a6f8614',1,'plot_multivariate.extent()'],['../namespaceplot__multivariate__tomography.html#a161a47a81c6cc2d5c9faaa8e4689bebf',1,'plot_multivariate_tomography.extent()']]]
+  ['forwardmodel',['forwardModel',['../classforwardModel.html',1,'forwardModel'],['../classforwardModel.html#aa0162d0bb0deec0138ab71925e43a493',1,'forwardModel::forwardModel(int numberParameters)'],['../classforwardModel.html#a0dc77f9e07c2ef917220c2c01eaf64c8',1,'forwardModel::forwardModel(const char *filename)'],['../classforwardModel.html#a0a19d7e2baaad6e1e42aaa81da02135c',1,'forwardModel::forwardModel()']]]
 ];

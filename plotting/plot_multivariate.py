@@ -24,7 +24,7 @@ pylab.rcParams.update(params)
 
 # If there's other stuff on the line, like misfit values
 trailingElements = 1
-nbi = 0
+nbi = 100
 fid = open('OUTPUT/samples.txt')
 dummy = fid.read().strip().split()
 fid.close()
@@ -57,8 +57,6 @@ print 'Inverse means;'
 printMatrixE(1 / np.matrix(means))
 print 'Covariances;'
 printMatrixE(np.matrix(covariances))
-# # print 'ALternative covariances;'
-# # printMatrixE(np.matrix(covariances_alt))
 print "Standard deviations;"
 for index, covariance in enumerate(covariances):
     print "Parameter", index + 1, np.sqrt(covariance[index])
@@ -66,6 +64,7 @@ for index, covariance in enumerate(covariances):
 maxCov = np.max(np.abs(covariances))
 plt.imshow(covariances, cmap=plt.get_cmap('seismic'), interpolation='none',
            extent=[0.5, numParameters + 0.5, numParameters + 0.5, 0.5], vmin=-maxCov, vmax=maxCov)
+plt.colorbar()
 plt.savefig("OUTPUT/linearModelCovariances.pdf", format='pdf')
 plt.close()
 

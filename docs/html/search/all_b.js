@@ -1,10 +1,12 @@
 var searchData=
 [
-  ['leap_5ffrog',['leap_frog',['../classmontecarlo.html#ace5f551621feb8d591354c24155c6986',1,'montecarlo']]],
-  ['length',['length',['../questions_8txt.html#a7e3409d28054a3fd4af0a7257a26eca4',1,'questions.txt']]],
-  ['linearalgebra_2ecpp',['linearalgebra.cpp',['../linearalgebra_8cpp.html',1,'']]],
-  ['linearalgebra_2ehpp',['linearalgebra.hpp',['../linearalgebra_8hpp.html',1,'']]],
-  ['lines',['lines',['../namespaceplot__data.html#a30f34d4cbd5153f087064981a5f509d1',1,'plot_data']]],
-  ['linewidth',['linewidth',['../namespaceplot__samples.html#a9500a1af0e9b489ee1e94ede712dd4af',1,'plot_samples.linewidth()'],['../namespaceplot__trajectory.html#a3faf4faedbffc1cb226a43f56900afe0',1,'plot_trajectory.linewidth()']]],
-  ['location',['location',['../namespaceplot__data.html#afe5a958f01e0bd53560467c076015068',1,'plot_data']]]
+  ['main',['main',['../generateGradient_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;generateGradient.cpp'],['../generateSynthetics_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;generateSynthetics.cpp'],['../runSampling_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;runSampling.cpp'],['../testMultivariate_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;testMultivariate.cpp']]],
+  ['matrixmatrixproduct',['MatrixMatrixProduct',['../linearalgebra_8cpp.html#ad0972fd0613212a5f363f740fa8da87b',1,'MatrixMatrixProduct(std::vector&lt; std::vector&lt; double &gt;&gt; M, std::vector&lt; std::vector&lt; double &gt;&gt; N):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#ad0972fd0613212a5f363f740fa8da87b',1,'MatrixMatrixProduct(std::vector&lt; std::vector&lt; double &gt;&gt; M, std::vector&lt; std::vector&lt; double &gt;&gt; N):&#160;linearalgebra.cpp']]],
+  ['matrixmatrixsum',['MatrixMatrixSum',['../linearalgebra_8cpp.html#a22e3e11bc1914c1335383c9c22abaf88',1,'MatrixMatrixSum(std::vector&lt; std::vector&lt; double &gt;&gt; M, std::vector&lt; std::vector&lt; double &gt;&gt; N):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#a22e3e11bc1914c1335383c9c22abaf88',1,'MatrixMatrixSum(std::vector&lt; std::vector&lt; double &gt;&gt; M, std::vector&lt; std::vector&lt; double &gt;&gt; N):&#160;linearalgebra.cpp']]],
+  ['matrixtrace',['MatrixTrace',['../linearalgebra_8cpp.html#a451df8b9bf01cd6a09234161ecf39dd5',1,'MatrixTrace(std::vector&lt; std::vector&lt; double &gt;&gt; M):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#a451df8b9bf01cd6a09234161ecf39dd5',1,'MatrixTrace(std::vector&lt; std::vector&lt; double &gt;&gt; M):&#160;linearalgebra.cpp']]],
+  ['matrixvectorproduct',['MatrixVectorProduct',['../linearalgebra_8cpp.html#aad52ff8219ee9b205d49e26038383978',1,'MatrixVectorProduct(std::vector&lt; std::vector&lt; double &gt; &gt; M, std::vector&lt; double &gt; A):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#a2c0f436b85983ff2f83d8baca22e76e8',1,'MatrixVectorProduct(std::vector&lt; std::vector&lt; double &gt;&gt; M, std::vector&lt; double &gt; A):&#160;linearalgebra.hpp']]],
+  ['misfit',['misfit',['../classprior.html#a4ce785a3d3f5222043a15ea83f74bfa8',1,'prior::misfit()'],['../classdata.html#aeafbd2b005e39705ac5f96610576da69',1,'data::misfit()'],['../classposterior.html#a33f391b598dbb9e3cd37f3ac0f81971c',1,'posterior::misfit()']]],
+  ['montecarlo',['montecarlo',['../classmontecarlo.html',1,'montecarlo'],['../classmontecarlo.html#a041eed89fd5d88e8c16ff711a6cad2e6',1,'montecarlo::montecarlo()']]],
+  ['montecarlo_2ecpp',['montecarlo.cpp',['../montecarlo_8cpp.html',1,'']]],
+  ['montecarlo_2ehpp',['montecarlo.hpp',['../montecarlo_8hpp.html',1,'']]]
 ];

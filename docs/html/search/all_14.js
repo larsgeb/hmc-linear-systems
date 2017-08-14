@@ -1,10 +1,5 @@
 var searchData=
 [
-  ['vectordifference',['VectorDifference',['../linearalgebra_8cpp.html#a597e4b880c84d3ce0442b6afc04dceaf',1,'VectorDifference(std::vector&lt; double &gt; A, std::vector&lt; double &gt; B):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#a597e4b880c84d3ce0442b6afc04dceaf',1,'VectorDifference(std::vector&lt; double &gt; A, std::vector&lt; double &gt; B):&#160;linearalgebra.cpp']]],
-  ['vectorscalarproduct',['VectorScalarProduct',['../linearalgebra_8cpp.html#a9421c6d0ca55335d00acec320e0214b4',1,'VectorScalarProduct(std::vector&lt; double &gt; A, double b):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#a9421c6d0ca55335d00acec320e0214b4',1,'VectorScalarProduct(std::vector&lt; double &gt; A, double b):&#160;linearalgebra.cpp']]],
-  ['vectorsum',['VectorSum',['../linearalgebra_8cpp.html#a6d9bdc7160e3c8640cf0eaca466985ee',1,'VectorSum(std::vector&lt; double &gt; A, std::vector&lt; double &gt; B):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#a6d9bdc7160e3c8640cf0eaca466985ee',1,'VectorSum(std::vector&lt; double &gt; A, std::vector&lt; double &gt; B):&#160;linearalgebra.cpp']]],
-  ['vectortodiagonal',['VectorToDiagonal',['../linearalgebra_8cpp.html#ab572e4af238b6622d11655a0704cb918',1,'VectorToDiagonal(std::vector&lt; double &gt; A):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#ab572e4af238b6622d11655a0704cb918',1,'VectorToDiagonal(std::vector&lt; double &gt; A):&#160;linearalgebra.cpp']]],
-  ['vectorvectorproduct',['VectorVectorProduct',['../linearalgebra_8cpp.html#a3815a35abdfaafef440a2bbb8c62a58f',1,'VectorVectorProduct(std::vector&lt; double &gt; A, std::vector&lt; double &gt; B):&#160;linearalgebra.cpp'],['../linearalgebra_8hpp.html#a3815a35abdfaafef440a2bbb8c62a58f',1,'VectorVectorProduct(std::vector&lt; double &gt; A, std::vector&lt; double &gt; B):&#160;linearalgebra.cpp']]],
-  ['vmax',['vmax',['../namespaceplot__multivariate.html#ad233b4c314c03c40299c72db8ffe4b0e',1,'plot_multivariate.vmax()'],['../namespaceplot__multivariate__tomography.html#ab20500bda72368d556e83aff58413f5f',1,'plot_multivariate_tomography.vmax()']]],
-  ['vmin',['vmin',['../namespaceplot__multivariate.html#a9d69b25831f475ff85364009e99b0e94',1,'plot_multivariate.vmin()'],['../namespaceplot__multivariate__tomography.html#aea3a7ce9ef347a9cf520b9e8716cdde9',1,'plot_multivariate_tomography.vmin()']]]
+  ['_7emontecarlo',['~montecarlo',['../classmontecarlo.html#a66baf0b0f7700b095a6a102e267d0c55',1,'montecarlo']]],
+  ['_7eprior',['~prior',['../classprior.html#a6f5aef1c028bd3a06a89a47784ca88fd',1,'prior']]]
 ];

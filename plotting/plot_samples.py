@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 # ============================================================
 
 # - Number of burn-in samples to be ignored.
-nbi = 30
+nbi = 100
 # - Dimensions of interest.
 dim_1 = 1
-dim_2 = 2
+dim_2 = 70
 # - Incremental displacement for duplicate points.
 epsilon_1 = 0.0003
 epsilon_2 = 0.0003
@@ -79,11 +79,11 @@ plt.xlabel('parameter ' + str(dim_1))
 plt.ylabel('parameter ' + str(dim_2))
 # plt.title('random walk')
 plt.gcf().subplots_adjust(bottom=0.15)
-# plt.savefig('OUTPUT/randomWalk.png')
+plt.savefig('OUTPUT/randomWalk.png')
 # plt.savefig('OUTPUT/randomWalk.pdf'
 # )
-plt.show()
-# plt.close()
+# plt.show()
+plt.close()
 # ============================================================
 # - Histograms.
 # ============================================================

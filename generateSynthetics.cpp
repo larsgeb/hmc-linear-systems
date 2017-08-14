@@ -8,12 +8,13 @@
 
 int main() {
     // Easy as can be.
-    forwardModel model("INPUT/matrix.txt");
+    forwardModel model(150);
+//    forwardModel model("INPUT/matrix.txt");
 
     std::vector<double> parameters;
     for (int i = 0; i < model._numberParameters; i++) {
-//        parameters.push_back(1.0/1000.0);
-        parameters.push_back(10.0 * double(i + 1));
+        parameters.push_back(i + 1.0);
+        model._designMatrix[i][i] = (i + 1.0) * (i + 1.0);
     }
 
     data synthetics;

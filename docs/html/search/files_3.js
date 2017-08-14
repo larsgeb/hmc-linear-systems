@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['linearalgebra_2ecpp',['linearalgebra.cpp',['../linearalgebra_8cpp.html',1,'']]],
-  ['linearalgebra_2ehpp',['linearalgebra.hpp',['../linearalgebra_8hpp.html',1,'']]]
+  ['montecarlo_2ecpp',['montecarlo.cpp',['../montecarlo_8cpp.html',1,'']]],
+  ['montecarlo_2ehpp',['montecarlo.hpp',['../montecarlo_8hpp.html',1,'']]]
 ];

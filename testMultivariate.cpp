@@ -24,8 +24,7 @@ int main() {
     std::vector<std::vector<double>> Cholesky_covC = CholeskyDecompose(covC);
 
     std::ofstream outfile;
-    outfile.open("OUTPUT/multivariate.txt");
-
+    outfile.open("OUTPUT/multivariate_samples.txt");
     int samples = 100000;
 
     outfile << meanC.size() << " " << samples << std::endl;
