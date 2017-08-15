@@ -1,6 +1,0 @@
-<map id="montecarlo" name="montecarlo">
-<area shape="rect" id="node2" href="$classforwardModel.html" title="forwardModel" alt="" coords="5,5,105,32"/>
-<area shape="rect" id="node3" href="$classprior.html" title="prior" alt="" coords="129,5,176,32"/>
-<area shape="rect" id="node4" href="$classposterior.html" title="posterior" alt="" coords="201,5,273,32"/>
-<area shape="rect" id="node5" href="$classdata.html" title="data" alt="" coords="301,5,348,32"/>
-</map>
