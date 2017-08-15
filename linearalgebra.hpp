@@ -1,25 +1,20 @@
 /** @file linearalgebra.hpp
  * @Author Lars Gebraad (larsgebraad@gmail.com)
- * @date   September, 2008
+ * @date August, 2017
  * @brief Linear algebra functions operating on standard library containers.
  *
- * A kind of library for all kinds of linear algebra functions. Incorporates basic operations such as multiplication and
- * dot products (with respective operator overloading) as well as some more specialized functions such as Cholesky
- * decomposition and lower triangular matrix inversion.
  *
- * This set of function operate on containers defined in the standard library. Most of the objects passed as input or
+ * <P>A kind of library for all kinds of linear algebra functions. Incorporates basic operations such as multiplication and
+ * dot products (with respective operator overloading) as well as some more specialized functions such as Cholesky
+ * decomposition and lower triangular matrix inversion. </P><P> This set of function operate on containers defined in the standard library. Most of the objects passed as input or
  * output within this set of functions are std::vector's, of either std::vector<doubles> or doubles itself. These
  * containers act as vectors and matrices. The benefit of these is that they are memory optimized, allow for (nearly)
- * perfect forwarding and other easy manipulation.
- *
- * When I refer to matrices or vectors, the actual C++ objects will be these containers (of containers) of doubles.
- * The first elements have index zero.
- *
- * Note that if there are nested containers, the convention is that the
+ * perfect forwarding and other easy manipulation.</P><P> When I refer to matrices or vectors, the actual C++ objects will be these containers (of containers) of doubles.
+ * The first elements have index zero.</P><P>  Note that if there are nested containers, the convention is that the
  * first index (the outer container) represents rows, where the inner containers represent row elements. There is no easy
- * way to directly access a column, except when usen GetMatrixColumn().
- *
+ * way to directly access a column, except when usen GetMatrixColumn(). </P>
  * */
+
 #ifndef HMC_VSP_LINEARALGEBRA_HPP
 #define HMC_VSP_LINEARALGEBRA_HPP
 

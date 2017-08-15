@@ -50,3 +50,4 @@ Makefile
 cmake_install.cmake
 runSampling
 *.cbp
+.idea/
