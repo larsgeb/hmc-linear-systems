@@ -1,3 +1,3 @@
 [submodule "SparseLinearAlgebra"]
 	path = SparseLinearAlgebra
-	url = git://github.com/larsgeb/SparseLinearAlgebra.git
+	url = https://github.com/larsgeb/SparseLinearAlgebra.git
