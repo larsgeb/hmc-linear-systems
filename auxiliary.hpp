@@ -16,7 +16,6 @@ class forwardModel;
 
 /**
  * @brief Prior information in parameter space.
- * \addtogroup Probabilisticinversion classes
  */
 class prior {
 public:

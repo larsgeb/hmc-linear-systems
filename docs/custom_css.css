@@ -1,7 +1,39 @@
-a {
-    color:#222;
+/** START Breadcrumbs style navbar **/
+.navpath ul {
+    margin-left: 20px;
+}
+.navpath ul li{
+    display: inline;
+    margin-right: 5px;
+}
+.navpath ul li:before{
+    content: ">";
+    margin-right: 5px;
+    padding: 0;
+}
+/** END Breadcrumbs style navbar **/
+
+
+/** Start Summary **/
+
+.summary{
+    font-size: medium;
 }
 
+/** END Summary **/
+
+/** Start Normal header sizes **/
+
+.groupheader{
+    font-size: x-large;
+    font-weight: 500;
+}
+
+/** End Normal header sizes **/
+
+a {
+    color: #222;
+}
 
 .titlebar-background {
     background-color: #f8f8f8;
@@ -12,6 +44,16 @@ a {
     padding-top: 20px;
     color: #454545;
     font-size: large;
+}
+
+dt {
+    padding-left: 10px;
+}
+
+dd {
+    padding-left: 10px;
+    margin-left: 0;
+    margin-bottom: 10px;
 }
 
 .titlebar a {
@@ -50,8 +92,7 @@ a {
     margin: 30px;
 }
 
-
-.memItemLeft{
+.memItemLeft {
     font-family: monospace, monospace;
     /*font-size: 1em;*/
 }
@@ -66,7 +107,6 @@ a {
 tr[class^='separator'], tr[class*=' separator'] {
     border: 0px solid black;
 }
-
 
 table.memberdecls {
     border-spacing: 0px;
@@ -204,7 +244,8 @@ table.memberdecls {
     border-top: 1px solid #A8B8D9;
     border-left: 1px solid #A8B8D9;
     border-right: 1px solid #A8B8D9;
-    padding: 6px 0px 6px 0px;
+    padding: 6px 10px 6px 10px;
+    padding: 6px 10px 6px 10px;
     color: #253555;
     font-weight: bold;
     /*text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);*/
@@ -249,20 +290,20 @@ table.memberdecls {
     /*-webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);*/
 }
 
-table.memname th, table.memname tr, table.memname td{
+table.memname th, table.memname tr, table.memname td {
     border: none;
 }
 
-.memtitle span{
+.memtitle span {
     margin-right: 10px;
 }
 
-.memItemLeft{
+.memItemLeft {
     font-family: monospace, monospace;
     /*font-size: 1em;*/
 }
 
-table.memname{
+table.memname {
     padding-left: 5px;
     font-family: monospace, monospace;
     font-size: 1em;
