@@ -8,20 +8,19 @@
 #include <cmath>
 #include "auxiliary.hpp"
 #include "montecarlo.hpp"
-#include <cstdlib>
 #include "randomnumbers.hpp"
-#include "linearalgebra.hpp"
-#include <cstdio>
-#include <iostream>
 
-montecarlo::montecarlo(prior &in_prior, data &in_data, forwardModel in_model, int in_nt, double in_dt, int in_iterations,
-                       bool useGeneralisedMomentumPropose, bool useGeneralisedMomentumKinetic, bool normalizeMomentum, bool
-                       evaluateHamiltonianBeforeLeap) {
+montecarlo::montecarlo(prior &in_prior, data &in_data, forwardModel in_model, int in_nt, double in_dt,
+                       int in_iterations,
+                       bool useGeneralisedMomentumPropose, bool useGeneralisedMomentumKinetic, bool normalizeMomentum,
+                       bool
+                       evaluateHamiltonianBeforeLeap, double gravity) {
     _prior = in_prior;
     _data = in_data;
     _model = std::move(in_model);
     _nt = in_nt;
     _dt = in_dt;
+    _gravity = gravity;
     _iterations = in_iterations;
     _useGeneralisedMomentumKinetic = useGeneralisedMomentumKinetic;
     _useGeneralisedMomentumPropose = useGeneralisedMomentumPropose;
@@ -32,37 +31,31 @@ montecarlo::montecarlo(prior &in_prior, data &in_data, forwardModel in_model, in
     srand((unsigned int) time(nullptr));
 
     // Pre-compute mass matrix and other associated quantities
-    _massMatrix = _prior._inverseCovarianceMatrix +
-                  (TransposeMatrix(_model._designMatrix) * _data._inverseCD) * _model._designMatrix;
-    _inverseMassMatrixDiagonal = VectorToDiagonal(MatrixTrace(InvertMatrixElements(_massMatrix)));
+    _massMatrix = _gravity * (_prior._inverseCovarianceMatrix +
+                              ((_model._designMatrix.Transpose() * _data._inverseCD) * _model._designMatrix));
+    _inverseMassMatrixDiagonal = AlgebraLib::VectorToDiagonal(_massMatrix.InvertMatrixElements(true).Trace());
 
     // This is where the magic happens
-    _CholeskyLowerMassMatrix = CholeskyDecompose(_massMatrix);
-    std::vector<std::vector<double>> InverseCholeskyLowerMassMatrix = InvertLowerTriangular(_CholeskyLowerMassMatrix);
-    _inverseMassMatrix = TransposeMatrix(InverseCholeskyLowerMassMatrix) * InverseCholeskyLowerMassMatrix;
+    _CholeskyLowerMassMatrix = _massMatrix.CholeskyDecompose();
+    AlgebraLib::Matrix InverseCholeskyLowerMassMatrix = _CholeskyLowerMassMatrix.InvertLowerTriangular();
+    _inverseMassMatrix = InverseCholeskyLowerMassMatrix.Transpose() * InverseCholeskyLowerMassMatrix;
 
     _proposedMomentum = _useGeneralisedMomentumPropose ?
                         randn_Cholesky(_CholeskyLowerMassMatrix) :
                         randn(_massMatrix);
-    _proposedMomentum = _normalizeMomentum ? NormalizeVector(_proposedMomentum) : _proposedMomentum;
+    _proposedMomentum = _normalizeMomentum ? _proposedMomentum.Normalize() : _proposedMomentum;
     _proposedModel = randn(_prior._mean, _prior._std);
     _currentModel = _proposedModel;
     _currentMomentum = _proposedMomentum;
 
-    _A = _massMatrix;
+    _A = _prior._inverseCovarianceMatrix +
+         (_model._designMatrix.Transpose() * _data._inverseCD) * _model._designMatrix;;
     _bT = (_prior._inverseCovarianceMatrix * _prior._mean) +
-          (TransposeMatrix(_model._designMatrix) * _data._inverseCD) * _data._observedData;
+          (_model._designMatrix.Transpose() * _data._inverseCD) * _data._observedData;
     _c = 0.5 * (_prior._mean * (_prior._inverseCovarianceMatrix * _prior._mean) +
                 _data._observedData * (_data._inverseCD * _data._observedData));
 };
 
-//montecarlo::montecarlo(prior &in_prior, data &in_data, posterior &in_posterior, forwardModel &in_model, int in_nt,
-//                       double in_dt, int in_iterations, bool useGeneralisedMomentumPropose,
-//                       bool useGeneralisedMomentumKinetic, bool normalizeMomentum) :
-//        montecarlo::montecarlo(in_prior, in_data, std::move(in_model), in_nt, in_dt, in_iterations,
-//                               useGeneralisedMomentumPropose, useGeneralisedMomentumKinetic, normalizeMomentum) {
-//    _posterior = in_posterior;
-//}
 
 montecarlo::~montecarlo() = default;
 
@@ -77,7 +70,8 @@ void montecarlo::propose_hamilton(int &uturns) {
     _proposedMomentum = _useGeneralisedMomentumPropose ?
                         randn_Cholesky(_CholeskyLowerMassMatrix) :
                         randn(_massMatrix);
-    _proposedMomentum = _normalizeMomentum ? normalizationFactor * NormalizeVector(_proposedMomentum) : _proposedMomentum;
+    _proposedMomentum = _normalizeMomentum ? normalizationFactor * _proposedMomentum.Normalize()
+                                           : _proposedMomentum;
 }
 
 double montecarlo::precomp_misfit() {
@@ -90,7 +84,7 @@ double montecarlo::kineticEnergy() {
            0.5 * _proposedMomentum * (_inverseMassMatrixDiagonal * _proposedMomentum);
 }
 
-std::vector<double> montecarlo::precomp_misfitGrad() {
+AlgebraLib::Vector montecarlo::precomp_misfitGrad() {
     // Should actually be left multiply, but matrix is symmetric, so skipped that bit.
     return _A * _proposedModel - _bT;
 }
@@ -165,7 +159,7 @@ void montecarlo::leap_frog(int &uturns, bool writeTrajectory) {
     // Acts as starting momentum
     _currentMomentum = _proposedMomentum;
 
-    std::vector<double> misfitGrad;
+    AlgebraLib::Vector misfitGrad;
     double angle1, angle2;
 
     std::ofstream trajectoryfile;
@@ -177,7 +171,6 @@ void montecarlo::leap_frog(int &uturns, bool writeTrajectory) {
     for (int it = 0; it < _nt; it++) {
         misfitGrad = precomp_misfitGrad();
         _proposedMomentum = _proposedMomentum - 0.5 * _dt * misfitGrad;
-        misfitGrad.clear();
 
         if (writeTrajectory) write_sample(trajectoryfile, chi());
         // Full step in position. Linear algebra does not allow for dividing by diagonal of matrix, hence the loop.
@@ -187,7 +180,6 @@ void montecarlo::leap_frog(int &uturns, bool writeTrajectory) {
 
         misfitGrad = precomp_misfitGrad();
         _proposedMomentum = _proposedMomentum - 0.5 * _dt * misfitGrad;
-        misfitGrad.clear();
 
         /* Check no-U-turn criterion. */
         angle1 = _proposedMomentum * (_currentModel - _proposedModel);
@@ -210,7 +202,7 @@ void montecarlo::write_sample(std::ofstream &outfile, double misfit) {
 
 }
 
-std::vector<double> montecarlo::precomp_misfitGrad(std::vector<double> parameters) {
+AlgebraLib::Vector montecarlo::precomp_misfitGrad(AlgebraLib::Vector parameters) {
     // Should actually be left multiply, but matrix is symmetric, so skipped that bit.
-    return _A * std::move(parameters) - _bT;
+    return _A * parameters - _bT;
 }

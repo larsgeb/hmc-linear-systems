@@ -6,7 +6,6 @@
 #include <cmath>
 #include <fstream>
 #include "auxiliary.hpp"
-#include "linearalgebra.hpp"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
@@ -19,37 +18,35 @@ prior::~prior() = default;
 prior::prior() = default;
 
 // Setting prior data manually
-prior::prior(std::vector<double> mean, std::vector<double> std) {
-    _mean.clear();
-    _std.clear();
+prior::prior(AlgebraLib::Vector mean, AlgebraLib::Vector std) {
     _mean = std::move(mean);
     _std = std::move(std);
     _numberParameters = _mean.size();
     setInverseCovarianceMatrix();
 }
 
-double prior::misfit(std::vector<double> parameters) {
-    std::vector<double> parameterDifference = (std::move(parameters) - _mean);
+double prior::misfit(AlgebraLib::Vector parameters) {
+    AlgebraLib::Vector parameterDifference = parameters - _mean;
     return 0.5 * (parameterDifference * (_inverseCovarianceMatrix * parameterDifference));
 }
 
-std::vector<double> prior::gradientMisfit(std::vector<double> parameters) {
-    std::vector<double> parameters_diff = (parameters - _mean);
-    std::vector<double> gradient;
-    gradient.clear();
+AlgebraLib::Vector prior::gradientMisfit(AlgebraLib::Vector parameters) {
+    AlgebraLib::Vector parameters_diff = parameters - _mean;
+    AlgebraLib::Vector gradient(parameters.size());
+
     for (int q = 0; q < parameters.size(); q++) {
-        gradient.push_back(0.5 * ((GetMatrixColumn(_inverseCovarianceMatrix, q) * parameters_diff) +
-                                  (GetMatrixRow(_inverseCovarianceMatrix, q) * parameters_diff)));
+        gradient[q] = 0.5 * (_inverseCovarianceMatrix.getColumn(q) * parameters_diff +
+                             _inverseCovarianceMatrix[q] * parameters_diff);
     }
     return gradient;
 }
 
 // Set prior inverse covariance matrix, or mass matrix. Only diagonal entries are filled, no correlation is described.
 void prior::setInverseCovarianceMatrix() {
-    std::vector<double> zeroRow(_numberParameters, 0.0);
+    _inverseCovarianceMatrix = AlgebraLib::Matrix (_numberParameters, _numberParameters);
+
     for (int i = 0; i < _numberParameters; i++) {
-        _inverseCovarianceMatrix.push_back(zeroRow);
-        _inverseCovarianceMatrix[i][i] = 1 / (_std[i] * _std[i]);
+        _inverseCovarianceMatrix[i][i] = 1.0 / (_std[i] * _std[i]);
     }
 }
 
@@ -66,94 +63,65 @@ prior::prior(const prior &in_prior) {
  * matrix and is able to compute data misfits.
  * ----------------------------------------------------------------------------------------------------------------------- */
 data::data(const char *filename) {
-    readData(filename);
+    _observedData = AlgebraLib::ReadVector(filename);
 }
 
 data::data(const char *filename, double percentage) {
-    readData(filename);
+    _observedData = AlgebraLib::ReadVector(filename);
+    _numberData = _observedData.size();
     setICDMatrix_percentual(percentage);
 }
 
 data::data() = default;
 
-double data::misfit(std::vector<double> q, forwardModel m) {
-    std::vector<double> dataDifference = m.calculateData(std::move(q)) - _observedData;
+double data::misfit(AlgebraLib::Vector q, forwardModel m) {
+    AlgebraLib::Vector dataDifference = m.calculateData(std::move(q)) - _observedData;
     return 0.5 * (dataDifference * (_inverseCD * dataDifference));
 }
 
 void data::setICDMatrix(double std) {
-    std::vector<double> zeroRow((unsigned long) _numberData, 0.0);
-    _inverseCD.clear();
-    for (int i = 0; i < _numberData; i++) {
-        _inverseCD.push_back(zeroRow);
+    AlgebraLib::Matrix _inverseCD(_numberData, _numberData);
+    for (int i = 0; i < _inverseCD.rows(); i++) {
         _inverseCD[i][i] = 1 / (std * std); // computing inverse variance
     }
 }
 
 void data::setICDMatrix_percentual(double percentage) {
-    double std;
-    std::vector<double> zeroRow((unsigned long) _numberData, 0.0);
-    _inverseCD.clear();
-    for (int i = 0; i < _numberData; i++) {
-        _inverseCD.push_back(zeroRow);
-        std = _observedData[i] * (percentage / 100.0);
-        _inverseCD[i][i] = 1 / (std * std); // computing inverse variance
+    _inverseCD = AlgebraLib::Matrix(_numberData, _numberData);
+
+    for (int i = 0; i < _inverseCD.rows(); i++) {
+
+        double std = fabs(_observedData[i] * (percentage / 100.0));
+        _inverseCD[i][i] = 1.0 / (std * std); // computing inverse variance
     }
 }
 
 void data::readData(const char *filename) {
-    // Read file for observed data
-    double a;
-    _observedData.clear();
-    std::ifstream infile(filename);
-
-    // Ignore first two lines
-    infile.ignore(500,'\n');
-    infile.ignore(500,'\n');
-    infile.ignore(500,'\n');
-
-    infile >> _numberData;
-    for (int i = 0; i < _numberData; i++) {
-        infile >> a;
-        _observedData.push_back(a);
-    }
-    infile.close();
+    _observedData = AlgebraLib::ReadVector(filename);
 }
 
 void data::writeData(const char *filename) {
-    // Write data
-    std::ofstream outfile;
-    outfile.open(filename);
-
-    outfile << "# Data generated from hardcoded class, which reads from matrix.txt" << std::endl;
-    outfile << "# Line 4: number of data points. Line 5: data in sequential order." << std::endl;
-    outfile << "# The first three lines are always ignored, no matter the characters (up to 500 characters per line)." << std::endl;
-
-    outfile << _numberData << std::endl;
-    for (int i = 0; i < _numberData; i++) {
-        outfile << _observedData[i] << " ";
-    }
-    outfile.close();
+    AlgebraLib::WriteVector(_observedData, filename);
 }
 
-void data::setMisfitParameterDataMatrix(std::vector<std::vector<double>> designMatrix) {
-    _misfitParameterDataMatrix = TransposeMatrix(designMatrix) * _inverseCD;
+void data::setMisfitParameterDataMatrix(AlgebraLib::Matrix designMatrix) {
+    _misfitParameterDataMatrix = designMatrix.Transpose() * _inverseCD;
     setMisfitParameterMatrix(designMatrix);
 }
 
-void data::setMisfitParameterMatrix(std::vector<std::vector<double>> designMatrix) {
-    _misfitParameterMatrix = _misfitParameterDataMatrix * std::move(designMatrix);
+void data::setMisfitParameterMatrix(AlgebraLib::Matrix designMatrix) {
+    _misfitParameterMatrix = _misfitParameterDataMatrix * designMatrix;
 }
 
-std::vector<double> data::gradientMisfit(std::vector<double> parameters) {
-    std::vector<double> gradient;
-    gradient.clear();
+AlgebraLib::Vector data::gradientMisfit(AlgebraLib::Vector parameters) {
+    AlgebraLib::Vector gradient;
+
     for (int q = 0; q < parameters.size(); q++) {
         // I am -fairly- sure of this matrix equation derivative
-        gradient.push_back(0.5 * (GetMatrixColumn(_misfitParameterMatrix, q) * parameters +
-                                  GetMatrixRow(_misfitParameterMatrix, q) * parameters +
-                                  -2 * (GetMatrixRow(_misfitParameterDataMatrix, q) * _observedData)
-        ));
+        gradient[q] = (0.5 * (_misfitParameterMatrix.getColumn(q) * parameters +
+                              _misfitParameterMatrix[q] * parameters +
+                              -2 * (_misfitParameterDataMatrix[q] * _observedData))
+        );
     }
     return gradient;
 };
@@ -161,68 +129,39 @@ std::vector<double> data::gradientMisfit(std::vector<double> parameters) {
 /* -----------------------------------------------------------------------------------------------------------------------
  * Forward model class.
  * ----------------------------------------------------------------------------------------------------------------------- */
-void forwardModel::constructUnitDesignMatrix(int numberParameters) {
+void forwardModel::constructUnitDesignMatrix(unsigned long numberParameters) {
     // Make square zero matrix
-    _designMatrix.clear();
-    std::vector<double> zeroRow((unsigned long) numberParameters, 0);
-    _designMatrix.insert(_designMatrix.end(), (unsigned long) numberParameters, zeroRow);
+    _designMatrix = AlgebraLib::Matrix(numberParameters, numberParameters);
 
     // Set diagonal entries to 1
     for (int i = 0; i < numberParameters; i++) {
-        _designMatrix[i][i] = 1;
+        _designMatrix[i][i] = 1.0;
     }
 }
 
-forwardModel::forwardModel(int numberParameters) {
+forwardModel::forwardModel(unsigned long numberParameters) {
     _numberParameters = numberParameters;
-    constructUnitDesignMatrix(numberParameters);
+    constructUnitDesignMatrix(_numberParameters);
 }
 
-std::vector<double> forwardModel::calculateData(std::vector<double> parameters) {
-    return (_designMatrix * std::move(parameters));
+AlgebraLib::Vector forwardModel::calculateData(AlgebraLib::Vector parameters) {
+    return (_designMatrix * parameters);
 }
 
 forwardModel::forwardModel(const char *filename) {
     // Read file for observed data
-    double element;
-    std::vector<double> row;
-    int numberData;
-    _designMatrix.clear();
-
-    std::ifstream infile(filename);
-
-    // Ignore first two lines
-    infile.ignore(500,'\n');
-    infile.ignore(500,'\n');
-    infile.ignore(500,'\n');
-
-    infile >> numberData;
-    infile >> _numberParameters;
-    for (int i = 0; i < numberData; i++) {
-        for (int j = 0; j < _numberParameters; j++) {
-            infile >> element;
-            row.push_back(element);
-        }
-        _designMatrix.push_back(row);
-        row.clear();
-    }
-    infile.close();
+    _designMatrix = AlgebraLib::ReadMatrix(filename);
+    _numberParameters = _designMatrix.columns();
 }
 
 forwardModel::forwardModel() = default;
 
-double posterior::misfit(std::vector<double> parameters, prior &in_prior, data &in_data, forwardModel m) {
+double posterior::misfit(AlgebraLib::Vector parameters, prior &in_prior, data &in_data, forwardModel m) {
     return in_prior.misfit(parameters) + in_data.misfit(parameters, std::move(m));
 }
 
-std::vector<double> posterior::gradientMisfit(std::vector<double> parameters, prior &in_prior, data &in_data) {
+AlgebraLib::Vector posterior::gradientMisfit(AlgebraLib::Vector parameters, prior &in_prior, data &in_data) {
     return (in_data.gradientMisfit(parameters) + in_prior.gradientMisfit(parameters));
-}
-
-void printVector(std::vector<double> A) {
-    for (int i = 0; i < A.size(); i++) {
-        std::cout << "Component " << i + 1 << ": " << A[i] << std::endl;
-    }
 }
 
 #pragma clang diagnostic pop

@@ -1,12 +1,9 @@
 //
 // Created by Lars Gebraad on 7/10/17.
 //
-#include <cstdlib>
+#include <SparseLinearAlgebra/src/AlgebraLib/AlgebraLib.hpp>
 #include "randomnumbers.hpp"
-#include "linearalgebra.hpp"
 #include <cmath>
-#include <utility>
-#include <vector>
 
 // Random number generators
 /* Uniformly distributed, double-valued random numbers. ---------------------------*/
@@ -27,43 +24,41 @@ double randn(double mean, double stdv) {
 }
 
 
-std::vector<double> randn(std::vector<double> means, std::vector<double> stdv) {
-    std::vector<double> samples;
-    samples = means + randn(std::move(stdv));
-    return samples;
+AlgebraLib::Vector randn(AlgebraLib::Vector means, AlgebraLib::Vector stdv) {
+    return means + randn(std::move(stdv));
 }
 
-std::vector<double> randn(std::vector<double> stdv) {
+AlgebraLib::Vector randn(AlgebraLib::Vector stdv) {
     // Zero mean
-    std::vector<double> samples;
-    samples.reserve(stdv.size());
-    for (double i : stdv) {
-        samples.push_back(randn(0, i));
+    AlgebraLib::Vector samples(stdv.size(), true);
+    for (int iStd = 0; iStd < stdv.size(); ++iStd) {
+        samples[iStd] = (randn(0, stdv[iStd]));
     }
     return samples;
 }
 
-std::vector<double>
-randn_Cholesky(std::vector<double> mean, std::vector<std::vector<double>> CholeskyLower_CovarianceMatrix) {
+AlgebraLib::Vector
+randn_Cholesky(AlgebraLib::Vector mean, AlgebraLib::Matrix CholeskyLower_CovarianceMatrix) {
     return mean + randn_Cholesky(std::move(CholeskyLower_CovarianceMatrix));
 }
 
-std::vector<double> randn_Cholesky(std::vector<std::vector<double>> CholeskyLower_CovarianceMatrix) {
+AlgebraLib::Vector randn_Cholesky(AlgebraLib::Matrix CholeskyLower_CovarianceMatrix) {
     // Assumes zero mean
-    std::vector<double> uncorrelated;
-    uncorrelated.reserve(CholeskyLower_CovarianceMatrix.size());
-    for (int i = 0; i < CholeskyLower_CovarianceMatrix.size(); ++i) {
-        uncorrelated.push_back(randn(0, 1));
+    AlgebraLib::Vector uncorrelated(CholeskyLower_CovarianceMatrix.rows(), true);
+
+    for (int i = 0; i < CholeskyLower_CovarianceMatrix.rows(); ++i) {
+        uncorrelated[i] = randn(0, 1);
     }
-    return std::move(CholeskyLower_CovarianceMatrix) * uncorrelated;
+
+    return CholeskyLower_CovarianceMatrix * uncorrelated;
 
 }
 
-std::vector<double> randn(std::vector<std::vector<double>> DiagonalCovarianceMatrix) {
-    std::vector<double> samples;
-    samples.reserve(DiagonalCovarianceMatrix.size());
-    for (int i = 0; i < DiagonalCovarianceMatrix.size(); i++) {
-        samples.push_back(randn(0, sqrt(DiagonalCovarianceMatrix[i][i])));
+AlgebraLib::Vector randn(AlgebraLib::Matrix DiagonalCovarianceMatrix) {
+    AlgebraLib::Vector samples(DiagonalCovarianceMatrix.rows(), true);
+
+    for (int i = 0; i < DiagonalCovarianceMatrix.rows(); i++) {
+        samples[i] = randn(0, sqrt(DiagonalCovarianceMatrix[i][i]));
     }
     return samples;
 }
