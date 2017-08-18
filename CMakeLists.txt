@@ -1,8 +1,9 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 2.8)
 project(hmc-linear-system)
 #set (CMAKE_CXX_FLAGS "-O4")
 
-set(CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_FLAGS "-std=gnu++11 -g ${CMAKE_CXX_FLAGS}")
+
 SET(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 

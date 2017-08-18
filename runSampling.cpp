@@ -26,8 +26,8 @@ int main() {
 
     HMC::Prior prior(means, std);
 
-    HMC::GenerateInversionSettings settings = HMC::GenerateInversionSettings()
-            .setSamples(100000)
+    HMC::GenerateInversionSettings settings;
+    settings.setSamples(100000)
             .setGravity(1.0);
 
     HMC::Sampler sampler(prior, data, model, settings);
