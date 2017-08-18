@@ -13,6 +13,7 @@
 #ifndef HMC_VSP_RANDOMNUMBERS_HPP
 #define HMC_VSP_RANDOMNUMBERS_HPP
 
+#include "SparseLinearAlgebra/src/AlgebraLib/AlgebraLib.hpp"
 #include <vector>
 
 const double PI = 3.14159265358979323846264338327;
@@ -29,19 +30,19 @@ double randn(double mean, double stdv);
  * @brief Draws from uncorrelated Gaussians \f$ \mathcal{N} (\boldsymbol \mu,\boldsymbol{\sigma}) \f$ (vectors of mean, standard deviation) using Box-Müller transform. Loops over both vectors and calls randn(double mean, double stdv) every
  * iteration.
  * @param mean vector containing \f$ \mu_i \f$
- * @param stdv vector containing \f$ \sigma_i \f$
+ * @param cov vector containing \f$ \sigma_i \f$
  * @return Vector of samples from the distributions.
  */
-AlgebraLib::Vector randn(AlgebraLib::Vector means, AlgebraLib::Vector stdv);
+AlgebraLib::Vector randn(AlgebraLib::Vector means, AlgebraLib::Vector cov);
 
 /*!
  * @brief Draws zero-mean samples from uncorrelated Gaussians \f$ \mathcal{N} (\boldsymbol 0,\boldsymbol{\sigma}) \f$
  * (standard deviation) using Box-Müller transform. Loops over both vectors and calls randn(double mean, double stdv) every
  * iteration.
- * @param stdv vector containing \f$ \sigma_i \f$
+ * @param cov vector containing \f$ \sigma_i \f$
  * @return Vector of samples from the distributions.
  */
-AlgebraLib::Vector randn(AlgebraLib::Vector stdv);
+AlgebraLib::Vector randn(AlgebraLib::Vector cov);
 
 /**
  * @brief Drawing non-zero mean samples from an \f$ n \f$ dimensional correlated Gaussian.

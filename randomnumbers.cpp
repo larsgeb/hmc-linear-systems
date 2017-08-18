@@ -24,15 +24,15 @@ double randn(double mean, double stdv) {
 }
 
 
-AlgebraLib::Vector randn(AlgebraLib::Vector means, AlgebraLib::Vector stdv) {
-    return means + randn(std::move(stdv));
+AlgebraLib::Vector randn(AlgebraLib::Vector means, AlgebraLib::Vector cov) {
+    return means + randn(std::move(cov));
 }
 
-AlgebraLib::Vector randn(AlgebraLib::Vector stdv) {
+AlgebraLib::Vector randn(AlgebraLib::Vector cov) {
     // Zero mean
-    AlgebraLib::Vector samples(stdv.size(), true);
-    for (int iStd = 0; iStd < stdv.size(); ++iStd) {
-        samples[iStd] = (randn(0, stdv[iStd]));
+    AlgebraLib::Vector samples(cov.size(), true);
+    for (int iStd = 0; iStd < cov.size(); ++iStd) {
+        samples[iStd] = (randn(0, sqrt(cov[iStd])));
     }
     return samples;
 }
