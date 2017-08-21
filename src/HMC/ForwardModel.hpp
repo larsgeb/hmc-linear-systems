@@ -5,14 +5,14 @@
 #ifndef HMC_LINEAR_SYSTEM_FORWARDMODEL_HPP
 #define HMC_LINEAR_SYSTEM_FORWARDMODEL_HPP
 
-#include <SparseLinearAlgebra/src/AlgebraLib/AlgebraLib.hpp>
+#include <algebra_lib/src/algebra_lib/algebra_lib.hpp>
 
-namespace HMC {
+namespace hmc {
     class ForwardModel {
     public:
-        explicit ForwardModel(const AlgebraLib::Matrix &_model_matrix);
+        explicit ForwardModel(const algebra_lib::matrix &_model_matrix);
 
-        const AlgebraLib::Matrix _g;
+        const algebra_lib::matrix _g;
 
     };
 }

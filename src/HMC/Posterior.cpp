@@ -2,15 +2,15 @@
 // Created by Lars Gebraad on 18-8-17.
 //
 
-#include "Posterior.hpp"
+#include "posterior.hpp"
 
-using namespace HMC;
-using namespace AlgebraLib;
+using namespace hmc;
+using namespace algebra_lib;
 
-double Posterior::misfit(Vector &parameters, Prior &prior, Data &data) {
+double Posterior::misfit(vector &parameters, prior &prior, data &data) {
     return prior.misfit(parameters) + data.misfit(parameters);
 }
 
-Vector Posterior::gradient_misfit(Vector &parameters, Prior &prior, Data &data) {
+vector Posterior::gradient_misfit(vector &parameters, prior &prior, data &data) {
     return prior.gradient_misfit(parameters) + data.gradient_misfit(parameters);
 }

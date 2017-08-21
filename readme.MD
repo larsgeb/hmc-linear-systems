@@ -1,9 +1,9 @@
 
-## HMC Inversion of simple linear models
+## hmc Inversion of simple linear models
 
 This set of programs is built to incorporate MCMC inversion using Hamiltonian Mechanics. Essentially, any amount of
 parameters and any linear forward model matrix can be supplied, as long as one can describe the measurement errors, data
-uncertainty and misfit function. This could be used as a framework for building any inversion using HMC.
+uncertainty and misfit function. This could be used as a framework for building any inversion using hmc.
 
 ### Compilation
 

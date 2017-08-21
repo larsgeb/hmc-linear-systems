@@ -2,9 +2,9 @@
 // Created by Lars Gebraad on 18-8-17.
 //
 
-#include "ForwardModel.hpp"
+#include "forwardmodel.hpp"
 
-HMC::ForwardModel::ForwardModel(const AlgebraLib::Matrix &_model_matrix)
+hmc::ForwardModel::ForwardModel(const algebra_lib::matrix &_model_matrix)
         : _g(_model_matrix) {
 
 }

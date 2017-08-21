@@ -1,7 +1,7 @@
 //
 // Created by Lars Gebraad on 7/10/17.
 //
-#include <SparseLinearAlgebra/src/AlgebraLib/AlgebraLib.hpp>
+#include <algebra_lib/src/algebra_lib/algebra_lib.hpp>
 #include "randomnumbers.hpp"
 #include <cmath>
 
@@ -24,27 +24,27 @@ double randn(double mean, double stdv) {
 }
 
 
-AlgebraLib::Vector randn(AlgebraLib::Vector means, AlgebraLib::Vector cov) {
+algebra_lib::vector randn(algebra_lib::vector means, algebra_lib::vector cov) {
     return means + randn(std::move(cov));
 }
 
-AlgebraLib::Vector randn(AlgebraLib::Vector cov) {
+algebra_lib::vector randn(algebra_lib::vector cov) {
     // Zero mean
-    AlgebraLib::Vector samples(cov.size(), true);
+    algebra_lib::vector samples(cov.size(), true);
     for (int iStd = 0; iStd < cov.size(); ++iStd) {
         samples[iStd] = (randn(0, sqrt(cov[iStd])));
     }
     return samples;
 }
 
-AlgebraLib::Vector
-randn_Cholesky(AlgebraLib::Vector mean, AlgebraLib::Matrix CholeskyLower_CovarianceMatrix) {
+algebra_lib::vector
+randn_Cholesky(algebra_lib::vector mean, algebra_lib::matrix CholeskyLower_CovarianceMatrix) {
     return mean + randn_Cholesky(std::move(CholeskyLower_CovarianceMatrix));
 }
 
-AlgebraLib::Vector randn_Cholesky(AlgebraLib::Matrix CholeskyLower_CovarianceMatrix) {
+algebra_lib::vector randn_Cholesky(algebra_lib::matrix CholeskyLower_CovarianceMatrix) {
     // Assumes zero mean
-    AlgebraLib::Vector uncorrelated(CholeskyLower_CovarianceMatrix.rows(), true);
+    algebra_lib::vector uncorrelated(CholeskyLower_CovarianceMatrix.rows(), true);
 
     for (int i = 0; i < CholeskyLower_CovarianceMatrix.rows(); ++i) {
         uncorrelated[i] = randn(0, 1);
@@ -54,8 +54,8 @@ AlgebraLib::Vector randn_Cholesky(AlgebraLib::Matrix CholeskyLower_CovarianceMat
 
 }
 
-AlgebraLib::Vector randn(AlgebraLib::Matrix DiagonalCovarianceMatrix) {
-    AlgebraLib::Vector samples(DiagonalCovarianceMatrix.rows(), true);
+algebra_lib::vector randn(algebra_lib::matrix DiagonalCovarianceMatrix) {
+    algebra_lib::vector samples(DiagonalCovarianceMatrix.rows(), true);
 
     for (int i = 0; i < DiagonalCovarianceMatrix.rows(); i++) {
         samples[i] = randn(0, sqrt(DiagonalCovarianceMatrix[i][i]));

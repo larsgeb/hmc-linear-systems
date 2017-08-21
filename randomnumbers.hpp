@@ -13,7 +13,7 @@
 #ifndef HMC_VSP_RANDOMNUMBERS_HPP
 #define HMC_VSP_RANDOMNUMBERS_HPP
 
-#include "SparseLinearAlgebra/src/AlgebraLib/AlgebraLib.hpp"
+#include "algebra_lib/src/algebra_lib/algebra_lib.hpp"
 #include <vector>
 
 const double PI = 3.14159265358979323846264338327;
@@ -33,7 +33,7 @@ double randn(double mean, double stdv);
  * @param cov vector containing \f$ \sigma_i \f$
  * @return Vector of samples from the distributions.
  */
-AlgebraLib::Vector randn(AlgebraLib::Vector means, AlgebraLib::Vector cov);
+algebra_lib::vector randn(algebra_lib::vector means, algebra_lib::vector cov);
 
 /*!
  * @brief Draws zero-mean samples from uncorrelated Gaussians \f$ \mathcal{N} (\boldsymbol 0,\boldsymbol{\sigma}) \f$
@@ -42,7 +42,7 @@ AlgebraLib::Vector randn(AlgebraLib::Vector means, AlgebraLib::Vector cov);
  * @param cov vector containing \f$ \sigma_i \f$
  * @return Vector of samples from the distributions.
  */
-AlgebraLib::Vector randn(AlgebraLib::Vector cov);
+algebra_lib::vector randn(algebra_lib::vector cov);
 
 /**
  * @brief Drawing non-zero mean samples from an \f$ n \f$ dimensional correlated Gaussian.
@@ -52,7 +52,7 @@ AlgebraLib::Vector randn(AlgebraLib::Vector cov);
  * of the n x n covariance matrix \f$ \boldsymbol \Sigma \f$, must be square and lower triangular.
  * @return Vector containing the non-zero mean correlated samples.
  */
-AlgebraLib::Vector randn_Cholesky(AlgebraLib::Vector mean, AlgebraLib::Matrix CholeskyLower_CovarianceMatrix);
+algebra_lib::vector randn_Cholesky(algebra_lib::vector mean, algebra_lib::matrix CholeskyLower_CovarianceMatrix);
 
 /**
  * @brief Drawing non-zero mean samples from an \f$ n \f$ dimensional correlated Gaussian. This algorithm uses the lower
@@ -62,14 +62,14 @@ AlgebraLib::Vector randn_Cholesky(AlgebraLib::Vector mean, AlgebraLib::Matrix Ch
  * of the n x n covariance matrix \f$ \boldsymbol \Sigma \f$, must be square and lower triangular.
  * @return Vector containing the zero mean correlated samples.
  */
-AlgebraLib::Vector randn_Cholesky(AlgebraLib::Matrix CholeskyLower_CovarianceMatrix);
+algebra_lib::vector randn_Cholesky(algebra_lib::matrix CholeskyLower_CovarianceMatrix);
 
 /**
  * @brief Drawing n zero mean samples from \f$ \mathcal{N} (\boldsymbol 0,\boldsymbol{\sigma}) \f$. No correlation is present between the parameters.
  * @param DiagonalCovarianceMatrix Matrix containing on the diagonal the variance, or standard deviation squared.
  * @return Vector containing n samples.
  */
-AlgebraLib::Vector randn(AlgebraLib::Matrix DiagonalCovarianceMatrix);
+algebra_lib::vector randn(algebra_lib::matrix DiagonalCovarianceMatrix);
 
 /**
  * @brief Draw uniformly distributed samples between two numbers.

@@ -5,50 +5,77 @@
 #ifndef HMC_LINEAR_SYSTEM_SAMPLER_HPP
 #define HMC_LINEAR_SYSTEM_SAMPLER_HPP
 
-#include "Prior.hpp"
-#include "Data.hpp"
-#include "Posterior.hpp"
+#include "prior.hpp"
+#include "data.hpp"
+#include "posterior.hpp"
 
-namespace HMC {
+#include <sys/ioctl.h>
+#include <cstdio>
+#include <unistd.h>
+
+namespace hmc {
     struct GenerateInversionSettings {
         double _gravity = 1.0;
         unsigned long int _proposals = 10000;
         double _timeStep = 0.1;
         unsigned long int _trajectorySteps = 10;
+        struct winsize window{};
         bool _genMomPropose = true; // Use generalized mass matrix to propose new momenta (true).
         bool _genMomKinetic = true; // Use generalized mass matrix to compute kinetic energy (true).
         bool _norMom = false; // Normalize momentum to previous value to keep constant energy level (true).
         bool _testBefore = true; // Decreases required computation time by order of magnitude, no other influence.
         bool _hamiltonianMonteCarlo = true; // Metropolis Hastings (false) or Hamiltonian Monte Carlo (true).
 
-        GenerateInversionSettings &setSamples(unsigned long int samples) { _proposals =
-                                                                                   samples; };
-        GenerateInversionSettings &setTimeStep(double _timeStep) { _timeStep = _timeStep; };
+        GenerateInversionSettings() {
+            ioctl(STDOUT_FILENO, TIOCGWINSZ, &window);
+            if (window.ws_col < 5)
+                window.ws_col = 20;
+            if (window.ws_row < 5)
+                window.ws_row = 20;
+        }
+
+        GenerateInversionSettings &setSamples(unsigned long int samples) { _proposals = samples; };
+
+        GenerateInversionSettings &setTimeStep(double timeStep) { _timeStep = timeStep; };
+
         GenerateInversionSettings &
-        setTrajectorySteps(unsigned long int _trajectorySteps) { _trajectorySteps = _trajectorySteps; };
+        setTrajectorySteps(unsigned long int trajectorySteps) { _trajectorySteps = trajectorySteps; };
+
         GenerateInversionSettings &setgenMomPropose(bool genMomPropose) { _genMomPropose = genMomPropose; }
+
         GenerateInversionSettings &setgenMomKinetic(bool genMomKinetic) { _genMomKinetic = genMomKinetic; }
+
         GenerateInversionSettings &setnorMom(bool norMom) { _norMom = norMom; }
+
         GenerateInversionSettings &setAcceptBeforeTraj(bool acceptBeforeTraj) { _testBefore = acceptBeforeTraj; }
+
         GenerateInversionSettings &setGravity(double gravity) { _gravity = gravity; }
+
         GenerateInversionSettings &sethamiltonianMonteCarlo
                 (bool hamiltonianMonteCarlo) { _hamiltonianMonteCarlo = hamiltonianMonteCarlo; }
 
     };
 
-    class Sampler {
+    class sampler {
     public:
         // Constructors and destructors
-        Sampler(Prior &prior, Data &data, ForwardModel &model, GenerateInversionSettings settings);
+        sampler(prior &prior, data &data, ForwardModel &model, GenerateInversionSettings settings);
 
-        void sample(bool hamilton);
+        void sample();
 
-        AlgebraLib::Vector precomp_misfitGrad(AlgebraLib::Vector parameters);
+        algebra_lib::vector precomp_misfitGrad(algebra_lib::vector parameters);
+
+        void setStarting(algebra_lib::vector &model, algebra_lib::vector &momentum);
+
+        algebra_lib::vector _currentModel;
+        algebra_lib::vector _proposedModel;
+        algebra_lib::vector _currentMomentum;
+        algebra_lib::vector _proposedMomentum;
 
     private:
         // Fields
-        Prior _prior;
-        Data _data;
+        prior _prior;
+        data _data;
         ForwardModel _model;
         Posterior _posterior;
         unsigned long _nt; // Number of time steps for trajectory
@@ -59,20 +86,17 @@ namespace HMC {
         bool _genMomPropose;
         bool _norMom;
         bool _testBefore;
+        bool _hmc;
+        winsize _window;
 
-        AlgebraLib::Vector _currentModel;
-        AlgebraLib::Vector _proposedModel;
-        AlgebraLib::Vector _currentMomentum;
-        AlgebraLib::Vector _proposedMomentum;
-
-        AlgebraLib::Matrix _massMatrix;
-        AlgebraLib::Matrix _CholeskyLowerMassMatrix;
-        AlgebraLib::Matrix _inverseMassMatrix; // needed to write Hamilton's equations in vector form
-        AlgebraLib::Matrix _inverseMassMatrixDiagonal; // needed to write Hamilton's equations in vector form
+        algebra_lib::matrix _massMatrix;
+        algebra_lib::matrix _CholeskyLowerMassMatrix;
+        algebra_lib::matrix _inverseMassMatrix; // needed to write Hamilton's equations in vector form
+        algebra_lib::matrix _inverseMassMatrixDiagonal; // needed to write Hamilton's equations in vector form
 
         // Precomputed misfit function size
-        AlgebraLib::Matrix _A;
-        AlgebraLib::Vector _bT; // Because I haven't coded up the actual left multiplication of vector-matrices
+        algebra_lib::matrix _A;
+        algebra_lib::vector _bT; // Because I haven't coded up the actual left multiplication of vector-matrices
         double _c;
 
         // Member functions
@@ -90,7 +114,7 @@ namespace HMC {
 
         double precomp_misfit();
 
-        AlgebraLib::Vector precomp_misfitGrad();
+        algebra_lib::vector precomp_misfitGrad();
 
         double kineticEnergy();
     };

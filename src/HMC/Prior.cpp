@@ -2,19 +2,19 @@
 // Created by Lars Gebraad on 18-8-17.
 //
 
-#include "Prior.hpp"
+#include "prior.hpp"
 
-namespace HMC {
-    Prior::Prior(AlgebraLib::Vector &mean, AlgebraLib::Vector &stdv) :
+namespace hmc {
+    prior::prior(algebra_lib::vector &mean, algebra_lib::vector &stdv) :
             _means(mean),
-            _covariance(AlgebraLib::VectorToDiagonal(AlgebraLib::ElementWiseMultiplication(stdv, stdv))),
-            _inv_cov_m(AlgebraLib::ElementWiseDivision(1.0, _covariance)) {}
+            _covariance(algebra_lib::VectorToDiagonal(algebra_lib::ElementWiseMultiplication(stdv, stdv))),
+            _inv_cov_m(algebra_lib::ElementWiseDivision(1.0, _covariance)) {}
 
-    double Prior::misfit(AlgebraLib::Vector &parameters) {
+    double prior::misfit(algebra_lib::vector &parameters) {
         return 0.5 * ((parameters - _means).TransposeSelf() * _inv_cov_m * (parameters - _means));
     }
 
-    AlgebraLib::Vector Prior::gradient_misfit(AlgebraLib::Vector &parameters) {
+    algebra_lib::vector prior::gradient_misfit(algebra_lib::vector &parameters) {
         return _inv_cov_m * (parameters - _means);
     }
 }
