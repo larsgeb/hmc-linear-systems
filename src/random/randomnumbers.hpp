@@ -13,7 +13,7 @@
 #ifndef HMC_VSP_RANDOMNUMBERS_HPP
 #define HMC_VSP_RANDOMNUMBERS_HPP
 
-#include "algebra_lib/src/algebra_lib/algebra_lib.hpp"
+#include "AlgebraLib/src/algebra_lib/algebra_lib.hpp"
 #include <vector>
 
 const double PI = 3.14159265358979323846264338327;

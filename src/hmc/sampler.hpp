@@ -13,6 +13,8 @@
 #include <cstdio>
 #include <unistd.h>
 
+using namespace algebra_lib;
+
 namespace hmc {
     struct GenerateInversionSettings {
         double _gravity = 1.0;
@@ -59,24 +61,24 @@ namespace hmc {
     class sampler {
     public:
         // Constructors and destructors
-        sampler(prior &prior, data &data, ForwardModel &model, GenerateInversionSettings settings);
+        sampler(prior &prior, data &data, forward_model &model, GenerateInversionSettings settings);
 
         void sample();
 
-        algebra_lib::vector precomp_misfitGrad(algebra_lib::vector parameters);
+        vector precomp_misfitGrad(vector parameters);
 
-        void setStarting(algebra_lib::vector &model, algebra_lib::vector &momentum);
+        void setStarting(vector &model, vector &momentum);
 
-        algebra_lib::vector _currentModel;
-        algebra_lib::vector _proposedModel;
-        algebra_lib::vector _currentMomentum;
-        algebra_lib::vector _proposedMomentum;
+        vector _currentModel;
+        vector _proposedModel;
+        vector _currentMomentum;
+        vector _proposedMomentum;
 
     private:
         // Fields
         prior _prior;
         data _data;
-        ForwardModel _model;
+        forward_model _model;
         Posterior _posterior;
         unsigned long _nt; // Number of time steps for trajectory
         double _dt; // Time step for trajectory
@@ -89,14 +91,14 @@ namespace hmc {
         bool _hmc;
         winsize _window;
 
-        algebra_lib::matrix _massMatrix;
-        algebra_lib::matrix _CholeskyLowerMassMatrix;
-        algebra_lib::matrix _inverseMassMatrix; // needed to write Hamilton's equations in vector form
-        algebra_lib::matrix _inverseMassMatrixDiagonal; // needed to write Hamilton's equations in vector form
+        matrix _massMatrix;
+        matrix _CholeskyLowerMassMatrix;
+        matrix _inverseMassMatrix; // needed to write Hamilton's equations in vector form
+        matrix _inverseMassMatrixDiagonal; // needed to write Hamilton's equations in vector form
 
         // Precomputed misfit function size
-        algebra_lib::matrix _A;
-        algebra_lib::vector _bT; // Because I haven't coded up the actual left multiplication of vector-matrices
+        matrix _A;
+        vector _bT; // Because I haven't coded up the actual left multiplication of vector-matrices
         double _c;
 
         // Member functions
@@ -114,7 +116,7 @@ namespace hmc {
 
         double precomp_misfit();
 
-        algebra_lib::vector precomp_misfitGrad();
+        vector precomp_misfitGrad();
 
         double kineticEnergy();
     };

@@ -1,17 +1,19 @@
 //
 // Created by Lars Gebraad on 18-8-17.
 //
-#include <randomnumbers.hpp>
+#include <src/random/randomnumbers.hpp>
 #include <cmath>
 #include <sstream>
 #include <iomanip>
-#include "forwardmodel.hpp"
+#include "forward_model.hpp"
 #include "data.hpp"
 #include "prior.hpp"
 #include "sampler.hpp"
 
+using namespace algebra_lib;
+
 namespace hmc {
-    sampler::sampler(prior &prior, data &data, ForwardModel &model, GenerateInversionSettings settings) :
+    sampler::sampler(prior &prior, data &data, forward_model &model, GenerateInversionSettings settings) :
             _data(data), _prior(prior), _model(model) {
         _nt = settings._trajectorySteps;
         _dt = settings._timeStep;
@@ -29,16 +31,16 @@ namespace hmc {
 
         // Pre-compute mass matrix and other associated quantities
         _massMatrix = _gravity * (_prior._inv_cov_m + ((_model._g.Transpose() * _data._inv_cov_d) * _model._g));
-        _inverseMassMatrixDiagonal = algebra_lib::VectorToDiagonal(_massMatrix.InvertMatrixElements(true).Trace());
+        _inverseMassMatrixDiagonal = VectorToDiagonal(_massMatrix.InvertMatrixElements(true).Trace());
 
         // Prepare mass matrix decomposition and inverse.
         _CholeskyLowerMassMatrix = _massMatrix.CholeskyDecompose();
-        algebra_lib::matrix InverseCholeskyLowerMassMatrix = _CholeskyLowerMassMatrix.InvertLowerTriangular();
+        matrix InverseCholeskyLowerMassMatrix = _CholeskyLowerMassMatrix.InvertLowerTriangular();
         _inverseMassMatrix = InverseCholeskyLowerMassMatrix.Transpose() * InverseCholeskyLowerMassMatrix;
 
         // Set starting proposal.
         _proposedMomentum = _genMomPropose ? randn_Cholesky(_CholeskyLowerMassMatrix) : randn(_massMatrix);
-        _norMom ? _proposedMomentum = _proposedMomentum.Normalize() : algebra_lib::vector();
+        _norMom ? _proposedMomentum = _proposedMomentum.Normalize() : vector();
         _proposedModel = randn(_prior._means, _prior._covariance.Trace());
 
         // Set starting model.
@@ -54,7 +56,7 @@ namespace hmc {
         );
     };
 
-    void sampler::setStarting(algebra_lib::vector &model, algebra_lib::vector &momentum) {
+    void sampler::setStarting(vector &model, vector &momentum) {
 //        _currentMomentum = momentum;
         _currentModel = model;
         _proposedModel = model;
@@ -74,7 +76,7 @@ namespace hmc {
         return 0.5 * _proposedModel * (_A * _proposedModel) - _bT * _proposedModel + _c;
     }
 
-    algebra_lib::vector sampler::precomp_misfitGrad() {
+    vector sampler::precomp_misfitGrad() {
         // Should actually be left multiply, but matrix is symmetric, so skipped that bit.
         return _A * _proposedModel - _bT;
     }
@@ -177,7 +179,7 @@ namespace hmc {
         // Acts as starting momentum
         _currentMomentum = _proposedMomentum;
 
-        algebra_lib::vector misfitGrad;
+        vector misfitGrad;
         double angle1, angle2;
 
         std::ofstream trajectoryfile;
@@ -220,7 +222,7 @@ namespace hmc {
 
     }
 
-    algebra_lib::vector sampler::precomp_misfitGrad(algebra_lib::vector parameters) {
+    vector sampler::precomp_misfitGrad(vector parameters) {
         // Should actually be left multiply, but matrix is symmetric, so skipped that bit.
         return _A * parameters - _bT;
     }

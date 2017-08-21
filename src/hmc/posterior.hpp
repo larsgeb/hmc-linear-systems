@@ -5,15 +5,17 @@
 #ifndef HMC_LINEAR_SYSTEM_POSTERIOR_HPP
 #define HMC_LINEAR_SYSTEM_POSTERIOR_HPP
 
-#include <algebra_lib/src/algebra_lib/algebra_lib.hpp>
+#include <AlgebraLib/src/algebra_lib/algebra_lib.hpp>
 #include "prior.hpp"
 #include "data.hpp"
 
+using namespace algebra_lib;
+
 namespace hmc {
     class Posterior {
-        double misfit(algebra_lib::vector &parameters, prior &prior, data &data);
+        double misfit(vector &parameters, prior &prior, data &data);
 
-        algebra_lib::vector gradient_misfit(algebra_lib::vector &parameters, prior &prior, data &data);
+        vector gradient_misfit(vector &parameters, prior &prior, data &data);
     };
 }
 

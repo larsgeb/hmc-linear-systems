@@ -6,7 +6,7 @@
 
 namespace hmc {
     // TODO implement constructors with predefined data covariance matrices.
-    data::data(ForwardModel &forward_model, algebra_lib::vector &data, double cov, bool percentage)
+    data::data(forward_model &forward_model, algebra_lib::vector &data, double cov, bool percentage)
             : _numberData(data.size()),
               _observedData(data),
               _inv_cov_d(percentage ?

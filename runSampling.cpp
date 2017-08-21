@@ -1,8 +1,8 @@
 //
 // Created by Lars Gebraad on 7/11/17.
 //
-#include "algebra_lib/src/algebra_lib/algebra_lib.hpp"
-#include <src/hmc/hmc.hpp>
+#include "AlgebraLib/src/algebra_lib/algebra_lib.hpp"
+#include "src/hmc/hmc.hpp"
 #include <ctime>
 
 int main() {
@@ -19,7 +19,7 @@ int main() {
         std[i] = (10.0);
     }
 
-    ForwardModel model(g);
+    forward_model model(g);
 
     // Load the observed data
     vector synthData = ReadVector("INPUT/synthetics.txt");
