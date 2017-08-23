@@ -22,6 +22,7 @@ namespace hmc {
         double _timeStep = 0.1;
         unsigned long int _trajectorySteps = 10;
         struct winsize window{};
+        char *_outfile = "samples.txt";
         bool _genMomPropose = true; // Use generalized mass matrix to propose new momenta (true).
         bool _genMomKinetic = true; // Use generalized mass matrix to compute kinetic energy (true).
         bool _norMom = false; // Normalize momentum to previous value to keep constant energy level (true).
@@ -51,6 +52,8 @@ namespace hmc {
 
         GenerateInversionSettings &setAcceptBeforeTraj(bool acceptBeforeTraj) { _testBefore = acceptBeforeTraj; }
 
+        GenerateInversionSettings &setOutfile(char *outputFile) { _outfile = outputFile; }
+
         GenerateInversionSettings &setGravity(double gravity) { _gravity = gravity; }
 
         GenerateInversionSettings &sethamiltonianMonteCarlo
@@ -65,14 +68,14 @@ namespace hmc {
 
         void sample();
 
-        vector precomp_misfitGrad(vector parameters);
+        sparse_vector precomp_misfitGrad(sparse_vector parameters);
 
-        void setStarting(vector &model, vector &momentum);
+        void setStarting(sparse_vector &model);
 
-        vector _currentModel;
-        vector _proposedModel;
-        vector _currentMomentum;
-        vector _proposedMomentum;
+        sparse_vector _currentModel;
+        sparse_vector _proposedModel;
+        sparse_vector _currentMomentum;
+        sparse_vector _proposedMomentum;
 
     private:
         // Fields
@@ -89,16 +92,17 @@ namespace hmc {
         bool _norMom;
         bool _testBefore;
         bool _hmc;
+        char *_outfile;
         winsize _window;
 
-        matrix _massMatrix;
-        matrix _CholeskyLowerMassMatrix;
-        matrix _inverseMassMatrix; // needed to write Hamilton's equations in vector form
-        matrix _inverseMassMatrixDiagonal; // needed to write Hamilton's equations in vector form
+        sparse_matrix _massMatrix;
+        sparse_matrix _CholeskyLowerMassMatrix;
+        sparse_matrix _inverseMassMatrix; // needed to write Hamilton's equations in vector form
+        sparse_matrix _inverseMassMatrixDiagonal; // needed to write Hamilton's equations in vector form
 
         // Precomputed misfit function size
-        matrix _A;
-        vector _bT; // Because I haven't coded up the actual left multiplication of vector-matrices
+        sparse_matrix _A;
+        sparse_vector _bT; // Because I haven't coded up the actual left multiplication of vector-matrices
         double _c;
 
         // Member functions
@@ -116,9 +120,11 @@ namespace hmc {
 
         double precomp_misfit();
 
-        vector precomp_misfitGrad();
+        sparse_vector precomp_misfitGrad();
 
         double kineticEnergy();
+
+
     };
 }
 

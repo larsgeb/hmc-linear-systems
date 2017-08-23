@@ -13,9 +13,9 @@ using namespace algebra_lib;
 
 namespace hmc {
     class Posterior {
-        double misfit(vector &parameters, prior &prior, data &data);
+        double misfit(sparse_vector &parameters, prior &prior, data &data);
 
-        vector gradient_misfit(vector &parameters, prior &prior, data &data);
+        sparse_vector gradient_misfit(sparse_vector &parameters, prior &prior, data &data);
     };
 }
 

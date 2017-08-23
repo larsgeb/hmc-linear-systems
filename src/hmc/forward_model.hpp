@@ -12,9 +12,9 @@ using namespace algebra_lib;
 namespace hmc {
     class forward_model {
     public:
-        explicit forward_model(const matrix &_model_matrix);
+        explicit forward_model(const sparse_matrix &_model_matrix);
 
-        const matrix _g;
+        const sparse_matrix _g;
 
     };
 }

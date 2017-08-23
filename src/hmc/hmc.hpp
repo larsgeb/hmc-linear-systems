@@ -8,11 +8,11 @@
 using namespace algebra_lib;
 
 namespace hmc {
-    matrix std_to_inv_cov(vector stdv) {
-        matrix inv_cov(stdv.size(), stdv.size());
+    sparse_matrix std_to_inv_cov(sparse_vector stdv) {
+        sparse_matrix inv_cov(stdv.size(), stdv.size());
 
-        for (auto it = stdv.begin(); it != stdv.end(); it++) {
-            inv_cov[it - stdv.begin()][it - stdv.begin()] = 1.0 / (*it * *it);
+        for (int it = 0; it < stdv.size(); it++) {
+            inv_cov(it)(it) = 1.0 / stdv[it];
         }
         return inv_cov;
     }

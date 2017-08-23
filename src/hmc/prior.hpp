@@ -13,16 +13,16 @@ namespace hmc{
     class prior {
     public:
         // Constructors
-        prior(vector &mean, vector &std);
+        prior(sparse_vector &mean, sparse_vector &std);
 
         // Fields
-        const vector _means;
-        const matrix _covariance;
-        const matrix _inv_cov_m;
+        const sparse_vector _means;
+        const sparse_matrix _covariance;
+        const sparse_matrix _inv_cov_m;
 
         // Member functions
-        double misfit(vector &parameters);
-        vector gradient_misfit(vector &parameters);
+        double misfit(sparse_vector &parameters);
+        sparse_vector gradient_misfit(sparse_vector &parameters);
     };
 }
 

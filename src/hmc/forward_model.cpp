@@ -6,7 +6,7 @@
 
 using namespace algebra_lib;
 
-hmc::forward_model::forward_model(const matrix &_model_matrix)
+hmc::forward_model::forward_model(const sparse_matrix &_model_matrix)
         : _g(_model_matrix) {
 
 }

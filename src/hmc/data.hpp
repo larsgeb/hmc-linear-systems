@@ -14,27 +14,27 @@ namespace hmc {
     class data {
     public:
         // Constructors
-        data(forward_model &forward_model, vector &data, double cov, bool percentage);
+        data(forward_model &forward_model, sparse_vector &data, double cov, bool percentage);
 
         // Member fields
         const unsigned long _numberData;
-        const vector _observedData;
-        const matrix _inv_cov_d;
-        const matrix _G;
+        const sparse_vector _observedData;
+        const sparse_matrix _inv_cov_d;
+        const sparse_matrix _G;
         // Precomputed matrices
-        const vector _tG_invCd_d;
-        const matrix _tG_invCd_G;
+        const sparse_vector _tG_invCd_d;
+        const sparse_matrix _tG_invCd_G;
 
         // Member functions
-        double misfit(vector &in_parameters);
+        double misfit(sparse_vector &in_parameters);
 
-        vector gradient_misfit(vector &parameters);
+        sparse_vector gradient_misfit(sparse_vector &parameters);
 
     private:
         // Member functions
-        matrix calculate_inverse_data_covariance(double std);
+        sparse_matrix calculate_inverse_data_covariance(double std);
 
-        matrix calculate_inverse_data_covariance_percentual(double percentage);
+        sparse_matrix calculate_inverse_data_covariance_percentual(double percentage);
     };
 }
 
