@@ -22,6 +22,7 @@ namespace hmc {
         double _timeStep = 0.1;
         unsigned long int _trajectorySteps = 10;
         struct winsize window{};
+        char *_outfile = "samples.txt";
         bool _genMomPropose = true; // Use generalized mass matrix to propose new momenta (true).
         bool _genMomKinetic = true; // Use generalized mass matrix to compute kinetic energy (true).
         bool _norMom = false; // Normalize momentum to previous value to keep constant energy level (true).
@@ -51,6 +52,8 @@ namespace hmc {
 
         GenerateInversionSettings &setAcceptBeforeTraj(bool acceptBeforeTraj) { _testBefore = acceptBeforeTraj; }
 
+        GenerateInversionSettings &setOutfile(char *outputFile) { _outfile = outputFile; }
+
         GenerateInversionSettings &setGravity(double gravity) { _gravity = gravity; }
 
         GenerateInversionSettings &sethamiltonianMonteCarlo
@@ -67,7 +70,7 @@ namespace hmc {
 
         vector precomp_misfitGrad(vector parameters);
 
-        void setStarting(vector &model, vector &momentum);
+        void setStarting(vector &model);
 
         vector _currentModel;
         vector _proposedModel;
@@ -89,6 +92,7 @@ namespace hmc {
         bool _norMom;
         bool _testBefore;
         bool _hmc;
+        char *_outfile;
         winsize _window;
 
         matrix _massMatrix;
@@ -119,6 +123,8 @@ namespace hmc {
         vector precomp_misfitGrad();
 
         double kineticEnergy();
+
+
     };
 }
 

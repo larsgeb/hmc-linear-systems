@@ -25,6 +25,7 @@ namespace hmc {
         _testBefore = settings._testBefore;
         _window = settings.window;
         _hmc = settings._hamiltonianMonteCarlo;
+        _outfile = settings._outfile;
 
         /* Initialise random number generator. ----------------------------------------*/
         srand((unsigned int) time(nullptr));
@@ -56,8 +57,7 @@ namespace hmc {
         );
     };
 
-    void sampler::setStarting(vector &model, vector &momentum) {
-//        _currentMomentum = momentum;
+    void sampler::setStarting(vector &model) {
         _currentModel = model;
         _proposedModel = model;
     }
@@ -118,7 +118,7 @@ namespace hmc {
         int uturns = 0;
 
         std::ofstream samplesfile;
-        samplesfile.open("OUTPUT/samples.txt");
+        samplesfile.open(_outfile);
         samplesfile << _prior._means.size() << " " << _proposals << std::endl;
 
         write_sample(samplesfile, x);
@@ -165,7 +165,7 @@ namespace hmc {
         std::cout << "[" << 100 << "%] " << std::string((unsigned long) (_window.ws_col - 7), *"=") << "\r\n"
                   << std::flush;
         std::cout << "Number of accepted models: " << accepted << std::endl;
-        std::cout << "Number of U-Turn terminations in propagation: " << uturns;
+        std::cout << "Number of U-Turn terminations in propagation: " << uturns << std::endl;
 
         // Write result
         samplesfile << accepted << std::endl;
@@ -189,14 +189,14 @@ namespace hmc {
         }
 
         for (int it = 0; it < _nt; it++) {
+
             misfitGrad = precomp_misfitGrad();
             _proposedMomentum = _proposedMomentum - 0.5 * _dt * misfitGrad;
 
             if (writeTrajectory) write_sample(trajectoryfile, chi());
-            // Full step in position. Linear algebra does not allow for dividing by diagonal of matrix, hence the loop.
+
             _proposedModel = _proposedModel + _dt * (
                     (_genMomKinetic ? _inverseMassMatrix : _inverseMassMatrixDiagonal) * _proposedMomentum);
-            // Second branch produces unnecessary overhead (lot of zeros).
 
             misfitGrad = precomp_misfitGrad();
             _proposedMomentum = _proposedMomentum - 0.5 * _dt * misfitGrad;
