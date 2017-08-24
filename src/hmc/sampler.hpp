@@ -22,7 +22,7 @@ namespace hmc {
         double _timeStep = 0.1;
         unsigned long int _trajectorySteps = 10;
         struct winsize window{};
-        char *_outfile = "samples.txt";
+        char *_outfile = const_cast<char *>("samples.txt");
         bool _genMomPropose = true; // Use generalized mass matrix to propose new momenta (true).
         bool _genMomKinetic = true; // Use generalized mass matrix to compute kinetic energy (true).
         bool _norMom = false; // Normalize momentum to previous value to keep constant energy level (true).
@@ -79,10 +79,10 @@ namespace hmc {
 
     private:
         // Fields
-        prior _prior;
-        data _data;
-        forward_model _model;
-        Posterior _posterior;
+        const prior _prior;
+        const data _data;
+        const forward_model _model;
+//        const posterior _posterior;
         unsigned long _nt; // Number of time steps for trajectory
         double _dt; // Time step for trajectory
         double _gravity; // Global gravitational constant

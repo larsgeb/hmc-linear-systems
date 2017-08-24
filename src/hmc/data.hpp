@@ -17,7 +17,7 @@ namespace hmc {
         data(forward_model &forward_model, sparse_vector &data, double cov, bool percentage);
 
         // Member fields
-        const unsigned long _numberData;
+        const unsigned int _numberData;
         const sparse_vector _observedData;
         const sparse_matrix _inv_cov_d;
         const sparse_matrix _G;

@@ -31,7 +31,7 @@ namespace hmc {
         srand((unsigned int) time(nullptr));
 
         // Pre-compute mass matrix and other associated quantities
-        _massMatrix = _gravity * (_prior._inv_cov_m + ((_model._g.Transpose() * _data._inv_cov_d) * _model._g));
+        _massMatrix = _gravity * (_prior._inv_cov_m + (_model._g.Transpose() * _data._inv_cov_d) * _model._g);
         _inverseMassMatrixDiagonal = VectorToDiagonal(_massMatrix.InvertMatrixElements(true).Trace());
 
         // Prepare mass matrix decomposition and inverse.
@@ -78,7 +78,7 @@ namespace hmc {
 
     sparse_vector sampler::precomp_misfitGrad() {
         // Should actually be left multiply, but matrix is symmetric, so skipped that bit.
-        return _A * _proposedModel - _bT;
+        return (_A * _proposedModel - _bT);
     }
 
     double sampler::kineticEnergy() {
@@ -103,6 +103,7 @@ namespace hmc {
                   << std::endl;
         std::cout << "\t parameters:   \033[1;32m" << _currentModel.size() << "\033[0m" << std::endl;
         std::cout << "\t proposals:    \033[1;32m" << _proposals << "\033[0m" << std::endl;
+        std::cout << "\t timestep:     \033[1;32m" << _dt << "\033[0m" << std::endl;
         std::cout << "\t gravity:      \033[1;32m" << _gravity << "\033[0m" << std::endl;
 
         if (_testBefore) {
@@ -188,10 +189,12 @@ namespace hmc {
             trajectoryfile << _prior._means.size() << " " << _nt << std::endl;
         }
 
+        double _localTimeStep = _dt*randn(1, 0.25);
+
         for (int it = 0; it < _nt; it++) {
 
             misfitGrad = precomp_misfitGrad();
-            _proposedMomentum = _proposedMomentum - 0.5 * _dt * misfitGrad;
+            _proposedMomentum = _proposedMomentum - 0.5 * _localTimeStep * misfitGrad;
 
             if (writeTrajectory) write_sample(trajectoryfile, chi());
 
@@ -199,7 +202,7 @@ namespace hmc {
                     (_genMomKinetic ? _inverseMassMatrix : _inverseMassMatrixDiagonal) * _proposedMomentum);
 
             misfitGrad = precomp_misfitGrad();
-            _proposedMomentum = _proposedMomentum - 0.5 * _dt * misfitGrad;
+            _proposedMomentum = _proposedMomentum - 0.5 * _localTimeStep * misfitGrad;
 
             /* Check no-U-turn criterion. */
             angle1 = _proposedMomentum * (_currentModel - _proposedModel);
@@ -214,8 +217,8 @@ namespace hmc {
     }
 
     void sampler::write_sample(std::ofstream &outfile, double misfit) {
-        for (double j : _proposedModel) {
-            outfile << j << "  ";
+        for (auto &j : _proposedModel) {
+            outfile << j.second << "  ";
         }
         outfile << misfit;
         outfile << std::endl;

@@ -12,7 +12,7 @@
 using namespace algebra_lib;
 
 namespace hmc {
-    class Posterior {
+    class posterior {
         double misfit(sparse_vector &parameters, prior &prior, data &data);
 
         sparse_vector gradient_misfit(sparse_vector &parameters, prior &prior, data &data);
