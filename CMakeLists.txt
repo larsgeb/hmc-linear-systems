@@ -8,37 +8,37 @@ SET(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(SOURCE_FILES generateSynthetics.cpp
-        SparseLinearAlgebra/src/AlgebraLib/SparseAlgebra.cpp SparseLinearAlgebra/src/AlgebraLib/SparseVector.cpp
-        SparseLinearAlgebra/src/AlgebraLib/SparseMatrix.cpp SparseLinearAlgebra/src/AlgebraLib/Matrix.cpp
-        SparseLinearAlgebra/src/AlgebraLib/Matrix.hpp SparseLinearAlgebra/src/AlgebraLib/Vector.cpp
-        SparseLinearAlgebra/src/AlgebraLib/Vector.hpp SparseLinearAlgebra/src/AlgebraLib/AlgebraLib.hpp
-        SparseLinearAlgebra/src/AlgebraLib/FullAlgebra.cpp SparseLinearAlgebra/src/AlgebraLib/FullAlgebra.hpp
-        SparseLinearAlgebra/src/AlgebraLib/Globals.hpp src/HMC/HMC.hpp src/HMC/Prior.cpp src/HMC/Prior.hpp src/HMC/Data.cpp src/HMC/Data.hpp src/HMC/Posterior.cpp src/HMC/Posterior.hpp src/HMC/Sampler.cpp src/HMC/Sampler.hpp src/HMC/ForwardModel.cpp src/HMC/ForwardModel.hpp)
+        AlgebraLib/src/algebra_lib/sparse_algebra.cpp AlgebraLib/src/algebra_lib/sparse_vector.cpp
+        AlgebraLib/src/algebra_lib/sparse_matrix.cpp AlgebraLib/src/algebra_lib/matrix.cpp
+        AlgebraLib/src/algebra_lib/matrix.hpp AlgebraLib/src/algebra_lib/vector.cpp
+        AlgebraLib/src/algebra_lib/vector.hpp AlgebraLib/src/algebra_lib/algebra_lib.hpp
+        AlgebraLib/src/algebra_lib/full_algebra.cpp AlgebraLib/src/algebra_lib/full_algebra.hpp
+        AlgebraLib/src/algebra_lib/globals.hpp src/hmc/hmc.hpp src/hmc/prior.cpp src/hmc/prior.hpp src/hmc/data.cpp src/hmc/data.hpp src/hmc/posterior.cpp src/hmc/posterior.hpp src/hmc/sampler.cpp src/hmc/sampler.hpp src/hmc/forward_model.cpp src/hmc/forward_model.hpp)
 add_executable(generateSynthetics ${SOURCE_FILES})
 
-set(SOURCE_FILES runSampling.cpp randomnumbers.cpp
-        SparseLinearAlgebra/src/AlgebraLib/SparseAlgebra.cpp SparseLinearAlgebra/src/AlgebraLib/SparseVector.cpp
-        SparseLinearAlgebra/src/AlgebraLib/SparseMatrix.cpp SparseLinearAlgebra/src/AlgebraLib/Matrix.cpp
-        SparseLinearAlgebra/src/AlgebraLib/Matrix.hpp SparseLinearAlgebra/src/AlgebraLib/Vector.cpp
-        SparseLinearAlgebra/src/AlgebraLib/Vector.hpp SparseLinearAlgebra/src/AlgebraLib/AlgebraLib.hpp
-        SparseLinearAlgebra/src/AlgebraLib/FullAlgebra.cpp SparseLinearAlgebra/src/AlgebraLib/FullAlgebra.hpp
-        SparseLinearAlgebra/src/AlgebraLib/Globals.hpp src/HMC/HMC.hpp src/HMC/Prior.cpp src/HMC/Prior.hpp src/HMC/Data.cpp src/HMC/Data.hpp src/HMC/Posterior.cpp src/HMC/Posterior.hpp src/HMC/Sampler.cpp src/HMC/Sampler.hpp src/HMC/ForwardModel.cpp src/HMC/ForwardModel.hpp)
+set(SOURCE_FILES runSampling.cpp src/random/randomnumbers.cpp
+        AlgebraLib/src/algebra_lib/sparse_algebra.cpp AlgebraLib/src/algebra_lib/sparse_vector.cpp
+        AlgebraLib/src/algebra_lib/sparse_matrix.cpp AlgebraLib/src/algebra_lib/matrix.cpp
+        AlgebraLib/src/algebra_lib/matrix.hpp AlgebraLib/src/algebra_lib/vector.cpp
+        AlgebraLib/src/algebra_lib/vector.hpp AlgebraLib/src/algebra_lib/algebra_lib.hpp
+        AlgebraLib/src/algebra_lib/full_algebra.cpp AlgebraLib/src/algebra_lib/full_algebra.hpp
+        AlgebraLib/src/algebra_lib/globals.hpp src/hmc/hmc.hpp src/hmc/prior.cpp src/hmc/prior.hpp src/hmc/data.cpp src/hmc/data.hpp src/hmc/posterior.cpp src/hmc/posterior.hpp src/hmc/sampler.cpp src/hmc/sampler.hpp src/hmc/forward_model.cpp src/hmc/forward_model.hpp)
 add_executable(runSampling ${SOURCE_FILES})
 
-set(SOURCE_FILES generateGradient.cpp randomnumbers.cpp
-        SparseLinearAlgebra/src/AlgebraLib/SparseAlgebra.cpp SparseLinearAlgebra/src/AlgebraLib/SparseVector.cpp
-        SparseLinearAlgebra/src/AlgebraLib/SparseMatrix.cpp SparseLinearAlgebra/src/AlgebraLib/Matrix.cpp
-        SparseLinearAlgebra/src/AlgebraLib/Matrix.hpp SparseLinearAlgebra/src/AlgebraLib/Vector.cpp
-        SparseLinearAlgebra/src/AlgebraLib/Vector.hpp SparseLinearAlgebra/src/AlgebraLib/AlgebraLib.hpp
-        SparseLinearAlgebra/src/AlgebraLib/FullAlgebra.cpp SparseLinearAlgebra/src/AlgebraLib/FullAlgebra.hpp
-        SparseLinearAlgebra/src/AlgebraLib/Globals.hpp src/HMC/HMC.hpp src/HMC/Prior.cpp src/HMC/Prior.hpp src/HMC/Data.cpp src/HMC/Data.hpp src/HMC/Posterior.cpp src/HMC/Posterior.hpp src/HMC/Sampler.cpp src/HMC/Sampler.hpp src/HMC/ForwardModel.cpp src/HMC/ForwardModel.hpp)
+set(SOURCE_FILES generateGradient.cpp src/random/randomnumbers.cpp
+        AlgebraLib/src/algebra_lib/sparse_algebra.cpp AlgebraLib/src/algebra_lib/sparse_vector.cpp
+        AlgebraLib/src/algebra_lib/sparse_matrix.cpp AlgebraLib/src/algebra_lib/matrix.cpp
+        AlgebraLib/src/algebra_lib/matrix.hpp AlgebraLib/src/algebra_lib/vector.cpp
+        AlgebraLib/src/algebra_lib/vector.hpp AlgebraLib/src/algebra_lib/algebra_lib.hpp
+        AlgebraLib/src/algebra_lib/full_algebra.cpp AlgebraLib/src/algebra_lib/full_algebra.hpp
+        AlgebraLib/src/algebra_lib/globals.hpp src/hmc/hmc.hpp src/hmc/prior.cpp src/hmc/prior.hpp src/hmc/data.cpp src/hmc/data.hpp src/hmc/posterior.cpp src/hmc/posterior.hpp src/hmc/sampler.cpp src/hmc/sampler.hpp src/hmc/forward_model.cpp src/hmc/forward_model.hpp)
 add_executable(generateGradient ${SOURCE_FILES})
 
-set(SOURCE_FILES testMultivariate.cpp randomnumbers.cpp
-        SparseLinearAlgebra/src/AlgebraLib/SparseAlgebra.cpp SparseLinearAlgebra/src/AlgebraLib/SparseVector.cpp
-        SparseLinearAlgebra/src/AlgebraLib/SparseMatrix.cpp SparseLinearAlgebra/src/AlgebraLib/Matrix.cpp
-        SparseLinearAlgebra/src/AlgebraLib/Matrix.hpp SparseLinearAlgebra/src/AlgebraLib/Vector.cpp
-        SparseLinearAlgebra/src/AlgebraLib/Vector.hpp SparseLinearAlgebra/src/AlgebraLib/AlgebraLib.hpp
-        SparseLinearAlgebra/src/AlgebraLib/FullAlgebra.cpp SparseLinearAlgebra/src/AlgebraLib/FullAlgebra.hpp
-        SparseLinearAlgebra/src/AlgebraLib/Globals.hpp src/HMC/HMC.hpp src/HMC/Prior.cpp src/HMC/Prior.hpp src/HMC/Data.cpp src/HMC/Data.hpp src/HMC/Posterior.cpp src/HMC/Posterior.hpp src/HMC/Sampler.cpp src/HMC/Sampler.hpp src/HMC/ForwardModel.cpp src/HMC/ForwardModel.hpp)
+set(SOURCE_FILES testMultivariate.cpp src/random/randomnumbers.cpp
+        AlgebraLib/src/algebra_lib/sparse_algebra.cpp AlgebraLib/src/algebra_lib/sparse_vector.cpp
+        AlgebraLib/src/algebra_lib/sparse_matrix.cpp AlgebraLib/src/algebra_lib/matrix.cpp
+        AlgebraLib/src/algebra_lib/matrix.hpp AlgebraLib/src/algebra_lib/vector.cpp
+        AlgebraLib/src/algebra_lib/vector.hpp AlgebraLib/src/algebra_lib/algebra_lib.hpp
+        AlgebraLib/src/algebra_lib/full_algebra.cpp AlgebraLib/src/algebra_lib/full_algebra.hpp
+        AlgebraLib/src/algebra_lib/globals.hpp src/hmc/hmc.hpp src/hmc/prior.cpp src/hmc/prior.hpp src/hmc/data.cpp src/hmc/data.hpp src/hmc/posterior.cpp src/hmc/posterior.hpp src/hmc/sampler.cpp src/hmc/sampler.hpp src/hmc/forward_model.cpp src/hmc/forward_model.hpp)
 add_executable(testMultivariate ${SOURCE_FILES})

@@ -5,7 +5,7 @@
 #include "auxiliary.hpp"
 #include "montecarlo.hpp"
 #include "linearalgebra.hpp"
-#include "randomnumbers.hpp"
+#include "src/random/randomnumbers.hpp"
 #include <iostream>
 #include <fstream>
 #include <ctime>

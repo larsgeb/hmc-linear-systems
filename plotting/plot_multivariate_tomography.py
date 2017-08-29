@@ -24,8 +24,8 @@ pylab.rcParams.update(params)
 
 # If there's other stuff on the line, like misfit values
 trailingElements = 1
-nbi = 0
-fid = open('OUTPUT/results/tomography_1/samples.txt')
+nbi = 1000
+fid = open('OUTPUT/samples1.txt')
 dummy = fid.read().strip().split()
 fid.close()
 numParameters = int(dummy[0])
@@ -62,26 +62,31 @@ printMatrixE(np.matrix(covariances))
 # print "Standard deviations;"
 # for index, covariance in enumerate(covariances):
 #     print "Parameter", index + 1, np.sqrt(covariance[index])
-#
+
+variances = []
+for index, parameter in enumerate(parameters):
+    variances.append(covariances[index][index])
+
+maxVar = np.max(np.abs(variances))
+plt.imshow(np.transpose(np.reshape(variances, (11,11))), cmap=plt.get_cmap('seismic'), interpolation='none',
+           extent=[-0.5, 10 + 0.5, 10 + 0.5, -0.5], vmin=0, vmax=maxVar)
+cbar = plt.colorbar(ticks=np.arange(0, maxVar, maxVar/10))
+# plt.gca().invert_yaxis()
+plt.savefig("OUTPUT/tomographyVariances.pdf", format='pdf')
+plt.close()
+
+
 maxCov = np.max(np.abs(covariances))
 plt.imshow(covariances, cmap=plt.get_cmap('seismic'), interpolation='none',
            extent=[0.5, numParameters + 0.5, numParameters + 0.5, 0.5], vmin=-maxCov, vmax=maxCov)
 plt.savefig("OUTPUT/tomographyCovariances.pdf", format='pdf')
 plt.close()
 
-plt.imshow(1 / np.transpose(np.reshape(means, (7, 3))), cmap=plt.get_cmap('jet'), interpolation='none',
-           extent=[-2.5, 30 + 2.5, -2.5, 10 + 2.5], vmin=1500, vmax=2501)
-plt.gca().yaxis.set_ticks(np.arange(0, 15, 5))
-cbar = plt.colorbar(ticks=np.arange(1500, 2501, 200))
+plt.imshow(1 / np.transpose(np.reshape(means, (11,11))), cmap=plt.get_cmap('binary'), interpolation='none',
+           extent=[-0.5, 10 + 0.5, -0.5, 10 + 0.5], vmin=0000, vmax=3001)
+# plt.gca().yaxis.set_ticks(np.arange(0, 15, 5))
+cbar = plt.colorbar(ticks=np.arange(0, 3001, 500))
 plt.gca().invert_yaxis()
 cbar.set_label('Speed of sound [m/s]')
 plt.savefig("OUTPUT/tomographyMeans.pdf", format='pdf')
 plt.close()
-plt.imshow((np.reshape(np.repeat(np.array([1800, 1600, 1400]), 7), (3, 7))), cmap=plt.get_cmap('jet'),
-           interpolation='none',
-           extent=[-2.5, 30 + 2.5, -2.5, 10 + 2.5], vmin=1200, vmax=2000)
-plt.gca().yaxis.set_ticks(np.arange(0, 15, 5))
-cbar = plt.colorbar(ticks=np.arange(1200, 2001, 200))
-cbar.set_label('Speed of sound [m/s]')
-plt.gca().invert_yaxis()
-plt.savefig("OUTPUT/tomographyModel.pdf", format='pdf')

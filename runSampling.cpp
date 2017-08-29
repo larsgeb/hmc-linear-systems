@@ -1,57 +1,50 @@
 //
 // Created by Lars Gebraad on 7/11/17.
 //
-#include "SparseLinearAlgebra/src/AlgebraLib/AlgebraLib.hpp"
-#include <src/HMC/HMC.hpp>
+#include "AlgebraLib/src/algebra_lib/algebra_lib.hpp"
+#include "src/hmc/hmc.hpp"
 #include <ctime>
 
 int main() {
 
-    AlgebraLib::Vector means(150, true);
-    AlgebraLib::Matrix g(means.size(), means.size());
-    AlgebraLib::Vector std(means.size(), true);
+    using namespace algebra_lib;
+    using namespace hmc;
+
+    // Create prior information
+    vector means(121, true);
+    vector std(means.size(), true);
     for (int i = 0; i < means.size(); i++) {
-        g[i][i] = (i + 1.0) * (i + 1.0);
-        means[i] = (35.0);
-        std[i] = (100.0);
+        means[i] = i%1 == 1 ? 1.0 / 1000.0 : 1.0 / 2000.0;
+        std[i] = 0.01;
     }
 
-    HMC::ForwardModel model(g);
+    matrix forward_matrix = ReadMatrix("INPUT/matrix_checkerboard_lr_10x10.txt");
+    forward_model model(forward_matrix);
 
     // Load the observed data
-    AlgebraLib::Vector synthData = AlgebraLib::ReadVector("INPUT/synthetics.txt");
-    HMC::Data data(model, synthData, 5.0, true);
+    vector synthData = ReadVector("INPUT/Recorded_time_sources_checkerboard_lr_10x10.txt");
+    data data(model, synthData, 5.0, true);
+    prior prior(means, std);
 
-    AlgebraLib::Vector synth = AlgebraLib::ReadVector("INPUT/synthetics.txt");
+    GenerateInversionSettings settings;
+    settings
+            .setSamples(100000)
+            .setGravity(0.0000001) // Choose it such that oscillations are around explorative (no slow exploration)
+            .setTimeStep(0.0001) // ideally below 2 std_dev for 1d problems for stability
+            .setErgodicity(true)
+            .setHamiltonianMonteCarlo(true)
+            .setGenMomPropose(true)
+            .setGenMomKinetic(true)
+            .setOutfile(const_cast<char *>("OUTPUT/samples1.txt"));
 
-    HMC::Prior prior(means, std);
-
-    HMC::GenerateInversionSettings settings;
-    settings.setSamples(100000)
-            .setGravity(1.0);
-
-    HMC::Sampler sampler(prior, data, model, settings);
-
-    { // Some nicely formatted settings.
-        std::cout << "Inversion of linear model using MCMC sampling." << std::endl;
-        std::cout << "Selected method; \033[1;34m" << (settings._hamiltonianMonteCarlo ? "HMC" : "Metropolis-Hastings")
-                  << "\033[0m with following options:"
-                  << std::endl;
-        std::cout << "\t parameters:   \033[1;32m" << means.size() << "\033[0m" << std::endl;
-        std::cout << "\t proposals:    \033[1;32m" << settings._proposals << "\033[0m" << std::endl;
-
-        if (settings._testBefore) {
-            std::cout << "\t - Exploiting conservation of energy by evaluating before propagation" << std::endl;
-        }
-        std::cout << "\t - Use generalised mass matrix with" << (settings._genMomPropose ? "" : "out")
-                  << " off diagonal entries" << std::endl;
-        if (settings._genMomKinetic) std::cout << "\t - Use generalised momentum for kinetic energy" << std::endl;
-    }
+    sampler sampler1(prior, data, model, settings);
 
     /* ---- The actual sampling ---- */
     std::clock_t start;
     start = std::clock();
-    sampler.sample(settings._hamiltonianMonteCarlo);
+
+    sampler1.sample();
+
     std::cout << std::endl << "Time: " << (std::clock() - start) / (double) (CLOCKS_PER_SEC) << " s" << std::endl;
 
     return EXIT_SUCCESS;

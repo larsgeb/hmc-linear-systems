@@ -1,5 +1,0 @@
-# Data generated from hardcoded class, which reads from matrix.txt
-# Line 4: number of data points. Line 5: data in sequential order.
-# The first three lines are always ignored, no matter the characters (up to 500 characters per line).
-4
-50 60 30 40 
