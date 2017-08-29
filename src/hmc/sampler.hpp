@@ -20,21 +20,23 @@ namespace hmc {
         double _gravity = 1.0;
         unsigned long int _proposals = 10000;
         double _timeStep = 0.1;
+        double _acceptanceFactor = 0.1;
         unsigned long int _trajectorySteps = 10;
-        struct winsize window{};
-        char *_outfile = "samples.txt";
+        struct winsize _window{};
+        char *_outfile = const_cast<char *>("samples.txt");
         bool _genMomPropose = true; // Use generalized mass matrix to propose new momenta (true).
         bool _genMomKinetic = true; // Use generalized mass matrix to compute kinetic energy (true).
         bool _norMom = false; // Normalize momentum to previous value to keep constant energy level (true).
         bool _testBefore = true; // Decreases required computation time by order of magnitude, no other influence.
+        bool _ergodic = false;  // Randomizes trajectory length and step size
         bool _hamiltonianMonteCarlo = true; // Metropolis Hastings (false) or Hamiltonian Monte Carlo (true).
 
         GenerateInversionSettings() {
-            ioctl(STDOUT_FILENO, TIOCGWINSZ, &window);
-            if (window.ws_col < 5)
-                window.ws_col = 20;
-            if (window.ws_row < 5)
-                window.ws_row = 20;
+            ioctl(STDOUT_FILENO, TIOCGWINSZ, &_window);
+            if (_window.ws_col < 5)
+                _window.ws_col = 20;
+            if (_window.ws_row < 5)
+                _window.ws_row = 20;
         }
 
         GenerateInversionSettings &setSamples(unsigned long int samples) { _proposals = samples; };
@@ -42,11 +44,16 @@ namespace hmc {
         GenerateInversionSettings &setTimeStep(double timeStep) { _timeStep = timeStep; };
 
         GenerateInversionSettings &
+        setAcceptanceFactor(double acceptanceFactor) { _acceptanceFactor = acceptanceFactor; };
+
+        GenerateInversionSettings &
         setTrajectorySteps(unsigned long int trajectorySteps) { _trajectorySteps = trajectorySteps; };
 
-        GenerateInversionSettings &setgenMomPropose(bool genMomPropose) { _genMomPropose = genMomPropose; }
+        GenerateInversionSettings &setGenMomPropose(bool genMomPropose) { _genMomPropose = genMomPropose; }
 
-        GenerateInversionSettings &setgenMomKinetic(bool genMomKinetic) { _genMomKinetic = genMomKinetic; }
+        GenerateInversionSettings &setGenMomKinetic(bool genMomKinetic) { _genMomKinetic = genMomKinetic; }
+
+        GenerateInversionSettings &setErgodicity(bool ergodic) { _ergodic = ergodic; }
 
         GenerateInversionSettings &setnorMom(bool norMom) { _norMom = norMom; }
 
@@ -56,9 +63,8 @@ namespace hmc {
 
         GenerateInversionSettings &setGravity(double gravity) { _gravity = gravity; }
 
-        GenerateInversionSettings &sethamiltonianMonteCarlo
+        GenerateInversionSettings &setHamiltonianMonteCarlo
                 (bool hamiltonianMonteCarlo) { _hamiltonianMonteCarlo = hamiltonianMonteCarlo; }
-
     };
 
     class sampler {
@@ -125,6 +131,8 @@ namespace hmc {
         double kineticEnergy();
 
 
+        bool _ergodic;
+        double _acceptanceFactor;
     };
 }
 

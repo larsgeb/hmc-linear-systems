@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 # ============================================================
 
 # - Number of burn-in samples to be ignored.
-nbi = 1
+nbi = 1000
 # - Dimensions of interest.
 dim_1 = 1
 dim_2 = 70
@@ -30,7 +30,7 @@ pylab.rcParams.update(params)
 # - Read samples and plot trajectory.
 # ============================================================
 
-fid = open('OUTPUT/samples.txt')
+fid = open('OUTPUT/samples1.txt')
 dummy = fid.read().strip().split()
 fid.close()
 dimension = int(dummy[0])
@@ -79,10 +79,10 @@ plt.xlabel('parameter ' + str(dim_1))
 plt.ylabel('parameter ' + str(dim_2))
 # plt.title('random walk')
 plt.gcf().subplots_adjust(bottom=0.15)
-plt.savefig('OUTPUT/randomWalk.png')
+# plt.savefig('OUTPUT/randomWalk.png')
 # plt.savefig('OUTPUT/randomWalk.pdf'
 # )
-# plt.show()
+plt.show()
 plt.close()
 # ============================================================
 # - Histograms.
@@ -92,21 +92,21 @@ xlimu = np.max(x)
 xliml = np.min(x)
 ylimu = np.max(y)
 yliml = np.min(y)
-plt.hist(x, bins=40, color='k', normed=True)
+plt.hist(x, bins=20, color='k', normed=True)
 plt.xlim([xliml, xlimu])
 plt.xlabel('m' + str(dim_1))
 plt.ylabel('posterior marginal')
 plt.savefig('OUTPUT/marginal1.png')
 plt.close()
 # plt.show()
-plt.hist(y, bins=40, color='k', normed=True)
+plt.hist(y, bins=20, color='k', normed=True)
 plt.xlim([yliml, ylimu])
 plt.xlabel('m' + str(dim_2))
 plt.ylabel('posterior marginal')
 plt.savefig('OUTPUT/marginal2.png')
 plt.close()
 # plt.show()
-plt.hist2d(x, y, bins=40, normed=True, cmap='binary')
+plt.hist2d(x, y, bins=20, normed=True, cmap='binary')
 # plt.axis('equal')
 # plt.xlim([-20,40])
 # plt.ylim([10,70])

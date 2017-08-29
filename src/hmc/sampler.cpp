@@ -17,13 +17,15 @@ namespace hmc {
             _data(data), _prior(prior), _model(model) {
         _nt = settings._trajectorySteps;
         _dt = settings._timeStep;
+        _acceptanceFactor = settings._acceptanceFactor;
         _gravity = settings._gravity;
         _proposals = settings._proposals;
         _genMomKinetic = settings._genMomKinetic;
         _genMomPropose = settings._genMomPropose;
         _norMom = settings._norMom;
         _testBefore = settings._testBefore;
-        _window = settings.window;
+        _window = settings._window;
+        _ergodic = settings._ergodic;
         _hmc = settings._hamiltonianMonteCarlo;
         _outfile = settings._outfile;
 
@@ -144,7 +146,7 @@ namespace hmc {
                 propose_metropolis();
             }
 
-            x_new = (_hmc ? energy() : chi());
+            x_new = _acceptanceFactor*(_hmc ? energy() : chi());
 
             double result;
             result = x - x_new;
@@ -188,18 +190,26 @@ namespace hmc {
             trajectoryfile << _prior._means.size() << " " << _nt << std::endl;
         }
 
-        for (int it = 0; it < _nt; it++) {
+        unsigned long local_nt = _nt;
+        double local_dt = _dt;
+
+        if (_ergodic) {
+            local_nt= static_cast<unsigned long>(_nt * randf(0.5, 1.5));
+            local_dt= _dt * randf(0.5, 1.5);
+        }
+
+        for (int it = 0; it < local_nt; it++) {
 
             misfitGrad = precomp_misfitGrad();
-            _proposedMomentum = _proposedMomentum - 0.5 * _dt * misfitGrad;
+            _proposedMomentum = _proposedMomentum - 0.5 * local_dt * misfitGrad;
 
             if (writeTrajectory) write_sample(trajectoryfile, chi());
 
-            _proposedModel = _proposedModel + _dt * (
+            _proposedModel = _proposedModel + local_dt * (
                     (_genMomKinetic ? _inverseMassMatrix : _inverseMassMatrixDiagonal) * _proposedMomentum);
 
             misfitGrad = precomp_misfitGrad();
-            _proposedMomentum = _proposedMomentum - 0.5 * _dt * misfitGrad;
+            _proposedMomentum = _proposedMomentum - 0.5 * local_dt * misfitGrad;
 
             /* Check no-U-turn criterion. */
             angle1 = _proposedMomentum * (_currentModel - _proposedModel);

@@ -11,30 +11,33 @@ int main() {
     using namespace hmc;
 
     // Create prior information
-    vector means(10201, true);
+    vector means(121, true);
     vector std(means.size(), true);
     for (int i = 0; i < means.size(); i++) {
-        means[i] = 1.0 / 1500.0;
-        std[i] = 0.006;
+        means[i] = i%1 == 1 ? 1.0 / 1000.0 : 1.0 / 2000.0;
+        std[i] = 0.01;
     }
 
-    matrix forward_matrix = ReadMatrix("INPUT/matrix_checkerboard_lr_100x100.txt");
+    matrix forward_matrix = ReadMatrix("INPUT/matrix_checkerboard_lr_10x10.txt");
     forward_model model(forward_matrix);
 
     // Load the observed data
-    vector synthData = ReadVector("INPUT/Recorded_time_sources_checkerboard_lr_100x100.txt");
+    vector synthData = ReadVector("INPUT/Recorded_time_sources_checkerboard_lr_10x10.txt");
     data data(model, synthData, 5.0, true);
     prior prior(means, std);
 
-    GenerateInversionSettings settings1;
-    settings1
-            .setSamples(1000)
-            .setGravity(0.15)
-            .setgenMomPropose(true)
-            .setgenMomKinetic(true)
+    GenerateInversionSettings settings;
+    settings
+            .setSamples(100000)
+            .setGravity(0.0000001) // Choose it such that oscillations are around explorative (no slow exploration)
+            .setTimeStep(0.0001) // ideally below 2 std_dev for 1d problems for stability
+            .setErgodicity(true)
+            .setHamiltonianMonteCarlo(true)
+            .setGenMomPropose(true)
+            .setGenMomKinetic(true)
             .setOutfile(const_cast<char *>("OUTPUT/samples1.txt"));
 
-    sampler sampler1(prior, data, model, settings1);
+    sampler sampler1(prior, data, model, settings);
 
     /* ---- The actual sampling ---- */
     std::clock_t start;
