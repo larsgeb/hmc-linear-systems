@@ -1,0 +1,7 @@
+Global 'Gravitational constant', mutliply mass matrix.
+
+Implement 100x100 tomography model, checkerboard? Layers? Heterogeneity.
+
+Markov chain, multiple chain tempering.
+
+Parallel tempering algorthm sambrigde 2014

@@ -12,7 +12,7 @@ namespace hmc {
         sparse_matrix inv_cov(stdv.size(), stdv.size());
 
         for (int it = 0; it < stdv.size(); it++) {
-            inv_cov(it)(it) = 1.0 / stdv[it];
+            inv_cov(it)(it) = 1.0 / (stdv[it] * stdv[it]);
         }
         return inv_cov;
     }

@@ -1,0 +1,25 @@
+'Large models'
+10201 parameters is a bit much for my laptop. I need the sparse library perhaps, or Euler. The thing is that the library I developed uses compressed row storage. In this format I know which elements from a certain row are non-zero, but I do not for a column. This is detrimental for matrix multiplication because one needs to extract both columns and rows. A work around would be to also index the columns, which would add for a n x n matrix with k non-zero elements k unsigned integers to the memory. Not necessarily bad if the matrix is very sparse, and it will hugely speed up the matrix multiplication algorithm for matrices of at least 100 rows. 
+
+There's also some good linear algebra packages out there for C++. If I can't properly incorporate fast matrix multiplication in my library (in a sensible amount of time) I'll consider using one of these. My code so far only compiled with the 'full' algebra library on the Euler PC, but I don't know if ETH likes it if I start tot take up 50 Gigs of ram. It would be impressive to make such a large inversion run on my 'ordinary' laptop.
+
+There is a delicate tuning with the mass matrix, stepsize, trajectory length, U-Turn criterion and gravity. I will try to illuminate it from all sides, but in the end the choice of parameters is not that arbitrary. Basically one decides if the exploration should stay confined very much to the minima, or explore model space more (with following consequences for amount accepted models).
+
+Mass matrix
+The mass matrix is essentially dictated by the analysis on equal trajectory oscillations in each dimension. I do think my combined mass matrix is ideal for linear models. For non-linear models we might want to look at updating it in the trajectory or some other exotic model. We can of course scale the mass matrix by an arbitrary constant, but we'll keep this out of this matrix and call that the gravitational constant.
+
+Stepsizes
+I found that lowering stepsize to be at least lower than two times the standard deviation of the parameter is desirable, following Radford M. Neal. I still want to invesitgate a rule for many parameters; do we use the largest or lowest standard deviation? I think I can repicate his analysis for an arbitrary amount of parameters. My gut says it's something related to the determinant of the parameter covariance matrix, but I haven't looked at this in detail. This choice is based on numerical stability and preservation of energy. 
+
+Gravity
+Lowering timestep usually means very slow exploration in parameter space. If the initial guess of model is very off we spend a lot of time to even get to the stable region of model space, wasting a lot of computation time. The parameter to counter this is the 'gravitational constant'. Using a fixed stepsize and fixed number of steps (10 usually), one can tune gravity to be such that the model traverses the parameter space fully with one trajectory. 
+
+Lowering or increasing timesteps will result in a very different type of model space exploration; very slow versus almost random sampling. For illustration, I have included two random walks.
+
+This balancing of timestep and gravity should be done TOGETHER. Lowering and increasing one of these can (and usually does) result in a very poor sampling. I want to make some clear figures to illustrate this, but there's only so much time in an day. I hope to do this after my travels.
+
+Ergodicity
+Getting the optimal trajectory step size and gravity does result in some resonance, where each sample is a mirror image around the mean, and essentially two very small step Markov Chains are symmetrically generated. To counter this, one should randomize stepsize and number of steps. This is done in my code using uniform distribution of factors between 0.5 and 1.5. Radford also discusses this as 'ensuring ergodicity'.
+
+U-Turn Criterion
+In the end, I don't know if we want to use the No U-Turn Criterion. It breaks the ergodicity of HMC. It is I think better to randomize stepsize and length to ensure that all regions of space are reachable. It's not that we actually want to direct the sampler in a direction, is it? There is still some debate within myself about this. What do you think? The behaviour if one chooses a long trajectory (long timestep + high amount of steps in trajectory) is this resonance we've seen before.

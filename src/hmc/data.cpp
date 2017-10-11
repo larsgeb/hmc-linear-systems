@@ -13,8 +13,8 @@ namespace hmc {
                          calculate_inverse_data_covariance_percentual(cov) :
                          calculate_inverse_data_covariance(cov)),
               _G(forward_model._g),
-              _tG_invCd_d(forward_model._g.Transpose() * _inv_cov_d * _observedData),
-              _tG_invCd_G(forward_model._g.Transpose() * _inv_cov_d * forward_model._g) {}
+              _tG_invCd_d(forward_model._g.Transpose() * (_inv_cov_d * _observedData)),
+              _tG_invCd_G(VectorToDiagonal(forward_model._g.Transpose() * (_inv_cov_d.Trace())) * forward_model._g) {}
 
     algebra_lib::sparse_matrix data::calculate_inverse_data_covariance(double std) {
         // Covariance is interpreted as absolute value of all datapoints.

@@ -13,7 +13,7 @@ int main() {
     // Create prior information
     sparse_vector means(10201, true);
     sparse_vector std(means.size(), true);
-    for (int i = 0; i < means.size(); i++) {
+    for (unsigned int i = 0; i < means.size(); i++) {
         means(i) = 1.0 / 1500.0;
         std(i) = 0.006;
     }
@@ -22,19 +22,22 @@ int main() {
     forward_model model(forward_matrix);
 
     // Load the observed data
-    sparse_vector synthData = ReadSparseVector("INPUT/Recorded_time_sources_checkerboard_lr_100x100.txt");
+    sparse_vector synthData = ReadSparseVector("INPUT/Recorded_time_sources_100x100.txt");
     data data(model, synthData, 5.0, true);
     prior prior(means, std);
 
-    GenerateInversionSettings settings1;
-    settings1
+    GenerateInversionSettings settings;
+    settings
             .setSamples(1000)
-            .setGravity(0.15)
-            .setgenMomPropose(true)
-            .setgenMomKinetic(true)
+            .setGravity(0.0000001) // Choose it such that oscillations are around explorative (no slow exploration)
+            .setTimeStep(0.0001) // ideally below 2 std_dev for 1d problems for stability
+            .setErgodicity(true)
+            .setHamiltonianMonteCarlo(true)
+            .setGenMomPropose(true)
+            .setGenMomKinetic(true)
             .setOutfile(const_cast<char *>("OUTPUT/samples1.txt"));
 
-    sampler sampler1(prior, data, model, settings1);
+    sampler sampler1(prior, data, model, settings);
 
     /* ---- The actual sampling ---- */
     std::clock_t start;
