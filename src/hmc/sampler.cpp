@@ -10,11 +10,11 @@
 #include "prior.hpp"
 #include "sampler.hpp"
 
-using namespace algebra_lib;
-
 namespace hmc {
     sampler::sampler(prior &prior, data &data, forward_model &model, GenerateInversionSettings settings) :
             _data(data), _prior(prior), _model(model) {
+
+        // Read in the settings
         _nt = settings._trajectorySteps;
         _dt = settings._timeStep;
         _acceptanceFactor = settings._acceptanceFactor;
@@ -22,7 +22,7 @@ namespace hmc {
         _proposals = settings._proposals;
         _genMomKinetic = settings._genMomKinetic;
         _genMomPropose = settings._genMomPropose;
-        _norMom = settings._norMom;
+//        _norMom = settings._norMom;
         _testBefore = settings._testBefore;
         _window = settings._window;
         _ergodic = settings._ergodic;
@@ -33,60 +33,59 @@ namespace hmc {
         srand((unsigned int) time(nullptr));
 
         // Pre-compute mass matrix and other associated quantities
-        _massMatrix = _gravity * (_prior._inv_cov_m + ((_model._g.Transpose() * _data._inv_cov_d) * _model._g));
-        _inverseMassMatrixDiagonal = VectorToDiagonal(_massMatrix.InvertMatrixElements(true).Trace());
+        _massMatrix = arma::conv_to<arma::mat>::from(
+                _gravity * (_prior._inv_cov_m + ((_model._g.t() * _data._inv_cov_d) * _model._g))
+        );
+        _inverseMassMatrixDiagonal = arma::diagmat(1.0 / _massMatrix.diag());
 
         // Prepare mass matrix decomposition and inverse.
-        _CholeskyLowerMassMatrix = _massMatrix.CholeskyDecompose();
-        matrix InverseCholeskyLowerMassMatrix = _CholeskyLowerMassMatrix.InvertLowerTriangular();
-        _inverseMassMatrix = InverseCholeskyLowerMassMatrix.Transpose() * InverseCholeskyLowerMassMatrix;
+        _CholeskyLowerMassMatrix = arma::chol(_massMatrix, "lower");
+        _inverseMassMatrix = arma::inv(_massMatrix);
 
         // Set starting proposal.
         _proposedMomentum = _genMomPropose ? randn_Cholesky(_CholeskyLowerMassMatrix) : randn(_massMatrix);
-        _norMom ? _proposedMomentum = _proposedMomentum.Normalize() : vector();
-        _proposedModel = randn(_prior._means, _prior._covariance.Trace());
+        _proposedModel = randn(_prior._means, arma::vec(arma::mat(_prior._covariance).diag()));
 
         // Set starting model.
         _currentModel = _proposedModel;
         _currentMomentum = _proposedMomentum;
 
         // Set precomputed quantities.
-        _A = _prior._inv_cov_m + _model._g.Transpose() * _data._inv_cov_d * _model._g;
-        _bT = _prior._inv_cov_m * _prior._means + _model._g.Transpose() * _data._inv_cov_d * _data._observedData;
-        _c = 0.5 * (
-                _prior._means.Transpose() * _prior._inv_cov_m * _prior._means +
-                _data._observedData.Transpose() * _data._inv_cov_d * _data._observedData
-        );
+        _A = _prior._inv_cov_m + _model._g.t() * _data._inv_cov_d * _model._g;
+        _bT = _prior._inv_cov_m * _prior._means + _model._g.t() * _data._inv_cov_d * _data._observedData;
+        _c = arma::conv_to<double>::from(0.5 * (
+                _prior._means.t() * _prior._inv_cov_m * _prior._means +
+                _data._observedData.t() * _data._inv_cov_d * _data._observedData
+        ));
     };
 
-    void sampler::setStarting(vector &model) {
+    void sampler::setStarting(arma::vec &model) {
         _currentModel = model;
         _proposedModel = model;
     }
 
     void sampler::propose_metropolis() {
-        _proposedModel = randn(_prior._means, _prior._covariance.Trace());
+        _proposedModel = randn(_prior._means, _prior._covariance.t());
     }
 
     void sampler::propose_hamilton(int &uturns) {
         /* Draw random prior momenta. */
         _proposedMomentum = _genMomPropose ? randn_Cholesky(_CholeskyLowerMassMatrix) : randn(_massMatrix);
-        if (_norMom) _proposedMomentum = sqrt(_currentMomentum * _currentMomentum) * _proposedMomentum.Normalize();
     }
 
     double sampler::precomp_misfit() {
-        return 0.5 * _proposedModel * (_A * _proposedModel) - _bT * _proposedModel + _c;
+        return conv_to<double>::from(0.5 * _proposedModel.t() * (_A * _proposedModel) - _bT.t() * _proposedModel + _c);
     }
 
-    vector sampler::precomp_misfitGrad() {
+    arma::vec sampler::precomp_misfitGrad() {
         // Should actually be left multiply, but matrix is symmetric, so skipped that bit.
         return _A * _proposedModel - _bT;
     }
 
     double sampler::kineticEnergy() {
         return _genMomKinetic ?
-               0.5 * _proposedMomentum.Transpose() * _inverseMassMatrix * _proposedMomentum :
-               0.5 * _proposedMomentum.Transpose() * _inverseMassMatrixDiagonal * _proposedMomentum;
+               conv_to<double>::from(0.5 * _proposedMomentum.t() * _inverseMassMatrix * _proposedMomentum) :
+               conv_to<double>::from(0.5 * _proposedMomentum.t() * _inverseMassMatrixDiagonal * _proposedMomentum);
     }
 
     double sampler::chi() {
@@ -100,12 +99,15 @@ namespace hmc {
     void sampler::sample() {
 
         std::cout << "Inversion of linear model using MCMC sampling." << std::endl;
-        std::cout << "Selected method; \033[1;34m" << (_hmc ? "hmc" : "Metropolis-Hastings")
+        std::cout << "Selected method;      \033[1;34m" << (_hmc ? "hmc" : "Metropolis-Hastings")
                   << "\033[0m with following options:"
                   << std::endl;
-        std::cout << "\t parameters:   \033[1;32m" << _currentModel.size() << "\033[0m" << std::endl;
-        std::cout << "\t proposals:    \033[1;32m" << _proposals << "\033[0m" << std::endl;
-        std::cout << "\t gravity:      \033[1;32m" << _gravity << "\033[0m" << std::endl;
+        std::cout << "\t parameters:        \033[1;32m" << _currentModel.size() << "\033[0m" << std::endl;
+        std::cout << "\t proposals:         \033[1;32m" << _proposals << "\033[0m" << std::endl;
+        std::cout << "\t gravity:           \033[1;32m" << _gravity << "\033[0m" << std::endl;
+        std::cout << "\t timestep:          \033[1;32m" << _dt << "\033[0m" << std::endl;
+        std::cout << "\t number of steps:   \033[1;32m" << _nt << "\033[0m" << std::endl;
+        std::cout << "\t acceptance factor: \033[1;32m" << _acceptanceFactor << "\033[0m" << std::endl;
 
         if (_testBefore) {
             std::cout << "\t - Exploiting conservation of energy by evaluating before propagation" << std::endl;
@@ -131,7 +133,7 @@ namespace hmc {
 
         for (int it = 1; it < _proposals; it++) {
 
-            if (it % 850 == 0) { // Display progress
+            if (it % 100 == 0) { // Display progress
                 std::cout << "[" << std::setw(3) << (int) (100.0 * double(it) / _proposals) << "%] "
                           << std::string(((unsigned long) ((_window.ws_col - 7) * it / _proposals)), *"=") <<
                           "\r" << std::flush;
@@ -146,7 +148,7 @@ namespace hmc {
                 propose_metropolis();
             }
 
-            x_new = _acceptanceFactor*(_hmc ? energy() : chi());
+            x_new = _acceptanceFactor * (_hmc ? energy() : chi());
 
             double result;
             result = x - x_new;
@@ -181,7 +183,7 @@ namespace hmc {
         // Acts as starting momentum
         _currentMomentum = _proposedMomentum;
 
-        vector misfitGrad;
+        arma::vec misfitGrad;
         double angle1, angle2;
 
         std::ofstream trajectoryfile;
@@ -194,8 +196,8 @@ namespace hmc {
         double local_dt = _dt;
 
         if (_ergodic) {
-            local_nt= static_cast<unsigned long>(_nt * randf(0.5, 1.5));
-            local_dt= _dt * randf(0.5, 1.5);
+            local_nt = static_cast<unsigned long>(_nt * randf(0.5, 1.5));
+            local_dt = _dt * randf(0.5, 1.5);
         }
 
         for (int it = 0; it < local_nt; it++) {
@@ -212,8 +214,8 @@ namespace hmc {
             _proposedMomentum = _proposedMomentum - 0.5 * local_dt * misfitGrad;
 
             /* Check no-U-turn criterion. */
-            angle1 = _proposedMomentum * (_currentModel - _proposedModel);
-            angle2 = _currentMomentum * (_proposedModel - _currentModel);
+            angle1 = arma::conv_to<double>::from(_proposedMomentum.t() * (_currentModel - _proposedModel));
+            angle2 = arma::conv_to<double>::from(_currentMomentum.t() * (_proposedModel - _currentModel));
 
             if (angle1 > 0.0 && angle2 > 0.0) {
                 uturns++;
@@ -232,7 +234,7 @@ namespace hmc {
 
     }
 
-    vector sampler::precomp_misfitGrad(vector parameters) {
+    arma::vec sampler::precomp_misfitGrad(arma::vec parameters) {
         // Should actually be left multiply, but matrix is symmetric, so skipped that bit.
         return _A * parameters - _bT;
     }

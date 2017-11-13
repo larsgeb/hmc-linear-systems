@@ -8,33 +8,31 @@
 #include <AlgebraLib/src/algebra_lib/algebra_lib.hpp>
 #include "forward_model.hpp"
 
-using namespace algebra_lib;
-
 namespace hmc {
     class data {
     public:
         // Constructors
-        data(forward_model &forward_model, vector &data, double cov, bool percentage);
+        data(forward_model &forward_model, arma::vec &data, double cov, bool percentage);
 
         // Member fields
         const unsigned long _numberData;
-        const vector _observedData;
-        const matrix _inv_cov_d;
-        const matrix _G;
+        const arma::vec _observedData;
+        const arma::mat _inv_cov_d;
+        const arma::mat _G;
         // Precomputed matrices
-        const vector _tG_invCd_d;
-        const matrix _tG_invCd_G;
+        const arma::vec _tG_invCd_d;
+        const arma::mat _tG_invCd_G;
 
         // Member functions
-        double misfit(vector &in_parameters);
+        double misfit(arma::vec &in_parameters);
 
-        vector gradient_misfit(vector &parameters);
+        arma::vec gradient_misfit(arma::vec &parameters);
 
     private:
         // Member functions
-        matrix calculate_inverse_data_covariance(double std);
+        arma::mat calculate_inverse_data_covariance(double std);
 
-        matrix calculate_inverse_data_covariance_percentual(double percentage);
+        arma::mat calculate_inverse_data_covariance_percentual(double percentage);
     };
 }
 

@@ -13,20 +13,19 @@
 #include <cstdio>
 #include <unistd.h>
 
-using namespace algebra_lib;
 
 namespace hmc {
     struct GenerateInversionSettings {
         double _gravity = 1.0;
         unsigned long int _proposals = 10000;
         double _timeStep = 0.1;
-        double _acceptanceFactor = 0.1;
+        double _acceptanceFactor = 1.0;
         unsigned long int _trajectorySteps = 10;
         struct winsize _window{};
         char *_outfile = const_cast<char *>("samples.txt");
         bool _genMomPropose = true; // Use generalized mass matrix to propose new momenta (true).
         bool _genMomKinetic = true; // Use generalized mass matrix to compute kinetic energy (true).
-        bool _norMom = false; // Normalize momentum to previous value to keep constant energy level (true).
+//        bool _norMom = false; // Normalize momentum to previous value to keep constant energy level (true).
         bool _testBefore = true; // Decreases required computation time by order of magnitude, no other influence.
         bool _ergodic = false;  // Randomizes trajectory length and step size
         bool _hamiltonianMonteCarlo = true; // Metropolis Hastings (false) or Hamiltonian Monte Carlo (true).
@@ -43,6 +42,10 @@ namespace hmc {
 
         GenerateInversionSettings &setTimeStep(double timeStep) { _timeStep = timeStep; };
 
+        GenerateInversionSettings &setTimeStepFromGrav_nSteps() {
+            _timeStep = 1.0 / (_trajectorySteps * sqrt(1.0 / _gravity));
+        };
+
         GenerateInversionSettings &
         setAcceptanceFactor(double acceptanceFactor) { _acceptanceFactor = acceptanceFactor; };
 
@@ -55,7 +58,7 @@ namespace hmc {
 
         GenerateInversionSettings &setErgodicity(bool ergodic) { _ergodic = ergodic; }
 
-        GenerateInversionSettings &setnorMom(bool norMom) { _norMom = norMom; }
+//        GenerateInversionSettings &setnorMom(bool norMom) { _norMom = norMom; }
 
         GenerateInversionSettings &setAcceptBeforeTraj(bool acceptBeforeTraj) { _testBefore = acceptBeforeTraj; }
 
@@ -74,14 +77,14 @@ namespace hmc {
 
         void sample();
 
-        vector precomp_misfitGrad(vector parameters);
+        arma::vec precomp_misfitGrad(arma::vec parameters);
 
-        void setStarting(vector &model);
+        void setStarting(arma::vec &model);
 
-        vector _currentModel;
-        vector _proposedModel;
-        vector _currentMomentum;
-        vector _proposedMomentum;
+        arma::vec _currentModel;
+        arma::vec _proposedModel;
+        arma::vec _currentMomentum;
+        arma::vec _proposedMomentum;
 
     private:
         // Fields
@@ -95,20 +98,20 @@ namespace hmc {
         unsigned long _proposals; // Number of iterations for Monte Carlo sampling
         bool _genMomKinetic;
         bool _genMomPropose;
-        bool _norMom;
+//        bool _norMom;
         bool _testBefore;
         bool _hmc;
         char *_outfile;
         winsize _window;
 
-        matrix _massMatrix;
-        matrix _CholeskyLowerMassMatrix;
-        matrix _inverseMassMatrix; // needed to write Hamilton's equations in vector form
-        matrix _inverseMassMatrixDiagonal; // needed to write Hamilton's equations in vector form
+        arma::mat _massMatrix;
+        arma::mat _CholeskyLowerMassMatrix;
+        arma::mat _inverseMassMatrix; // needed to write Hamilton's equations in vector form
+        arma::mat _inverseMassMatrixDiagonal; // needed to write Hamilton's equations in vector form
 
         // Precomputed misfit function size
-        matrix _A;
-        vector _bT; // Because I haven't coded up the actual left multiplication of vector-matrices
+        arma::mat _A;
+        arma::vec _bT; // Because I haven't coded up the actual left multiplication of vector-matrices
         double _c;
 
         // Member functions
@@ -126,7 +129,7 @@ namespace hmc {
 
         double precomp_misfit();
 
-        vector precomp_misfitGrad();
+        arma::vec precomp_misfitGrad();
 
         double kineticEnergy();
 

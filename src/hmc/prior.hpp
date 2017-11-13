@@ -5,24 +5,22 @@
 #ifndef HMC_LINEAR_SYSTEM_PRIOR_HPP
 #define HMC_LINEAR_SYSTEM_PRIOR_HPP
 
-#include <AlgebraLib/src/algebra_lib/algebra_lib.hpp>
-
-using namespace algebra_lib;
+#include <armadillo>
 
 namespace hmc{
     class prior {
     public:
         // Constructors
-        prior(vector &mean, vector &std);
+        prior(arma::vec &mean, arma::vec &std);
 
         // Fields
-        const vector _means;
-        const matrix _covariance;
-        const matrix _inv_cov_m;
+        const arma::vec _means;
+        const arma::mat _covariance;
+        const arma::mat _inv_cov_m;
 
         // Member functions
-        double misfit(vector &parameters);
-        vector gradient_misfit(vector &parameters);
+        double misfit(arma::vec &parameters);
+        arma::vec gradient_misfit(arma::vec &parameters);
     };
 }
 

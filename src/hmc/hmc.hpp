@@ -5,15 +5,12 @@
 #ifndef HMC_LINEAR_SYSTEM_HAMILTONIANMONTECARLO_HPP_HPP
 #define HMC_LINEAR_SYSTEM_HAMILTONIANMONTECARLO_HPP_HPP
 
-using namespace algebra_lib;
+#include <armadillo>
 
 namespace hmc {
-    matrix std_to_inv_cov(vector stdv) {
-        matrix inv_cov(stdv.size(), stdv.size());
 
-        for (auto it = stdv.begin(); it != stdv.end(); it++) {
-            inv_cov[it - stdv.begin()][it - stdv.begin()] = 1.0 / (*it * *it);
-        }
+    arma::mat std_to_inv_cov(const arma::dcolvec &stdv) {
+        arma::mat inv_cov = diagmat(arma::pow(arma::square(stdv), -1));
         return inv_cov;
     }
 }
