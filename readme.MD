@@ -3,7 +3,16 @@
 
 This set of programs is built to incorporate MCMC inversion using Hamiltonian Mechanics. Essentially, any amount of
 parameters and any linear forward model matrix can be supplied, as long as one can describe the measurement errors, data
-uncertainty and misfit function. This could be used as a framework for building any inversion using hmc.
+uncertainty and misfit function.
+
+The latest implementation (on the 'armadillo' branch) uses the Armadillo Linear Algebra Library 
+to do multithread linear algebra operations. This code has been succesfully tested for models
+up to 10201 parameters. A detailed documentation is as of yet not complete (see docs/), but looking 
+through runSampling.cpp one will encounter most settings as member functions of the settings object.
+
+### Prerequisites
+
+Make sure that BLAS and LaPACK are available on your system, as well as the Armadillo library. 
 
 ### Compilation
 
@@ -20,23 +29,21 @@ This prepares the platform dependent compilation instructions. For example, on L
  make <target>
  ```
 
-There are several build targets:
-1. generateSynthetics.
+There are two build targets:
+1. generateSynthetics (deprecated).
 
-   This program will read the forward matrix in INPUT/matrix.txt and generate synthetics which are saved in synthetics.txt. Model parameters are as of yet hardcoded.
+   This program will read the forward matrix in INPUT/matrix.txt and generate synthetics which are saved in 
+   synthetics.txt. Model parameters are as of yet hardcoded. NOTE: This code must be adapted still for Armadillo.
 
 2. runSampling.
 
-   This program will take samples from the posterior distribution described by hardcoded prior information, the forward model from INPUT/matrix.txt and synthetic data INPUT/synthetics.txt (with hardcoded data-covariance). The output are the samples in OUTPUT/samples.txt and the trajectory of the last sample in OUTPUT/trajectory.txt. Some diagnostics are written to the console.
-
-3. generateGradient.
-
-    This programs evaluates misfit gradients on a hardcoded interval, using the same input as runSampling.
-
-4. testMultivariate.
-
-   This program draws from hardcoded multivariate correlated gaussians, writing it's samples to OUTPUT/multivariate.txt. Used to evaluate the validity of the Cholesky decomposition.
+   This program will take samples from the posterior distribution described by hardcoded 
+   prior information, the forward model from a text file and synthetic data 
+   from another text files. (with hardcoded data-covariance). The output are the samples in 
+   OUTPUT/samples.txt and the trajectory of the last sample in OUTPUT/trajectory.txt. 
+   Some settings and diagnostics are written to the console.
 
 ### Code documentation
 
-Documentation generated using doxygen is found in th docs/ subdirectory, but is also found hosted at [my GitHub Pages](www.larsgeb.github.io).
+Documentation generated using doxygen is found in the docs/ subdirectory, but is also found hosted at [my GitHub 
+Pages](www.larsgeb.github.io).
