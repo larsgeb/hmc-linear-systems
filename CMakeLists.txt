@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.8)
 project(hmc-linear-system)
 #set (CMAKE_CXX_FLAGS "-O2")
 
-set(CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_FLAGS "-std=gnu++11 -g ${CMAKE_CXX_FLAGS}")
+
 SET(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set ( CMAKE_C_FLAGS "fopenmp -lopenblas -llapack -std=c++0x")
