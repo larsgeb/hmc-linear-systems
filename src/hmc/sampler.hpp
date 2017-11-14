@@ -14,9 +14,12 @@
 #include <unistd.h>
 
 
+
 namespace hmc {
     struct GenerateInversionSettings {
+        const double PI = 3.14159265358979323846264338327;
         double _gravity = 1.0;
+        double _temperature = 1.0;
         unsigned long int _proposals = 10000;
         double _timeStep = 0.1;
         double _acceptanceFactor = 1.0;
@@ -43,7 +46,7 @@ namespace hmc {
         GenerateInversionSettings &setTimeStep(double timeStep) { _timeStep = timeStep; };
 
         GenerateInversionSettings &setTimeStepFromGrav_nSteps() {
-            _timeStep = 1.0 / (_trajectorySteps * sqrt(1.0 / _gravity));
+            _timeStep = 1.0 / (_trajectorySteps * sqrt(1.0 / _gravity) / (2 * PI));
         };
 
         GenerateInversionSettings &
@@ -65,6 +68,7 @@ namespace hmc {
         GenerateInversionSettings &setOutfile(char *outputFile) { _outfile = outputFile; }
 
         GenerateInversionSettings &setGravity(double gravity) { _gravity = gravity; }
+        GenerateInversionSettings &setTemperature(double temperature) { _temperature = temperature; }
 
         GenerateInversionSettings &setHamiltonianMonteCarlo
                 (bool hamiltonianMonteCarlo) { _hamiltonianMonteCarlo = hamiltonianMonteCarlo; }
@@ -95,6 +99,7 @@ namespace hmc {
         unsigned long _nt; // Number of time steps for trajectory
         double _dt; // Time step for trajectory
         double _gravity; // Global gravitational constant
+        double _temperature; // Global gravitational constant
         unsigned long _proposals; // Number of iterations for Monte Carlo sampling
         bool _genMomKinetic;
         bool _genMomPropose;

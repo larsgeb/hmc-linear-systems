@@ -19,6 +19,7 @@ namespace hmc {
         _dt = settings._timeStep;
         _acceptanceFactor = settings._acceptanceFactor;
         _gravity = settings._gravity;
+        _temperature = settings._temperature;
         _proposals = settings._proposals;
         _genMomKinetic = settings._genMomKinetic;
         _genMomPropose = settings._genMomPropose;
@@ -79,7 +80,7 @@ namespace hmc {
 
     arma::vec sampler::precomp_misfitGrad() {
         // Should actually be left multiply, but matrix is symmetric, so skipped that bit.
-        return _A * _proposedModel - _bT;
+        return (_A * _proposedModel - _bT);
     }
 
     double sampler::kineticEnergy() {
@@ -151,11 +152,12 @@ namespace hmc {
             x_new = _acceptanceFactor * (_hmc ? energy() : chi());
 
             double result;
-            result = x - x_new;
+            result = (x - x_new)/_temperature;
+
             double result_exponent;
             result_exponent = exp(result);
 
-            if ((x_new < x) || (result_exponent > randf(0.0, 1.0))) {
+            if ((x_new < x) || (result_exponent > randf(0.0, 1.0) ) ) {
                 if (_testBefore) {
                     leap_frog(uturns, it == _proposals - 1);
                 }
