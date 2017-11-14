@@ -20,6 +20,6 @@ add_executable(runSampling ${SOURCE_FILES})
 find_package(OpenBLAS)
 #find_package(Armadillo 2.4.2 REQUIRED)
 
-target_link_libraries(runSampling ./armadillo/armadillo-8.200.2/libarmadillo.so)
+target_link_libraries(runSampling ${CMAKE_CURRENT_SOURCE_DIR}/armadillo/armadillo-8.200.2/libarmadillo.so)
 target_link_libraries(runSampling openblas)
 
