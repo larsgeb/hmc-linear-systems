@@ -5,7 +5,7 @@
 #ifndef HMC_LINEAR_SYSTEM_HAMILTONIANMONTECARLO_HPP_HPP
 #define HMC_LINEAR_SYSTEM_HAMILTONIANMONTECARLO_HPP_HPP
 
-#include <armadillo>
+#include <armadillo/armadillo-8.200.2/include/armadillo>
 
 namespace hmc {
 

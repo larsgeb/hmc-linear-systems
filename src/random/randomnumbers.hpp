@@ -14,7 +14,7 @@
 #define HMC_VSP_RANDOMNUMBERS_HPP
 
 #include <vector>
-#include <armadillo>
+#include <armadillo/armadillo-8.200.2/include/armadillo>
 
 const double PI = 3.14159265358979323846264338327;
 

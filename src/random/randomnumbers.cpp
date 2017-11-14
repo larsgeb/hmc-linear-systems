@@ -4,7 +4,7 @@
 #include "randomnumbers.hpp"
 #include <cmath>
 #include <random>
-#include <armadillo>
+#include <armadillo/armadillo-8.200.2/include/armadillo>
 
 // todo rewrite using C++11 random functions.
 // Random number generators

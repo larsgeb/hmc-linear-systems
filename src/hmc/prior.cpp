@@ -2,7 +2,7 @@
 // Created by Lars Gebraad on 18-8-17.
 //
 
-#include <armadillo>
+#include <armadillo/armadillo-8.200.2/include/armadillo>
 #include "prior.hpp"
 
 namespace hmc {

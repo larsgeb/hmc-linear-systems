@@ -5,7 +5,7 @@
 #ifndef HMC_LINEAR_SYSTEM_FORWARDMODEL_HPP
 #define HMC_LINEAR_SYSTEM_FORWARDMODEL_HPP
 
-#include "armadillo"
+#include <armadillo/armadillo-8.200.2/include/armadillo>
 
 using namespace arma;
 
