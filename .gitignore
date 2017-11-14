@@ -38,6 +38,7 @@ Thumbs.db
 
 # Repo specific #
 ################
+armadillo/
 OUTPUT/
 cmake-build-debug/
 doxygen_docs/DOXYGEN_OUTPUT/

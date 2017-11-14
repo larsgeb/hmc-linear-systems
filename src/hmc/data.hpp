@@ -5,7 +5,6 @@
 #ifndef HMC_LINEAR_SYSTEM_DATA_HPP
 #define HMC_LINEAR_SYSTEM_DATA_HPP
 
-#include <AlgebraLib/src/algebra_lib/algebra_lib.hpp>
 #include "forward_model.hpp"
 
 namespace hmc {

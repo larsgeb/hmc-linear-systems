@@ -13,8 +13,6 @@
 namespace hmc {
     sampler::sampler(prior &prior, data &data, forward_model &model, GenerateInversionSettings settings) :
             _data(data), _prior(prior), _model(model) {
-
-        // Read in the settings
         _nt = settings._trajectorySteps;
         _dt = settings._timeStep;
         _acceptanceFactor = settings._acceptanceFactor;
@@ -22,7 +20,7 @@ namespace hmc {
         _proposals = settings._proposals;
         _genMomKinetic = settings._genMomKinetic;
         _genMomPropose = settings._genMomPropose;
-//        _norMom = settings._norMom;
+        _norMom = settings._norMom;
         _testBefore = settings._testBefore;
         _window = settings._window;
         _ergodic = settings._ergodic;
@@ -44,6 +42,7 @@ namespace hmc {
 
         // Set starting proposal.
         _proposedMomentum = _genMomPropose ? randn_Cholesky(_CholeskyLowerMassMatrix) : randn(_massMatrix);
+//        if (_norMom) { _proposedMomentum = normalise(_proposedMomentum); }
         _proposedModel = randn(_prior._means, arma::vec(arma::mat(_prior._covariance).diag()));
 
         // Set starting model.
@@ -71,6 +70,7 @@ namespace hmc {
     void sampler::propose_hamilton(int &uturns) {
         /* Draw random prior momenta. */
         _proposedMomentum = _genMomPropose ? randn_Cholesky(_CholeskyLowerMassMatrix) : randn(_massMatrix);
+//        if (_norMom) _proposedMomentum = sqrt(_currentMomentum * _currentMomentum) * normalise(_proposedMomentum);
     }
 
     double sampler::precomp_misfit() {
@@ -99,15 +99,13 @@ namespace hmc {
     void sampler::sample() {
 
         std::cout << "Inversion of linear model using MCMC sampling." << std::endl;
-        std::cout << "Selected method;      \033[1;34m" << (_hmc ? "hmc" : "Metropolis-Hastings")
+        std::cout << "Selected method; \033[1;34m" << (_hmc ? "hmc" : "Metropolis-Hastings")
                   << "\033[0m with following options:"
                   << std::endl;
-        std::cout << "\t parameters:        \033[1;32m" << _currentModel.size() << "\033[0m" << std::endl;
-        std::cout << "\t proposals:         \033[1;32m" << _proposals << "\033[0m" << std::endl;
-        std::cout << "\t gravity:           \033[1;32m" << _gravity << "\033[0m" << std::endl;
-        std::cout << "\t timestep:          \033[1;32m" << _dt << "\033[0m" << std::endl;
-        std::cout << "\t number of steps:   \033[1;32m" << _nt << "\033[0m" << std::endl;
-        std::cout << "\t acceptance factor: \033[1;32m" << _acceptanceFactor << "\033[0m" << std::endl;
+        std::cout << "\t parameters:   \033[1;32m" << _currentModel.size() << "\033[0m" << std::endl;
+        std::cout << "\t proposals:    \033[1;32m" << _proposals << "\033[0m" << std::endl;
+        std::cout << "\t timestep:     \033[1;32m" << _dt << "\033[0m" << std::endl;
+        std::cout << "\t gravity:      \033[1;32m" << _gravity << "\033[0m" << std::endl;
 
         if (_testBefore) {
             std::cout << "\t - Exploiting conservation of energy by evaluating before propagation" << std::endl;
@@ -133,7 +131,7 @@ namespace hmc {
 
         for (int it = 1; it < _proposals; it++) {
 
-            if (it % 100 == 0) { // Display progress
+            if (it % 850 == 0) { // Display progress
                 std::cout << "[" << std::setw(3) << (int) (100.0 * double(it) / _proposals) << "%] "
                           << std::string(((unsigned long) ((_window.ws_col - 7) * it / _proposals)), *"=") <<
                           "\r" << std::flush;
