@@ -1,25 +1,20 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.7)
 project(hmc-linear-system)
-#set (CMAKE_CXX_FLAGS "-O2")
+set (CMAKE_CXX_FLAGS "-O2")
 
-set (CMAKE_CXX_FLAGS "-std=gnu++11 -g ${CMAKE_CXX_FLAGS}")
-
+set(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set ( CMAKE_C_FLAGS "fopenmp -lopenblas -llapack -std=c++0x")
+set(CMAKE_C_FLAGS "fopenmp")
 
-#find_package(Armadillo REQUIRED)
-include_directories(/cluster/home/lgebraad/armadillo/armadillo-8.200.2/include/armadillo_bits)
-include_directories(/cluster/home/lgebraad/armadillo/armadillo-8.200.2/include)
-include_directories(/cluster/home/lgebraad/armadillo/armadillo-8.200.2/)
+find_package(LAPACK)
+find_package(Armadillo REQUIRED)
+include_directories(${ARMADILLO_INCLUDE_DIRS})
 
 set(SOURCE_FILES runSampling.cpp src/random/randomnumbers.cpp src/hmc/hmc.hpp src/hmc/prior.cpp src/hmc/prior.hpp
-        src/hmc/data.cpp src/hmc/data.hpp src/hmc/posterior.cpp src/hmc/posterior.hpp src/hmc/sampler.cpp src/hmc/sampler.hpp src/hmc/forward_model.cpp src/hmc/forward_model.hpp)
+        src/hmc/data.cpp src/hmc/data.hpp src/hmc/posterior.cpp src/hmc/posterior.hpp src/hmc/sampler.cpp
+        src/hmc/sampler.hpp src/hmc/forward_model.cpp src/hmc/forward_model.hpp)
 add_executable(runSampling ${SOURCE_FILES})
 
-find_package(OpenBLAS)
-#find_package(Armadillo 2.4.2 REQUIRED)
-
-target_link_libraries(runSampling /cluster/home/lgebraad/armadillo/armadillo-8.200.2/libarmadillo.so)
-target_link_libraries(runSampling openblas)
-
+target_link_libraries(runSampling ${lapackblas_libraries} ${ARMADILLO_LIBARIES})
+target_link_libraries(runSampling ${ARMADILLO_LIBRARIES})

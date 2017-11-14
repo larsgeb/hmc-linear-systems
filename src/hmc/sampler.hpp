@@ -19,13 +19,13 @@ namespace hmc {
         double _gravity = 1.0;
         unsigned long int _proposals = 10000;
         double _timeStep = 0.1;
-        double _acceptanceFactor = 0.1;
+        double _acceptanceFactor = 1.0;
         unsigned long int _trajectorySteps = 10;
         struct winsize _window{};
         char *_outfile = const_cast<char *>("samples.txt");
         bool _genMomPropose = true; // Use generalized mass matrix to propose new momenta (true).
         bool _genMomKinetic = true; // Use generalized mass matrix to compute kinetic energy (true).
-        bool _norMom = false; // Normalize momentum to previous value to keep constant energy level (true).
+//        bool _norMom = false; // Normalize momentum to previous value to keep constant energy level (true).
         bool _testBefore = true; // Decreases required computation time by order of magnitude, no other influence.
         bool _ergodic = false;  // Randomizes trajectory length and step size
         bool _hamiltonianMonteCarlo = true; // Metropolis Hastings (false) or Hamiltonian Monte Carlo (true).
@@ -42,6 +42,10 @@ namespace hmc {
 
         GenerateInversionSettings &setTimeStep(double timeStep) { _timeStep = timeStep; };
 
+        GenerateInversionSettings &setTimeStepFromGrav_nSteps() {
+            _timeStep = 1.0 / (_trajectorySteps * sqrt(1.0 / _gravity));
+        };
+
         GenerateInversionSettings &
         setAcceptanceFactor(double acceptanceFactor) { _acceptanceFactor = acceptanceFactor; };
 
@@ -54,7 +58,7 @@ namespace hmc {
 
         GenerateInversionSettings &setErgodicity(bool ergodic) { _ergodic = ergodic; }
 
-        GenerateInversionSettings &setnorMom(bool norMom) { _norMom = norMom; }
+//        GenerateInversionSettings &setnorMom(bool norMom) { _norMom = norMom; }
 
         GenerateInversionSettings &setAcceptBeforeTraj(bool acceptBeforeTraj) { _testBefore = acceptBeforeTraj; }
 
@@ -94,7 +98,7 @@ namespace hmc {
         unsigned long _proposals; // Number of iterations for Monte Carlo sampling
         bool _genMomKinetic;
         bool _genMomPropose;
-        bool _norMom;
+//        bool _norMom;
         bool _testBefore;
         bool _hmc;
         char *_outfile;
