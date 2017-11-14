@@ -3,7 +3,7 @@
 //
 #include "src/hmc/hmc.hpp"
 #include <ctime>
-#include <armadillo>
+#include <armadillo/armadillo-8.200.2/include/armadillo>
 #include <omp.h>
 #include <time.h>
 #include <sys/time.h>
@@ -28,10 +28,10 @@ int main() {
     auto startWall = get_wall_time();
 
     // Create prior information
-    arma::dcolvec means(121);
+    arma::dcolvec means(10201);
     arma::dcolvec std(means.size());
     for (int i = 0; i < means.size(); i++) {
-        means[i] = 1.0 / 1000.0; // i%1 > everything 1/1e3, i%2 > alternating checkerboard
+        means[i] = 1.0 / 1000.0; // everything 1/1e3
         std[i] = 0.01;
     }
 
@@ -40,7 +40,8 @@ int main() {
     startWall = get_wall_time();
     std::cout << "Loading forward matrix ..." << std::endl;
     arma::mat forward_matrix;
-    forward_matrix.load("INPUT/matrix_checkerboard_lr_10x10_arma.txt");
+    forward_matrix.load("INPUT/matrix_checkerboard_lr_100x100_arma.txt");
+
     hmc::forward_model model(forward_matrix);
     std::cout << "Forward matrix loading time CPU: " << (std::clock() - startCPU) / (double)
             (CLOCKS_PER_SEC) << "s, wall: " << get_wall_time() - startWall << "s" << std::endl << std::endl;
@@ -52,7 +53,7 @@ int main() {
     startWall = get_wall_time();
     std::cout << "Loading data ..." << std::endl;
     arma::rowvec synthDataRow;
-    synthDataRow.load("INPUT/Recorded_time_sources_checkerboard_lr_10x10_arma.txt");
+    synthDataRow.load("INPUT/Recorded_time_sources_checkerboard_lr_100x100_arma.txt");
     arma::vec synthData = synthDataRow.t();
     synthDataRow.clear();
     std::cout << "Data loading time CPU: " << (std::clock() - startCPU) / (double) (CLOCKS_PER_SEC) <<
