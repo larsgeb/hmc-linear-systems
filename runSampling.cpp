@@ -71,13 +71,13 @@ int main() {
     settings.setSamples(10000);
 
     // Choose it such that oscillations are around explorative (no slow exploration)
-    settings.setGravity(0.0001);
+    settings.setTemperature(10000);
 
     // ideally below 2 std_dev for 1d problems for stability, based on PDE analysis
     settings.setTimeStepFromGrav_nSteps();
 
     settings.setErgodicity(true);
-    settings.setAcceptanceFactor(0.0001);
+//    settings.setAcceptanceFactor(0.0001);
     settings.setHamiltonianMonteCarlo(true);
     settings.setGenMomPropose(true);
     settings.setGenMomKinetic(true);
