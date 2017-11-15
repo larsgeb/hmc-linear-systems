@@ -68,7 +68,7 @@ int main() {
 
     // Settings for the sampler
     hmc::GenerateInversionSettings settings;
-    settings.setSamples(10000);
+    settings.setSamples(100);
 
     // Choose it such that oscillations are around explorative (no slow exploration)
     settings.setTemperature(10000);
