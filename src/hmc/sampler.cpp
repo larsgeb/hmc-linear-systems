@@ -106,6 +106,7 @@ namespace hmc {
         std::cout << "\t parameters:        \033[1;32m" << _currentModel.size() << "\033[0m" << std::endl;
         std::cout << "\t proposals:         \033[1;32m" << _proposals << "\033[0m" << std::endl;
         std::cout << "\t gravity:           \033[1;32m" << _gravity << "\033[0m" << std::endl;
+        std::cout << "\t temperature:       \033[1;32m" << _temperature << "\033[0m" << std::endl;
         std::cout << "\t timestep:          \033[1;32m" << _dt << "\033[0m" << std::endl;
         std::cout << "\t number of steps:   \033[1;32m" << _nt << "\033[0m" << std::endl;
         std::cout << "\t acceptance factor: \033[1;32m" << _acceptanceFactor << "\033[0m" << std::endl;
