@@ -1,5 +1,5 @@
 //
-// Created by Lars Gebraad on 18-8-17.
+// Created by Lars Gebraad on 1-12-17.
 //
 
 #ifndef HMC_LINEAR_SYSTEM_SAMPLER_HPP
@@ -14,28 +14,26 @@
 #include <unistd.h>
 
 
+
 namespace hmc {
     struct InversionSettings {
         const double PI = 3.14159265358979323846264338327;
         double _gravity = 1.0;
         double _temperature = 1.0;
-        unsigned long int _proposals = 1000;
+        unsigned long int _proposals = 10000;
+        double _timeStep = 0.1;
         double _acceptanceFactor = 1.0;
         unsigned long int _trajectorySteps = 10;
         struct winsize _window{};
-        char *_outfile = const_cast<char *>("OUTPUT/samples.txt");
+        char *_outfile = const_cast<char *>("samples.txt");
         bool _genMomPropose = true; // Use generalized mass matrix to propose new momenta (true).
         bool _genMomKinetic = true; // Use generalized mass matrix to compute kinetic energy (true).
+//        bool _norMom = false; // Normalize momentum to previous value to keep constant energy level (true).
         bool _testBefore = true; // Decreases required computation time by order of magnitude, no other influence.
-        bool _ergodic = true;  // Randomizes trajectory length and step size
+        bool _ergodic = false;  // Randomizes trajectory length and step size
         bool _hamiltonianMonteCarlo = true; // Metropolis Hastings (false) or Hamiltonian Monte Carlo (true).
-        double _timeStep;
 
         InversionSettings() {
-            // Use standard timestep defined by gravity
-            setTimeStepFromGrav_nSteps();
-
-            // Try to get the command window size for displaying results.
             ioctl(STDOUT_FILENO, TIOCGWINSZ, &_window);
             if (_window.ws_col < 5)
                 _window.ws_col = 20;
@@ -63,12 +61,13 @@ namespace hmc {
 
         InversionSettings &setErgodicity(bool ergodic) { _ergodic = ergodic; }
 
+//        InversionSettings &setnorMom(bool norMom) { _norMom = norMom; }
+
         InversionSettings &setAcceptBeforeTraj(bool acceptBeforeTraj) { _testBefore = acceptBeforeTraj; }
 
         InversionSettings &setOutfile(char *outputFile) { _outfile = outputFile; }
 
         InversionSettings &setGravity(double gravity) { _gravity = gravity; }
-
         InversionSettings &setTemperature(double temperature) { _temperature = temperature; }
 
         InversionSettings &setHamiltonianMonteCarlo

@@ -1,17 +1,20 @@
-//
-// Created by Lars Gebraad on 7/11/17.
-//
+/*
+ * Main executable for running sampling of linear models with a provided Gaussian mean.
+ * Created by Lars Gebraad on 7/11/17.
+ */
+
 #include "src/hmc/hmc.hpp"
 #include <ctime>
+#include <sstream>
 #include <armadillo>
 #include <omp.h>
-#include <time.h>
+//#include <time.h>
 #include <sys/time.h>
 
 double get_wall_time() {
     struct timeval time;
     if (gettimeofday(&time, NULL)) {
-        //  Handle error
+        // Handle error
         return 0;
     }
     return (double) time.tv_sec + (double) time.tv_usec * .000001;
@@ -21,7 +24,84 @@ double get_cpu_time() {
     return (double) clock() / CLOCKS_PER_SEC;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+
+    // Standard settings
+    hmc::InversionSettings settings;
+
+    // Parse command line flags, it is very easy to implement new flags, but only done out of necessity
+    for (int i = 1; i < argc; i++) {
+        if (i + 1 != argc) {
+            if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--temperature") == 0) {
+                settings._temperature = atof(argv[i + 1]);
+                i++;
+            }
+
+            if (strcmp(argv[i], "-nt") == 0 || strcmp(argv[i], "--trajectorysteps") == 0) {
+                settings._trajectorySteps = atof(argv[i + 1]);
+                i++;
+            }
+
+            if (strcmp(argv[i], "-dt") == 0 || strcmp(argv[i], "--timestep") == 0) {
+                settings._timeStep = atof(argv[i + 1]);
+                i++;
+            }
+
+            if (strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--ergodic") == 0) {
+                std::stringstream ss(argv[i + 1]);
+                bool b;
+
+                if (!(ss >> std::boolalpha >> b)) {
+                    std::cout << "Incorrect value for boolean parameter (ergodicity), settings to default." <<
+                              std::endl;
+                } else {
+                    settings._ergodic = b;
+                }
+                i++;
+            }
+
+            if (strcmp(argv[i], "-gms") == 0 || strcmp(argv[i], "--generalizedmass") == 0) {
+                std::stringstream ss(argv[i + 1]);
+                bool b;
+
+                if (!(ss >> std::boolalpha >> b)) {
+                    std::cout << "Incorrect value for boolean parameter (generalized mass), settings to default." <<
+                              std::endl;
+                } else {
+                    settings._genMomPropose = b;
+                }
+                i++;
+            }
+
+            if (strcmp(argv[i], "-gmm") == 0 || strcmp(argv[i], "--generalizedmomentum") == 0) {
+                std::stringstream ss(argv[i + 1]);
+                bool b;
+
+                if (!(ss >> std::boolalpha >> b)) {
+                    std::cout << "Incorrect value for boolean parameter (generalized momentum), settings to default." <<
+                              std::endl;
+                } else {
+                    settings._genMomKinetic = b;
+                }
+                i++;
+            }
+
+            if (strcmp(argv[i], "-Hb") == 0 || strcmp(argv[i], "--hamiltonianbefore") == 0) {
+                std::stringstream ss(argv[i + 1]);
+                bool b;
+
+                if (!(ss >> std::boolalpha >> b)) {
+                    std::cout << "Incorrect value for boolean parameter (hamiltonian invariance exploit), settings to "
+                            "default." << std::endl;
+                } else {
+                    settings._testBefore = b;
+                }
+                i++;
+            }
+        }
+    }
+
+
     std::cout << std::endl << "Metropolis Hastings/Hamiltonian Monte Carlo Sampler" << std::endl
               << "Lars Gebraad, 2017" << std::endl << std::endl;
     std::clock_t startCPU;
@@ -71,17 +151,6 @@ int main() {
     hmc::prior prior(means, std);
 
     // Settings for the sampler
-    hmc::GenerateInversionSettings settings;
-    settings.setSamples(10000);
-
-    // Choose it such that oscillations are around explorative (no slow exploration)
-    settings.setTemperature(15);
-    settings.setTimeStepFromGrav_nSteps();
-    settings.setErgodicity(true);
-    settings.setHamiltonianMonteCarlo(true);
-    settings.setGenMomPropose(true);
-    settings.setGenMomKinetic(true);
-    settings.setOutfile(const_cast<char *>("OUTPUT/samples1.txt"));;
 
     // Creating the sampler
     hmc::sampler sampler1(prior, data, model, settings);
@@ -94,7 +163,6 @@ int main() {
     sampler1.sample();
     std::cout << std::endl << "Sampling time CPU: " << (std::clock() - startCPU) / (double) (CLOCKS_PER_SEC) << "s, "
             "wall: " << get_wall_time() - startWall << "s" << std::endl << std::endl;
-
     return EXIT_SUCCESS;
 }
 

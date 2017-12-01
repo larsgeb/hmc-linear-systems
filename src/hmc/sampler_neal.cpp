@@ -1,5 +1,5 @@
 //
-// Created by Lars Gebraad on 18-8-17.
+// Created by Lars Gebraad on 1-12-17.
 //
 #include <src/random/randomnumbers.hpp>
 #include <cmath>
@@ -99,14 +99,13 @@ namespace hmc {
 
     void sampler::sample() {
 
-        std::cout << "Inversion of linear model using MCMC sampling." << std::endl;
+        std::cout << "Inversion of linear model using MCMC sampling, Neal's algorithm." << std::endl;
         std::cout << "Selected method;      \033[1;34m" << (_hmc ? "hmc" : "Metropolis-Hastings")
                   << "\033[0m with following options:"
                   << std::endl;
         std::cout << "\t parameters:        \033[1;32m" << _currentModel.size() << "\033[0m" << std::endl;
         std::cout << "\t proposals:         \033[1;32m" << _proposals << "\033[0m" << std::endl;
         std::cout << "\t gravity:           \033[1;32m" << _gravity << "\033[0m" << std::endl;
-        std::cout << "\t temperature:       \033[1;32m" << _temperature << "\033[0m" << std::endl;
         std::cout << "\t timestep:          \033[1;32m" << _dt << "\033[0m" << std::endl;
         std::cout << "\t number of steps:   \033[1;32m" << _nt << "\033[0m" << std::endl;
         std::cout << "\t acceptance factor: \033[1;32m" << _acceptanceFactor << "\033[0m" << std::endl;
@@ -117,7 +116,6 @@ namespace hmc {
         std::cout << "\t - Use generalised mass matrix with" << (_genMomPropose ? "" : "out")
                   << " off diagonal entries" << std::endl;
         if (_genMomKinetic) std::cout << "\t - Use generalised momentum for kinetic energy" << std::endl;
-        std::cout << "\t - " << (_ergodic ? "E" : "Not e") << "nforcing ergodicity" << std::endl;
 
         double x = _hmc ? energy() : chi();
         double x_new;
@@ -143,19 +141,18 @@ namespace hmc {
             }
 
             if (_hmc) {
+                // Propose model and propagate
                 propose_hamilton(uturns);
-                if (!_testBefore) {
-                    leap_frog(uturns, it == _proposals - 1);
-                }
+                x = chi();
+                leap_frog(uturns, it == _proposals - 1);
+                x_new = chi();
             } else {
                 propose_metropolis();
             }
 
-            x_new = _acceptanceFactor * (_hmc ? energy() : chi());
-
+            // Check hamiltonian invariance
             double result;
             result = (x - x_new) / _temperature;
-
             double result_exponent;
             result_exponent = exp(result);
 
@@ -164,10 +161,12 @@ namespace hmc {
                     leap_frog(uturns, it == _proposals - 1);
                 }
                 accepted++;
-                x = x_new;
+                if (!_hmc) x = x_new;
                 _currentModel = _proposedModel;
                 write_sample(samplesfile, x);
             }
+
+
         }
         // Write results
         std::cout << "[" << 100 << "%] " << std::string((unsigned long) (_window.ws_col - 7), *"=") << "\r\n"
@@ -192,7 +191,7 @@ namespace hmc {
 
         std::ofstream trajectoryfile;
         if (writeTrajectory) {
-            trajectoryfile.open("OUTPUT/trajectory.txt");
+            trajectoryfile.open("OUTPUT/trajectory_neal.txt");
             trajectoryfile << _prior._means.size() << " " << _nt << std::endl;
         }
 
