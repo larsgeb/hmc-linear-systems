@@ -17,8 +17,8 @@ set(SOURCE_FILES runSampling.cpp src/random/randomnumbers.cpp src/hmc/hmc.hpp sr
 add_executable(runSampling ${SOURCE_FILES})
 
 set(SOURCE_FILES_NEAL runSampling.cpp src/random/randomnumbers.cpp src/hmc/hmc.hpp src/hmc/prior.cpp src/hmc/prior.hpp
-        src/hmc/data.cpp src/hmc/data.hpp src/hmc/posterior.cpp src/hmc/posterior.hpp src/hmc/sampler_neal.cpp
-        src/hmc/sampler_neal.hpp src/hmc/forward_model.cpp src/hmc/forward_model.hpp)
+        src/hmc/data.cpp src/hmc/data.hpp src/hmc/posterior.cpp src/hmc/posterior.hpp
+        src/hmc/forward_model.cpp src/hmc/forward_model.hpp)
 add_executable(runSampling_NEAL ${SOURCE_FILES_NEAL})
 
 target_link_libraries(runSampling ${lapackblas_libraries} ${ARMADILLO_LIBARIES})
