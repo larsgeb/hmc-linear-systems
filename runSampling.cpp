@@ -22,8 +22,8 @@ int main(int argc, char *argv[]) {
     arma::dcolvec means(121);
     arma::dcolvec std(means.size());
     for (int i = 0; i < means.size(); i++) {
-        means[i] = 1.0 / 1500.0; // i%1 > everything 1/1e3, i%2 > alternating checkerboard
-        std[i] = 0.001;
+        means[i] = settings._means;
+        std[i] = settings._std_dev;
         // Increasing this value to 0.1 will allow the algorithm to diverge far from relatively
         // expected speeds, and thus for this underdetermined problem come up with very good fitting models, but
         // unexpected values. Settings it to 0.0001 will pull many values towards the value 1.0/1500.0, giving to
@@ -48,11 +48,8 @@ int main(int argc, char *argv[]) {
     startCPU = std::clock();
     startWall = get_wall_time();
     std::cout << "Loading data ..." << std::endl;
-    arma::rowvec synthDataRow;
-//    synthDataRow.load("INPUT/Recorded_time_sources_checkerboard_lr_10x10_arma.txt");
-    synthDataRow.load(settings._inputData);
-    arma::vec synthData = synthDataRow.t();
-    synthDataRow.clear();
+    arma::vec synthData;
+    synthData.load(settings._inputData);
     std::cout << "Data loading time CPU: " << (std::clock() - startCPU) / (double) (CLOCKS_PER_SEC) <<
               "s, wall: " << get_wall_time() - startWall << "s" << std::endl << std::endl;
 

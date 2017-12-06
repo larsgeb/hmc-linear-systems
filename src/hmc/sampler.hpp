@@ -25,9 +25,12 @@ namespace hmc {
         unsigned long int _trajectorySteps = 10;
         unsigned long int _massMatrixType = 0;
         struct winsize _window{};
+        double _means;
+        double _std_dev;
         char *_outputSamples = const_cast<char *>("OUTPUT/samples.txt");
         char *_inputMatrix = const_cast<char *>("INPUT/matrix.txt");
         char *_inputData = const_cast<char *>("INPUT/data.txt");
+        bool _algorithmNew = true;
         bool _genMomPropose = true; // Use generalized mass matrix to propose new momenta (true).
         bool _genMomKinetic = true; // Use generalized mass matrix to compute kinetic energy (true).
         bool _testBefore = true; // Decreases required computation time by order of magnitude, no other influence.
@@ -35,40 +38,10 @@ namespace hmc {
         bool _hamiltonianMonteCarlo = true; // Metropolis Hastings (false) or Hamiltonian Monte Carlo (true).
         double _timeStep;
 
-        // Setters (not really needed, since struct is public, but whatever
-        InversionSettings &setSamples(unsigned long int samples) { _proposals = samples; };
-
-        InversionSettings &setTimeStep(double timeStep) { _timeStep = timeStep; };
-
         InversionSettings &setTimeStepFromGrav_nSteps() {
             _timeStep = 2.0 * PI / _trajectorySteps;
         };
 
-        InversionSettings &setTrajectorySteps(unsigned long int trajectorySteps) {
-            _trajectorySteps = trajectorySteps;
-        };
-
-        InversionSettings &setGenMomPropose(bool genMomPropose) { _genMomPropose = genMomPropose; }
-
-        InversionSettings &setGenMomKinetic(bool genMomKinetic) { _genMomKinetic = genMomKinetic; }
-
-        InversionSettings &setErgodicity(bool ergodic) { _ergodic = ergodic; }
-
-        InversionSettings &setAcceptBeforeTraj(bool acceptBeforeTraj) { _testBefore = acceptBeforeTraj; }
-
-        InversionSettings &setOutfile(char *outputFile) { _outputSamples = outputFile; }
-
-        InversionSettings &setInputMatrix(char *inputMatrix) { _inputMatrix = inputMatrix; }
-
-        InversionSettings &setInputData(char *inputData) { _inputData = inputData; }
-
-        InversionSettings &setGravity(double gravity) { _gravity = gravity; }
-
-        InversionSettings &setTemperature(double temperature) { _temperature = temperature; }
-
-        InversionSettings &setHamiltonianMonteCarlo(bool hamiltonianMonteCarlo) {
-            _hamiltonianMonteCarlo = hamiltonianMonteCarlo;
-        }
 
         // Parse command line options
         void parse_input(int argc, char *argv[]) {
@@ -80,7 +53,6 @@ namespace hmc {
                 }
 
                 if (i + 1 != argc) {
-                    // input matrix
                     if (strcmp(argv[i], "-im") == 0 || strcmp(argv[i], "--inputmatrix") == 0) {
                         _inputMatrix = (argv[i + 1]);
                         i++;
@@ -116,6 +88,15 @@ namespace hmc {
                         i++;
                     } else if (strcmp(argv[i], "-Hb") == 0 || strcmp(argv[i], "--hamiltonianbefore") == 0) {
                         parse_boolean(argv, i, _testBefore);
+                        i++;
+                    } else if (strcmp(argv[i], "-an") == 0 || strcmp(argv[i], "--algorithmnew") == 0) {
+                        parse_boolean(argv, i, _algorithmNew);
+                        i++;
+                    } else if (strcmp(argv[i], "-means") == 0 || strcmp(argv[i], "--means") == 0) {
+                        parse_double(argv, i, _means);
+                        i++;
+                    } else if (strcmp(argv[i], "-std") == 0 || strcmp(argv[i], "--standarddeviation") == 0) {
+                        parse_double(argv, i, _std_dev);
                         i++;
                     }
                 }
@@ -177,6 +158,8 @@ namespace hmc {
 
         // Sample the posterior and write samples out to file
         void sample();
+        void sample_new();
+        void sample_neal();
 
         // Gradient of the misfit, according to Aq - b
         arma::vec precomp_misfitGrad(arma::vec parameters);
@@ -203,6 +186,7 @@ namespace hmc {
         unsigned long _massMatrixType; // Number of iterations for Monte Carlo sampling
         bool _genMomKinetic;
         bool _genMomPropose;
+        bool _algorithmNew;
 //        bool _norMom;
         bool _testBefore;
         bool _hmc;
@@ -210,6 +194,7 @@ namespace hmc {
         char *_inputMatrix;
         char *_inputData;
         winsize _window;
+        bool _ergodic;
 
         arma::mat *_massMatrix;
         arma::mat _optionalMassMatrixMemory;
@@ -225,7 +210,7 @@ namespace hmc {
         // Member functions
         void propose_metropolis();
 
-        void propose_hamilton(int &uturns);
+        void propose_momentum();
 
         void leap_frog(int &uturns, bool writeTrajectory);
 
@@ -240,10 +225,6 @@ namespace hmc {
         arma::vec precomp_misfitGrad();
 
         double kineticEnergy();
-
-
-        bool _ergodic;
-        double _acceptanceFactor;
     };
 }
 
