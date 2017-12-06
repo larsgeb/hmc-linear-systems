@@ -23,13 +23,15 @@ namespace hmc {
         _genMomPropose = settings._genMomPropose;
         _testBefore = settings._testBefore;
         _massMatrixType = settings._massMatrixType;
-        _window = settings._window;
         _ergodic = settings._ergodic;
         _hmc = settings._hamiltonianMonteCarlo;
         _outputSamples = settings._outputSamples;
+        _outputTrajectory = settings._outputTrajectory;
         _inputMatrix = settings._inputMatrix;
         _inputData = settings._inputData;
         _algorithmNew = settings._algorithmNew;
+        _window = settings._window;
+
 
         // Initialise random number generator
         srand((unsigned int) time(nullptr));
@@ -89,7 +91,8 @@ namespace hmc {
                   << "\033[0m" << std::endl << std::endl;
         std::cout << "\t input matrix:      \033[1;32m" << _inputMatrix << "\033[0m" << std::endl;
         std::cout << "\t input data:        \033[1;32m" << _inputData << "\033[0m" << std::endl;
-        std::cout << "\t output samples:    \033[1;32m" << _outputSamples << "\033[0m" << std::endl << std::endl;
+        std::cout << "\t output samples:    \033[1;32m" << _outputSamples << "\033[0m" << std::endl;
+        std::cout << "\t output trajectory: \033[1;32m" << _outputTrajectory << "\033[0m" << std::endl << std::endl;
 
         if (_testBefore) {
             std::cout << "\t - Exploiting conservation of energy by evaluating before propagation" << std::endl;
@@ -112,7 +115,8 @@ namespace hmc {
 
     void sampler::propose_momentum() {
         // Draw random prior momenta
-        _proposedMomentum = (_genMomPropose&&_massMatrixType==0) ? randn_Cholesky(_CholeskyLowerMassMatrix) : randn(*_massMatrix);
+        _proposedMomentum = (_genMomPropose && _massMatrixType == 0) ? randn_Cholesky(_CholeskyLowerMassMatrix) : randn(
+                *_massMatrix);
     }
 
     double sampler::precomp_misfit() {
@@ -284,7 +288,7 @@ namespace hmc {
 
         std::ofstream trajectoryfile;
         if (writeTrajectory) {
-            trajectoryfile.open("OUTPUT/trajectory.txt");
+            trajectoryfile.open(_outputTrajectory);
             trajectoryfile << _prior._means.size() << " " << _nt << std::endl;
         }
 
@@ -328,11 +332,6 @@ namespace hmc {
         outfile << misfit;
         outfile << std::endl;
 
-    }
-
-    arma::vec sampler::precomp_misfitGrad(arma::vec parameters) {
-        // Should actually be left multiply, but matrix is symmetric, so skipped that bit.
-        return _A * parameters - _bT;
     }
 
     void sampler::sample() {

@@ -18,16 +18,15 @@ namespace hmc {
     struct InversionSettings {
         // Defaults
         const double PI = 3.14159265358979323846264338327;
-        double _gravity = 1.0;
         double _temperature = 1.0;
         unsigned long int _proposals = 1000;
-        double _acceptanceFactor = 1.0;
         unsigned long int _trajectorySteps = 10;
         unsigned long int _massMatrixType = 0;
         struct winsize _window{};
-        double _means;
-        double _std_dev;
+        double _means = 1;
+        double _std_dev = 1;
         char *_outputSamples = const_cast<char *>("OUTPUT/samples.txt");
+        char *_outputTrajectory = const_cast<char *>("OUTPUT/trajectory.txt");
         char *_inputMatrix = const_cast<char *>("INPUT/matrix.txt");
         char *_inputData = const_cast<char *>("INPUT/data.txt");
         bool _algorithmNew = true;
@@ -64,6 +63,9 @@ namespace hmc {
                         i++;
                     } else if (strcmp(argv[i], "-os") == 0 || strcmp(argv[i], "--outputsamples") == 0) {
                         _outputSamples = (argv[i + 1]);
+                        i++;
+                    } else if (strcmp(argv[i], "-ot") == 0 || strcmp(argv[i], "--outputtrajectory") == 0) {
+                        _outputTrajectory = (argv[i + 1]);
                         i++;
                     } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--temperature") == 0) {
                         parse_double(argv, i, _temperature);
@@ -158,11 +160,10 @@ namespace hmc {
 
         // Sample the posterior and write samples out to file
         void sample();
-        void sample_new();
-        void sample_neal();
 
-        // Gradient of the misfit, according to Aq - b
-        arma::vec precomp_misfitGrad(arma::vec parameters);
+        void sample_new();
+
+        void sample_neal();
 
         // Set the starting model explicitly instead of prior-based
         void setStarting(arma::vec &model);
@@ -191,6 +192,7 @@ namespace hmc {
         bool _testBefore;
         bool _hmc;
         char *_outputSamples;
+        char *_outputTrajectory;
         char *_inputMatrix;
         char *_inputData;
         winsize _window;

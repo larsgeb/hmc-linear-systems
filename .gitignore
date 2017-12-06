@@ -53,3 +53,4 @@ runSampling
 *.cbp
 .idea/
 INPUT/
+bin/
