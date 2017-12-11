@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 params = {'legend.fontsize': 'x-large',
-          'figure.figsize': (6, 6),
+          'figure.figsize': (12, 4),
           'axes.labelsize': 16,
           'axes.titlesize': 'x-large',
           'xtick.labelsize': 16,
@@ -44,7 +44,9 @@ image0 = axarr[0].imshow(np.transpose(np.reshape(means, (int(numParameters**0.5)
                          extent=[-0.5, int(numParameters**0.5) - 0.5, -0.5, int(numParameters**0.5) - 0.5])
 axarr[0].invert_yaxis()
 axarr[0].set_title("Mean of model blocks")
-image1 = axarr[1].imshow(np.transpose(np.reshape(variances, (int(numParameters**0.5), int(numParameters**0.5)))), cmap=plt.get_cmap('seismic'),
+image1 = axarr[1].imshow(np.transpose(np.reshape(variances, (int(numParameters**0.5),
+                                                                     int(numParameters**0.5)))),
+                         cmap=plt.get_cmap('seismic'),
                          interpolation='none',
                          extent=[-0.5, int(numParameters**0.5) - 0.5, int(numParameters**0.5) - 0.5, -0.5], vmin=0,
                          vmax=maxVar)
@@ -54,13 +56,18 @@ axarr[1].set_title("Variance of model blocks")
 divider = make_axes_locatable(axarr[0])
 cax = divider.append_axes("right", size="5%", pad=0.05)
 cbar0 = plt.colorbar(image0, cax=cax)
-cbar0.set_label('Slowness of sound [s/m]')
+cbar0.set_label('mean slowness[s/m]')
 
 divider = make_axes_locatable(axarr[1])
 cax = divider.append_axes("right", size="5%", pad=0.05)
 cbar1 = plt.colorbar(image1, cax=cax)
-cbar1.set_label('Variance of q')
+cbar1.set_label('variance')
 # f.tight_layout()
 
 plt.subplots_adjust(wspace=0.5, hspace=20)
-plt.show()
+if (sys.argv[2] == 0):
+    plt.show()
+else:
+    print "Saving to", sys.argv[3]
+    plt.savefig(sys.argv[3])
+    plt.close()

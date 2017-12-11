@@ -5,11 +5,14 @@ input_data=../INPUT/Recorded_time_sources_checkerboard_lr_10x10_arma.txt
 input_matrix=../INPUT/matrix_checkerboard_lr_10x10_arma.txt
 
 # Output file
-name=checkerboard_10x10
+name=new_alg_mass_unit_10e4_checkerboard_10x10
 output_samples=../OUTPUT/${name}.txt
 output_trajectory=../OUTPUT/${name}_trajecory.txt
 output_log=../OUTPUT/${name}.log
 output_plot=../OUTPUT/${name}.pdf
+
+# plot (0) or save (1)
+pl_or_sv=1
 
 # Prior info
 means=0.000667
@@ -17,9 +20,10 @@ std_dev=0.001
 
 # Tuning parameters
 algorithm_type=1 # 1 for new, 0 for neal
-mass_matrix_type=0 # 0 for complete, 1 for diagonal, 2 for unit
+mass_matrix_type=2 # 0 for complete, 1 for diagonal, 2 for unit
 ergodicity=1 # 1 for enforcing ergodicity, 0 for not
-temperature=10
+temperature=12
+time_step=0.0000025 # nan for default
 number_of_samples=$((10**4))
 
 
@@ -32,6 +36,7 @@ number_of_samples=$((10**4))
     -ns ${number_of_samples} \
     -t ${temperature} \
     -e ${ergodicity} \
+    -dt ${time_step} \
     -means ${means} \
     -std ${std_dev} \
     --massmatrixtype ${mass_matrix_type} \
@@ -39,4 +44,4 @@ number_of_samples=$((10**4))
     2>&1 | tee ${output_log}
 
 # Visualize data
-python ../src/visualization/plotTomography.py ${output_samples}
+python ../src/visualization/plotTomography.py ${output_samples} ${pl_or_sv} ${output_plot}
