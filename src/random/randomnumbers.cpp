@@ -56,6 +56,7 @@ arma::vec randn_Cholesky(arma::mat CholeskyLower_CovarianceMatrix) {
 }
 
 arma::vec randn(arma::mat DiagonalCovarianceMatrix) {
+    // Generate uncorrelated samples from diagonal.
     arma::vec samples(DiagonalCovarianceMatrix.n_rows, true);
 
     for (int i = 0; i < DiagonalCovarianceMatrix.n_rows; i++) {

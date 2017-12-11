@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 # - Dimensions of interest.
 dim1 = 1
-dim2 = 3
+dim2 = 2
 
 params = {'legend.fontsize': 'x-large',
           'figure.figsize': (4, 4),

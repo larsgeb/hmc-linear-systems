@@ -1,3 +1,0 @@
-[submodule "SparseLinearAlgebra"]
-	path = AlgebraLib
-	url = https://github.com/larsgeb/AlgebraLib.git

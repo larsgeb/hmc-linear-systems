@@ -16,7 +16,7 @@ pylab.rcParams.update(params)
 # If there's other stuff on the line, like misfit values
 trailingElements = 1
 nbi = 30
-fid = open('OUTPUT/samples1.txt')
+fid = open('OUTPUT/samples_52934445.txt')
 dummy = fid.read().strip().split()
 fid.close()
 numParameters = int(dummy[0])
@@ -32,9 +32,9 @@ for i in range(nbi, numSamples):
 # Dimensions to visualize
 dimA = 15
 dimB = 20
-with open('OUTPUT/samples1.txt') as f:
+with open('OUTPUT/samples_52934445.txt') as f:
     iterations = sum(1 for _ in f) - nbi - 2
-dimension = 121
+dimension = 10201
 
 x_plot = np.zeros(iterations)
 y_plot = np.zeros(iterations)
