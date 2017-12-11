@@ -169,7 +169,7 @@ namespace hmc {
         for (int it = 1; it < _proposals; it++) {
 
             // Write progress to console
-            if (it % 100 == 0) {
+            if (it % 10 == 0) {
                 std::cout << "[" << std::setw(3) << (int) (100.0 * double(it) / _proposals) << "%] "
                           << std::string(((unsigned long) ((_window.ws_col - 7) * it / _proposals)), *"=") <<
                           "\r" << std::flush;
