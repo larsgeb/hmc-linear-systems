@@ -13,7 +13,8 @@ include_directories(/cluster/home/lgebraad/armadillo/armadillo-8.200.2/include/a
 include_directories(/cluster/home/lgebraad/armadillo/armadillo-8.200.2/include)
 include_directories(/cluster/home/lgebraad/armadillo/armadillo-8.200.2/)
 
-set(SOURCE_FILES runSampling.cpp src/random/randomnumbers.cpp src/hmc/hmc.hpp src/hmc/prior.cpp src/hmc/prior.hpp
+set(SOURCE_FILES src/hmc/runSampling.cpp src/random/randomnumbers.cpp src/hmc/hmc.hpp src/hmc/prior.cpp src/hmc/prior
+        .hpp
         src/hmc/data.cpp src/hmc/data.hpp src/hmc/posterior.cpp src/hmc/posterior.hpp src/hmc/sampler.cpp src/hmc/sampler.hpp src/hmc/forward_model.cpp src/hmc/forward_model.hpp)
 add_executable(runSampling ${SOURCE_FILES})
 
