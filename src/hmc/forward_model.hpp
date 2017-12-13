@@ -14,7 +14,9 @@ namespace hmc {
     public:
         explicit forward_model(const mat &_model_matrix);
 
-        const arma::mat _g;
+        forward_model();
+
+        arma::mat _g;
 
     };
 }

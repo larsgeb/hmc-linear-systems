@@ -5,7 +5,7 @@ input_data=../INPUT/Recorded_time_sources_checkerboard_lr_10x10_arma.txt
 input_matrix=../INPUT/matrix_checkerboard_lr_10x10_arma.txt
 
 # Output file
-name=new_alg_mass_unit_10e4_checkerboard_10x10
+name=new_alg_mass_diagonal_10e4_checkerboard_10x10
 output_samples=../OUTPUT/${name}.txt
 output_trajectory=../OUTPUT/${name}_trajecory.txt
 output_log=../OUTPUT/${name}.log
@@ -20,10 +20,11 @@ std_dev=0.001
 
 # Tuning parameters
 algorithm_type=1 # 1 for new, 0 for neal
-mass_matrix_type=2 # 0 for complete, 1 for diagonal, 2 for unit
+mass_matrix_type=1 # 0 for complete, 1 for diagonal, 2 for unit
 ergodicity=1 # 1 for enforcing ergodicity, 0 for not
-temperature=12
-time_step=0.0000025 # nan for default
+temperature=11
+adapttimestep=1
+time_step=nan # nan for default, is overridden by adapttmestep
 number_of_samples=$((10**4))
 
 
@@ -38,6 +39,7 @@ number_of_samples=$((10**4))
     -e ${ergodicity} \
     -dt ${time_step} \
     -means ${means} \
+    -at ${adapttimestep} \
     -std ${std_dev} \
     --massmatrixtype ${mass_matrix_type} \
     -an ${algorithm_type} \

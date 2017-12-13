@@ -11,12 +11,15 @@ namespace hmc{
     class prior {
     public:
         // Constructors
-        prior(arma::vec &mean, arma::vec &std);
+        prior(arma::vec mean, arma::vec std);
+
+        prior();
+
 
         // Fields
-        const arma::vec _means;
-        const arma::mat _covariance;
-        const arma::mat _inv_cov_m;
+        arma::vec _means;
+        arma::mat _covariance;
+        arma::mat _inv_cov_m;
 
         // Member functions
         double misfit(arma::vec &parameters);

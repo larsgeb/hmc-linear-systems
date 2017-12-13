@@ -11,9 +11,7 @@
 #include "sampler.hpp"
 
 namespace hmc {
-    sampler::sampler(prior &prior, data &data, forward_model &model, InversionSettings settings) :
-            _data(data), _prior(prior), _model(model) {
-
+    sampler::sampler(InversionSettings settings) {
         // Read the settings
         _nt = settings._trajectorySteps;
         _dt = settings._timeStep;
@@ -31,15 +29,54 @@ namespace hmc {
         _inputData = settings._inputData;
         _algorithmNew = settings._algorithmNew;
         _window = settings._window;
-
+        _adaptTimestep = settings._adaptTimestep;
 
         // Initialise random number generator
         srand((unsigned int) time(nullptr));
 
+        std::cout << std::endl << "Metropolis Hastings/Hamiltonian Monte Carlo Sampler" << std::endl << "Lars Gebraad, "
+                "2017" << std::endl << "Use --help or -h to display the documentation." << std::endl << std::endl;
+
+        // Load forward matrix
+        auto startCPU = get_cpu_time();
+        auto startWall = get_wall_time();
+        std::cout << "Loading forward matrix ..." << std::endl;
+        arma::mat forward_matrix;
+        forward_matrix.load(settings._inputMatrix);
+        _model = hmc::forward_model(forward_matrix);
+        std::cout << "Forward matrix loading time CPU: " << (std::clock() - startCPU) / (double)
+                (CLOCKS_PER_SEC) << "s, wall: " << get_wall_time() - startWall << "s" << std::endl << std::endl;
+
+        // Load the observed data
+        startCPU = std::clock();
+        startWall = get_wall_time();
+        std::cout << "Loading data ..." << std::endl;
+        arma::vec synthData;
+        synthData.load(settings._inputData);
+        std::cout << "Data loading time CPU: " << (std::clock() - startCPU) / (double) (CLOCKS_PER_SEC) <<
+                  "s, wall: " << get_wall_time() - startWall << "s" << std::endl << std::endl;
+
+        // Loading data and prior objects
+        startCPU = std::clock();
+        startWall = get_wall_time();
+        std::cout << "Generating required matrices and setting up the inversion ..." << std::endl;
+        _data = hmc::data(_model, synthData, 0.5, true);
+        arma::dcolvec means(forward_matrix.n_cols);
+        arma::dcolvec std(means.size());
+        for (int i = 0; i < means.size(); i++) {
+            means[i] = settings._means;
+            std[i] = settings._std_dev;
+        }
+        _prior = hmc::prior(means, std);
+
+        // Start precomputation
+        startCPU = std::clock();
+        startWall = get_wall_time();
+
         // Set precomputed quantities
         _A = _prior._inv_cov_m + _model._g.t() * _data._inv_cov_d * _model._g;
         _bT = _prior._inv_cov_m * _prior._means + _model._g.t() * _data._inv_cov_d * _data._observedData;
-        _c = arma::conv_to<double>::from(0.5 * (
+        _c = arma::as_scalar(0.5 * (
                 _prior._means.t() * _prior._inv_cov_m * _prior._means +
                 _data._observedData.t() * _data._inv_cov_d * _data._observedData
         ));
@@ -74,20 +111,48 @@ namespace hmc {
         _currentModel = _proposedModel;
         _currentMomentum = _proposedMomentum;
 
+        // Do analysis of the product _A * _massMatrix to determine optimal time step
+        if (_adaptTimestep) {
+            double maxFrequency;
+            arma::vec eigval;
+            arma::mat eigvec;
+            switch (_massMatrixType) {
+                case 0:
+                    _dt = (2.0 * PI / _nt);
+                    break;
+                case 1:
+                case 2:
+
+                    eig_sym(eigval, eigvec, _inverseMassMatrix * _A);
+                    maxFrequency = arma::max(eigval);
+                    eigval.clear();
+                    eigvec.clear();
+                    _dt = (2.0 * PI / _nt) * 1.0 / sqrt(maxFrequency);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        std::cout << "Set up time CPU: " << (std::clock() - startCPU) / (double) (CLOCKS_PER_SEC) << "s, "
+                "wall: " << get_wall_time() - startWall << "s" << std::endl << std::endl;
+
         // Output settings
         std::cout << "Inversion of linear model using MCMC sampling." << std::endl;
-        std::cout << "Selected method;      \033[1;34m" << (_hmc ? "hmc" : "Metropolis-Hastings")
-                  << "\033[0m with following options:"
-                  << std::endl;
+        std::cout << "Selected method;      \033[1;34m" << (_hmc ? "Hamiltonian Monte Carlo" : "Metropolis-Hastings")
+                  << "\033[0m with following options:" << std::endl;
         std::cout << "\t parameters:        \033[1;32m" << _currentModel.size() << "\033[0m" << std::endl;
         std::cout << "\t proposals:         \033[1;32m" << _proposals << "\033[0m" << std::endl;
         std::cout << "\t temperature:       \033[1;32m" << _temperature << "\033[0m" << std::endl;
         std::cout << "\t timestep:          \033[1;32m" << _dt << "\033[0m" << std::endl;
         std::cout << "\t number of steps:   \033[1;32m" << _nt << "\033[0m" << std::endl << std::endl;
         std::cout << "\t New algorithm:     \033[1;32m" << (_algorithmNew ? "true" : "false") << "\033[0m" << std::endl;
+        std::cout << "\t Optimal timestep:  \033[1;32m" << (_adaptTimestep ? "true" : "false") << "\033[0m"
+                  << std::endl;
         std::cout << "\t mass matrix type:  \033[1;32m" <<
                   (_massMatrixType == 0 ? "full optimal matrix" :
-                   (_massMatrixType == 0 ? "diagonal optimal matrix" : "unit matrix"))
+                   (_massMatrixType == 1 ? "diagonal optimal matrix" : "unit matrix"))
                   << "\033[0m" << std::endl << std::endl;
         std::cout << "\t input matrix:      \033[1;32m" << _inputMatrix << "\033[0m" << std::endl;
         std::cout << "\t input data:        \033[1;32m" << _inputData << "\033[0m" << std::endl;
@@ -100,8 +165,7 @@ namespace hmc {
         std::cout << "\t - Use generalised mass matrix with" << (_genMomPropose ? "" : "out")
                   << " off diagonal entries" << std::endl;
         if (_genMomKinetic) std::cout << "\t - Use generalised momentum for kinetic energy" << std::endl;
-        std::cout << "\t - " << (_ergodic ? "E" : "Not e") << "nforcing ergodicity" << std::endl;
-
+        std::cout << "\t - " << (_ergodic ? "E" : "Not e") << "nforcing ergodicity" << std::endl << std::endl;
     };
 
     void sampler::setStarting(arma::vec &model) {
@@ -110,21 +174,22 @@ namespace hmc {
     }
 
     void sampler::propose_metropolis() {
+        // This method might not be the actual Metropolis-Hastings method. It should draw from distributions with
+        // means at the CURRENT model, not at the prior model.
         _proposedModel = randn(_prior._means, _prior._covariance.t());
     }
 
     void sampler::propose_momentum() {
-        // Draw random prior momenta
+        // Draw random prior momenta according to the distribution defined by the mass matrix.
         _proposedMomentum = (_genMomPropose && _massMatrixType == 0) ? randn_Cholesky(_CholeskyLowerMassMatrix) : randn(
                 *_massMatrix);
     }
 
     double sampler::precomp_misfit() {
-        return conv_to<double>::from(0.5 * _proposedModel.t() * (_A * _proposedModel) - _bT.t() * _proposedModel + _c);
+        return as_scalar(0.5 * _proposedModel.t() * (_A * _proposedModel) - _bT.t() * _proposedModel + _c);
     }
 
     arma::vec sampler::precomp_misfitGrad() {
-        // Should actually be left multiply, but matrix is symmetric, so skipped that bit.
         return (_A * _proposedModel - _bT);
     }
 
@@ -133,9 +198,9 @@ namespace hmc {
         // In some choices, there's only non-zero numbers on the diagonal when explicitly choosing a specific
         // mass matrix, I hardcode these options to be more efficient.
         if (_genMomKinetic && _massMatrixType != 1 && _massMatrixType != 2) {
-            return conv_to<double>::from(0.5 * _proposedMomentum.t() * _inverseMassMatrix * _proposedMomentum);
+            return as_scalar(0.5 * _proposedMomentum.t() * _inverseMassMatrix * _proposedMomentum);
         } else {
-            return conv_to<double>::from(0.5 * _proposedMomentum.t() * _inverseMassMatrixDiagonal * _proposedMomentum);
+            return as_scalar(0.5 * _proposedMomentum.t() * _inverseMassMatrixDiagonal * _proposedMomentum);
         }
     }
 
@@ -188,9 +253,7 @@ namespace hmc {
 
             // Evaluate new misfit
             x_new = (_hmc ? energy() : chi());
-
             double result_exponent = exp((x - x_new) / _temperature);
-
             if ((x_new < x) || (result_exponent > randf(0.0, 1.0))) {
                 if (_testBefore) {
                     leap_frog(uturns, it == _proposals - 1);
@@ -314,8 +377,8 @@ namespace hmc {
             _proposedMomentum = _proposedMomentum - 0.5 * local_dt * misfitGrad;
 
             /* Check no-U-turn criterion. */
-            angle1 = arma::conv_to<double>::from(_proposedMomentum.t() * (_currentModel - _proposedModel));
-            angle2 = arma::conv_to<double>::from(_currentMomentum.t() * (_proposedModel - _currentModel));
+            angle1 = arma::as_scalar(_proposedMomentum.t() * (_currentModel - _proposedModel));
+            angle2 = arma::as_scalar(_currentMomentum.t() * (_proposedModel - _currentModel));
 
             if (angle1 > 0.0 && angle2 > 0.0) {
                 uturns++;
@@ -335,6 +398,9 @@ namespace hmc {
     }
 
     void sampler::sample() {
+        // Start timers
+        auto startCPU = std::clock();
+        auto startWall = get_wall_time();
 
         if (_algorithmNew) {
             sample_new();
@@ -342,7 +408,25 @@ namespace hmc {
             sample_neal();
         }
 
+        // Output sampling time
+        std::cout << "Sampling time CPU: " << (std::clock() - startCPU) / (double) (CLOCKS_PER_SEC)
+                  << "s, wall: " << get_wall_time() - startWall << "s" << std::endl << std::endl;
     }
 
 
 } // namespace hmc
+
+
+double get_wall_time() {
+    struct timeval time{};
+    if (gettimeofday(&time, nullptr)) {
+        // Handle error
+        return 0;
+    }
+    return (double) time.tv_sec + (double) time.tv_usec * .000001;
+}
+
+
+double get_cpu_time() {
+    return (double) clock() / CLOCKS_PER_SEC;
+}

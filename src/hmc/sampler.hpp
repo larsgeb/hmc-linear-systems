@@ -7,7 +7,6 @@
 
 #include "prior.hpp"
 #include "data.hpp"
-#include "posterior.hpp"
 
 #include <sys/ioctl.h>
 #include <cstdio>
@@ -35,12 +34,8 @@ namespace hmc {
         bool _testBefore = true; // Decreases required computation time by order of magnitude, no other influence.
         bool _ergodic = true;  // Randomizes trajectory length and step size
         bool _hamiltonianMonteCarlo = true; // Metropolis Hastings (false) or Hamiltonian Monte Carlo (true).
-        double _timeStep;
-
-        InversionSettings &setTimeStepFromGrav_nSteps() {
-            _timeStep = 2.0 * PI / _trajectorySteps;
-        };
-
+        bool _adaptTimestep = true; // adapt timestep for mass-matrix choice
+        double _timeStep = 0.1;
 
         // Parse command line options
         void parse_input(int argc, char *argv[]) {
@@ -75,6 +70,9 @@ namespace hmc {
                         i++;
                     } else if (strcmp(argv[i], "-dt") == 0 || strcmp(argv[i], "--timestep") == 0) {
                         parse_double(argv, i, _timeStep);
+                        i++;
+                    } else if (strcmp(argv[i], "-at") == 0 || strcmp(argv[i], "--timestep") == 0) {
+                        parse_boolean(argv, i, _adaptTimestep);
                         i++;
                     } else if (strcmp(argv[i], "-ns") == 0 || strcmp(argv[i], "--numberofsamples") == 0) {
                         parse_long_unsigned(argv, i, _proposals);
@@ -135,12 +133,6 @@ namespace hmc {
 
         // Constructor
         InversionSettings(int argc, char *argv[]) {
-            // Constructor for settings
-
-            // Use standard timestep defined by gravity
-            _timeStep = 0.05;
-            setTimeStepFromGrav_nSteps();
-
             // Parse command line input
             parse_input(argc, argv);
 
@@ -156,7 +148,7 @@ namespace hmc {
     class sampler {
     public:
         // Constructors and destructors
-        sampler(prior &prior, data &data, forward_model &model, InversionSettings settings);
+        explicit sampler(InversionSettings settings);
 
         // Sample the posterior and write samples out to file
         void sample();
@@ -176,9 +168,8 @@ namespace hmc {
     private:
         // Fields
         prior _prior;
-        data _data;
         forward_model _model;
-//        Posterior _posterior; // Necessary?
+        data _data;
         unsigned long _nt; // Number of time steps for trajectory
         double _dt; // Time step for trajectory
         double _REMOVETHIS; // Global gravitational constant
@@ -188,7 +179,6 @@ namespace hmc {
         bool _genMomKinetic;
         bool _genMomPropose;
         bool _algorithmNew;
-//        bool _norMom;
         bool _testBefore;
         bool _hmc;
         char *_outputSamples;
@@ -206,7 +196,7 @@ namespace hmc {
 
         // Precomputed misfit function size
         arma::mat _A;
-        arma::vec _bT; // Because I haven't coded up the actual left multiplication of vector-matrices
+        arma::vec _bT;
         double _c;
 
         // Member functions
@@ -227,7 +217,13 @@ namespace hmc {
         arma::vec precomp_misfitGrad();
 
         double kineticEnergy();
+
+        bool _adaptTimestep;
     };
 }
+
+double get_wall_time();
+
+double get_cpu_time();
 
 #endif //HMC_LINEAR_SYSTEM_SAMPLER_HPP
