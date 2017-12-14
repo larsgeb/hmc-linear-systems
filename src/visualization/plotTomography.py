@@ -1,7 +1,11 @@
-import matplotlib.pylab as pylab
 import numpy as np
 import sys
+
+import matplotlib
+matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
+import matplotlib.pylab as pylab
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 params = {'legend.fontsize': 'x-large',

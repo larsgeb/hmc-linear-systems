@@ -5,7 +5,7 @@ input_data=../INPUT/Recorded_time_sources_checkerboard_lr_100x100_arma.txt
 input_matrix=../INPUT/matrix_checkerboard_lr_100x100_arma.txt
 
 # Output file
-name=new_alg_mass_full_10e3_checkerboard_100x100
+name=new_alg_mass_unit_10e3_checkerboard_100x100
 output_samples=../OUTPUT/${name}.txt
 output_trajectory=../OUTPUT/${name}_trajecory.txt
 output_log=../OUTPUT/${name}.log
@@ -20,10 +20,10 @@ std_dev=0.001
 
 # Tuning parameters
 algorithm_type=1 # 1 for new, 0 for neal
-mass_matrix_type=0 # 0 for complete, 1 for diagonal, 2 for unit
+mass_matrix_type=2 # 0 for complete, 1 for diagonal, 2 for unit
 ergodicity=1 # 1 for enforcing ergodicity, 0 for not
 temperature=450
-time_step=nan # nan for default
+time_step=0.00001 # nan for default
 number_of_samples=$((10**3))
 
 
