@@ -11,16 +11,19 @@ namespace hmc {
     class data {
     public:
         // Constructors
-        data(forward_model &forward_model, arma::vec &data, double cov, bool percentage);
+        data(forward_model &forward_model, arma::vec data, double cov, bool percentage);
+
+        data();
+
 
         // Member fields
-        const unsigned long _numberData;
-        const arma::vec _observedData;
-        const arma::mat _inv_cov_d;
-        const arma::mat _G;
+        unsigned long _numberData;
+        arma::vec _observedData;
+        arma::mat _inv_cov_d;
+        arma::mat _G;
         // Precomputed matrices
-        const arma::vec _tG_invCd_d;
-        const arma::mat _tG_invCd_G;
+        arma::vec _tG_invCd_d;
+        arma::mat _tG_invCd_G;
 
         // Member functions
         double misfit(arma::vec &in_parameters);

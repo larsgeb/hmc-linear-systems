@@ -6,7 +6,7 @@
 
 namespace hmc {
     // TODO implement constructors with predefined data covariance matrices.
-    data::data(forward_model &forward_model, arma::vec &data, double cov, bool percentage)
+    data::data(forward_model &forward_model, arma::vec data, double cov, bool percentage)
             : _numberData(data.n_elem),
               _observedData(data),
               _inv_cov_d(percentage ?
@@ -28,12 +28,15 @@ namespace hmc {
     }
 
     double data::misfit(arma::vec &in_parameters) {
-        double a = conv_to<double>::from(0.5 * _G * (in_parameters - _observedData).t() * (_inv_cov_d) * _G *
-                                         (in_parameters - _observedData));
+        double a = as_scalar(0.5 * _G * (in_parameters - _observedData).t() * (_inv_cov_d) * _G *
+                             (in_parameters - _observedData));
         return a;
     }
 
     arma::vec data::gradient_misfit(arma::vec &parameters) {
         return _tG_invCd_G * parameters - _tG_invCd_d;
     }
+
+    data::data() = default;
+
 }

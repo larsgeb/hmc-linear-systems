@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 # Model definition
-input_data=../INPUT/Recorded_time_sources_checkerboard_lr_100x100_arma.txt
-input_matrix=../INPUT/matrix_checkerboard_lr_100x100_arma.txt
+input_data=../INPUT/Recorded_time_sources_checkerboard_lr_10x10_arma.txt
+input_matrix=../INPUT/matrix_checkerboard_lr_10x10_arma.txt
 
 # Output file
-name=new_alg_mass_full_10e3_checkerboard_100x100
+name=new_alg_mass_diagonal_10e4_checkerboard_10x10
 output_samples=../OUTPUT/${name}.txt
 output_trajectory=../OUTPUT/${name}_trajecory.txt
 output_log=../OUTPUT/${name}.log
@@ -20,11 +20,12 @@ std_dev=0.001
 
 # Tuning parameters
 algorithm_type=1 # 1 for new, 0 for neal
-mass_matrix_type=0 # 0 for complete, 1 for diagonal, 2 for unit
+mass_matrix_type=1 # 0 for complete, 1 for diagonal, 2 for unit
 ergodicity=1 # 1 for enforcing ergodicity, 0 for not
-temperature=450
-time_step=nan # nan for default
-number_of_samples=$((10**3))
+temperature=11
+adapttimestep=1
+time_step=nan # nan for default, is overridden by adapttmestep
+number_of_samples=$((10**4))
 
 
 # Run inversion
@@ -38,6 +39,7 @@ number_of_samples=$((10**3))
     -e ${ergodicity} \
     -dt ${time_step} \
     -means ${means} \
+    -at ${adapttimestep} \
     -std ${std_dev} \
     --massmatrixtype ${mass_matrix_type} \
     -an ${algorithm_type} \
