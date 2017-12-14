@@ -7,7 +7,6 @@
 
 #include "prior.hpp"
 #include "data.hpp"
-#include "posterior.hpp"
 
 #include <sys/ioctl.h>
 #include <cstdio>
@@ -35,22 +34,23 @@ namespace hmc {
         bool _testBefore = true; // Decreases required computation time by order of magnitude, no other influence.
         bool _ergodic = true;  // Randomizes trajectory length and step size
         bool _hamiltonianMonteCarlo = true; // Metropolis Hastings (false) or Hamiltonian Monte Carlo (true).
-        double _timeStep;
-
-        InversionSettings &setTimeStepFromGrav_nSteps() {
-            _timeStep = 2.0 * PI / _trajectorySteps;
-        };
-
+        bool _adaptTimestep = true; // adapt timestep for mass-matrix choice
+        double _timeStep = 0.1;
 
         // Parse command line options
         void parse_input(int argc, char *argv[]) {
-            for (int i = 1; i < argc; i++) {
 
+            int a = 1;
+            if (argc < 2) {
+                display_help();
+                exit(EXIT_SUCCESS);
+            }
+            // TODO implement data covariance also
+            for (int i = 1; i < argc; i++) {
                 if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-                    std::cout << "Display Help!" << std::endl;
+                    display_help();
                     exit(EXIT_SUCCESS);
                 }
-
                 if (i + 1 != argc) {
                     if (strcmp(argv[i], "-im") == 0 || strcmp(argv[i], "--inputmatrix") == 0) {
                         _inputMatrix = (argv[i + 1]);
@@ -76,16 +76,19 @@ namespace hmc {
                     } else if (strcmp(argv[i], "-dt") == 0 || strcmp(argv[i], "--timestep") == 0) {
                         parse_double(argv, i, _timeStep);
                         i++;
+                    } else if (strcmp(argv[i], "-at") == 0 || strcmp(argv[i], "--adapttimestep") == 0) {
+                        parse_boolean(argv, i, _adaptTimestep);
+                        i++;
                     } else if (strcmp(argv[i], "-ns") == 0 || strcmp(argv[i], "--numberofsamples") == 0) {
                         parse_long_unsigned(argv, i, _proposals);
                         i++;
                     } else if (strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--ergodic") == 0) {
                         parse_boolean(argv, i, _ergodic);
                         i++;
-                    } else if (strcmp(argv[i], "-gmp") == 0 || strcmp(argv[i], "--generalizedmomentumpropose") == 0) {
+                    } else if (strcmp(argv[i], "-gmp") == 0 || strcmp(argv[i], "--correlatedmomenta") == 0) {
                         parse_boolean(argv, i, _genMomPropose);
                         i++;
-                    } else if (strcmp(argv[i], "-gmc") == 0 || strcmp(argv[i], "--generalizedmomentumcalculate") == 0) {
+                    } else if (strcmp(argv[i], "-gmc") == 0 || strcmp(argv[i], "--generalkinetic") == 0) {
                         parse_boolean(argv, i, _genMomKinetic);
                         i++;
                     } else if (strcmp(argv[i], "-Hb") == 0 || strcmp(argv[i], "--hamiltonianbefore") == 0) {
@@ -110,7 +113,7 @@ namespace hmc {
             std::stringstream ss(argv[position + 1]);
             long unsigned x;
             if (!(ss >> x) || !ss.eof())
-                std::cerr << "Invalid number " << argv[position + 1] << " for option " << argv[position] << std::endl;
+                std::cerr << "Invalid input " << argv[position + 1] << " for option " << argv[position] << std::endl;
             else
                 to_set = x;
         }
@@ -119,7 +122,7 @@ namespace hmc {
             std::stringstream ss(argv[position + 1]);
             double x;
             if (!(ss >> x) || !ss.eof())
-                std::cerr << "Invalid number " << argv[position + 1] << " for option " << argv[position] << std::endl;
+                std::cerr << "Invalid input " << argv[position + 1] << " for option " << argv[position] << std::endl;
             else
                 to_set = x;
         }
@@ -128,19 +131,66 @@ namespace hmc {
             std::stringstream ss(argv[position + 1]);
             bool x;
             if (!(ss >> x) || !ss.eof())
-                std::cerr << "Invalid number " << argv[position + 1] << " for option " << argv[position] << std::endl;
+                std::cerr << "Invalid input " << argv[position + 1] << " for option " << argv[position] << std::endl;
             else
                 to_set = x;
         }
 
+        void display_help() {
+            std::cout << std::endl << "Hamiltonian Monte Carlo Sampler" << std::endl
+                      << "Lars Gebraad, 2017" << std::endl << "Displaying help ..." << std::endl << std::endl;
+
+            std::cout << "\tFiles" << std::endl
+                      << "\t\t \033[1;31m -im \033[0m (existing path to non-existing file, required)" << std::endl
+                      << "\t\t input matrix file (G), every line of text file should be a matrix row, \r\n\t\t entries "
+                              "separated"
+                      << " by spaces" << std::endl
+                      << "\t\t \033[1;31m -id \033[0m (existing path to non-existing file, required)" << std::endl
+                      << "\t\t input data file (d), every datapoint should be a new line" << std::endl
+                      << "\t\t \033[1;31m -os \033[0m (existing path to non-existing file, required)" << std::endl
+                      << "\t\t output samples file" << std::endl
+                      << "\t\t \033[1;31m -ot \033[0m (existing path to non-existing file, required)" << std::endl
+                      << "\t\t output trajectory file" << std::endl << std::endl
+                      << "\tPrior information" << std::endl
+                      << "\t\t \033[1;31m -means \033[0m (double, required)" << std::endl
+                      << "\t\t Prior means" << std::endl
+                      << "\t\t \033[1;31m -std \033[0m (double, required)" << std::endl
+                      << "\t\t Prior standard deviation (square root of variance)" << std::endl << std::endl
+                      << "\tTuning parameters" << std::endl
+                      << "\t\t \033[1;32m -dt \033[0m (double, default = adaptive)" << std::endl
+                      << "\t\t size of time discretization steps" << std::endl
+                      << "\t\t \033[1;32m -nt \033[0m (integer, default = 10)" << std::endl
+                      << "\t\t number of time discretization steps" << std::endl
+                      << "\t\t \033[1;32m -t \033[0m (double, default = 1)" << std::endl
+                      << "\t\t temperature" << std::endl
+                      << "\t\t \033[1;32m -mtype \033[0m (0, 1 or 2, default = 0)" << std::endl
+                      << "\t\t mass matrix type: full ideal (0), diagonal ideal (1) or unit matrix (2)"
+                      << std::endl
+                      << std::endl
+                      << "\tOther options" << std::endl
+                      << "\t\t \033[1;32m -ns \033[0m (integer, default = 1000)" << std::endl
+                      << "\t\t number of proposals" << std::endl
+                      << "\t\t \033[1;32m -at \033[0m (boolean, default = 1) " << std::endl
+                      << "\t\t adapt timestep to be stable, using eigen-decomposition of the term sqrt(Q^-1 A)"
+                      << std::endl
+                      << "\t\t \033[1;32m -e\033[0m (boolean, default = 1)" << std::endl
+                      << "\t\t ensure ergodicity of the sampler by uniformly modifying nt and dt by \r\n\t\t 0.5-1.5 "
+                              "(randomly) per sample" << std::endl
+                      << "\t\t \033[1;32m -gmp\033[0m (boolean, default = 1)" << std::endl
+                      << "\t\t use full mass matrix to propose new momenta (correlated samples)" << std::endl
+                      << "\t\t \033[1;32m -gmc\033[0m (boolean, default = 1)" << std::endl
+                      << "\t\t use full mass matrix to calculate kinetic energy instead of diagonal" << std::endl
+                      << "\t\t \033[1;32m -Hb\033[0m (boolean, default = 1)" << std::endl
+                      << "\t\t use conservation of energy to evaluate the Hamiltonian and acceptance \r\n\t\t     criterion "
+                              "before "
+                              "propagating, only for algorithm 1" << std::endl
+                      << "\t\t \033[1;32m -an\033[0m (boolean, default = 1)" << std::endl
+                      << "\t\t choose HMC algorithm; classic (0), new (1)" << std::endl << std::endl
+                      << "\tFor examples, see test/" << std::endl << std::endl;
+        }
+
         // Constructor
         InversionSettings(int argc, char *argv[]) {
-            // Constructor for settings
-
-            // Use standard timestep defined by gravity
-            _timeStep = 0.05;
-            setTimeStepFromGrav_nSteps();
-
             // Parse command line input
             parse_input(argc, argv);
 
@@ -156,7 +206,7 @@ namespace hmc {
     class sampler {
     public:
         // Constructors and destructors
-        sampler(prior &prior, data &data, forward_model &model, InversionSettings settings);
+        explicit sampler(InversionSettings settings);
 
         // Sample the posterior and write samples out to file
         void sample();
@@ -176,9 +226,8 @@ namespace hmc {
     private:
         // Fields
         prior _prior;
-        data _data;
         forward_model _model;
-//        Posterior _posterior; // Necessary?
+        data _data;
         unsigned long _nt; // Number of time steps for trajectory
         double _dt; // Time step for trajectory
         double _REMOVETHIS; // Global gravitational constant
@@ -188,7 +237,6 @@ namespace hmc {
         bool _genMomKinetic;
         bool _genMomPropose;
         bool _algorithmNew;
-//        bool _norMom;
         bool _testBefore;
         bool _hmc;
         char *_outputSamples;
@@ -206,7 +254,7 @@ namespace hmc {
 
         // Precomputed misfit function size
         arma::mat _A;
-        arma::vec _bT; // Because I haven't coded up the actual left multiplication of vector-matrices
+        arma::vec _bT;
         double _c;
 
         // Member functions
@@ -227,7 +275,13 @@ namespace hmc {
         arma::vec precomp_misfitGrad();
 
         double kineticEnergy();
+
+        bool _adaptTimestep;
     };
 }
+
+double get_wall_time();
+
+double get_cpu_time();
 
 #endif //HMC_LINEAR_SYSTEM_SAMPLER_HPP
