@@ -21,6 +21,6 @@ set(SOURCE_FILES src/hmc/runSampling.cpp src/random/randomnumbers.cpp src/hmc/hm
         src/hmc/sampler.hpp src/hmc/forward_model.cpp src/hmc/forward_model.hpp)
 
 # For system installed armadillo
-add_executable(runSampling ${SOURCE_FILES})
-target_link_libraries(runSampling ${lapackblas_libraries})
-target_link_libraries(runSampling ${ARMADILLO_LIBRARIES})
+add_executable(hmc_sampler ${SOURCE_FILES})
+target_link_libraries(hmc_sampler ${lapackblas_libraries})
+target_link_libraries(hmc_sampler ${ARMADILLO_LIBRARIES})

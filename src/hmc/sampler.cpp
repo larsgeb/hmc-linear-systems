@@ -34,7 +34,7 @@ namespace hmc {
         // Initialise random number generator
         srand((unsigned int) time(nullptr));
 
-        std::cout << std::endl << "Metropolis Hastings/Hamiltonian Monte Carlo Sampler" << std::endl << "Lars Gebraad, "
+        std::cout << std::endl << "Hamiltonian Monte Carlo Sampler" << std::endl << "Lars Gebraad, "
                 "2017" << std::endl << "Use --help or -h to display the documentation." << std::endl << std::endl;
 
         // Load forward matrix
@@ -63,6 +63,7 @@ namespace hmc {
         _data = hmc::data(_model, synthData, 0.5, true);
         arma::dcolvec means(forward_matrix.n_cols);
         arma::dcolvec std(means.size());
+        // generate uniform prior
         for (int i = 0; i < means.size(); i++) {
             means[i] = settings._means;
             std[i] = settings._std_dev;

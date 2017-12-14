@@ -37,6 +37,6 @@ namespace hmc {
         return _tG_invCd_G * parameters - _tG_invCd_d;
     }
 
-    data::data() {}
+    data::data() = default;
 
 }

@@ -3,11 +3,12 @@
 //
 
 #include <armadillo>
+#include <utility>
 #include "prior.hpp"
 
 namespace hmc {
     prior::prior(arma::vec mean, arma::vec stdv) :
-            _means(mean),
+            _means(std::move(mean)),
             _covariance(arma::diagmat(arma::square(stdv))),
             _inv_cov_m(arma::diagmat(1.0 / arma::square(stdv))) {}
 
@@ -19,5 +20,5 @@ namespace hmc {
         return _inv_cov_m * (parameters - _means);
     }
 
-    prior::prior() {}
+    prior::prior() = default;
 }
