@@ -2,7 +2,7 @@
 
 # Model definition
 input_data=../INPUT/Recorded_time_sources_checkerboard_lr_10x10_arma.txt
-input_matrix=../INPUT/matrix_checkerboard_lr_10x10_arma.txt
+input_matrix=../INPUT/forward_matrix_11x11.txt
 
 # Output file
 name=new_alg_mass_full_10e4_checkerboard_10x10
@@ -12,7 +12,7 @@ output_log=../OUTPUT/${name}.log
 output_plot=../OUTPUT/${name}.pdf
 
 # plot (0) or save (1)
-pl_or_sv=1
+pl_or_sv=0
 
 # Prior info
 means=0.000667

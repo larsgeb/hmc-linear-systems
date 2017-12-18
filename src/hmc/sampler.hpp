@@ -17,17 +17,36 @@ namespace hmc {
     struct InversionSettings {
         // Defaults
         const double PI = 3.14159265358979323846264338327;
+        struct winsize _window{};
+
+        // Output files
+        char *_outputSamplesFile = const_cast<char *>("OUTPUT/samples.txt");
+        char *_outputTrajectoryFile = const_cast<char *>("OUTPUT/trajectory.txt");
+
+        // Forward model
+        char *_inputMatrixFile = const_cast<char *>("INPUT/matrix.txt");
+
+        // Prior stuff
+        bool _fixedPrior = true;
+        double _fixedPriorMean = 1;
+        double _fixedPriorCovariance = 1;
+        char *_priorCovarianceFile  = const_cast<char *>("");
+        char *_priorMeanFile  = const_cast<char *>("");
+
+        // Data stuff
+        int _useFixedDataCovariance = 2; // 0 is not fixed, 1 is absolute, 2 is percentual
+        double _fixedDataCovariance = 1; // being absolute or percentual
+        char *_inputDataFile = const_cast<char *>("INPUT/data.txt");
+        char *_dataCovarianceFile  = const_cast<char *>("");
+
+        // Tuning parameters
+        double _timeStep = 0.1;
         double _temperature = 1.0;
         unsigned long int _proposals = 1000;
         unsigned long int _trajectorySteps = 10;
         unsigned long int _massMatrixType = 0;
-        struct winsize _window{};
-        double _means = 1;
-        double _std_dev = 1;
-        char *_outputSamples = const_cast<char *>("OUTPUT/samples.txt");
-        char *_outputTrajectory = const_cast<char *>("OUTPUT/trajectory.txt");
-        char *_inputMatrix = const_cast<char *>("INPUT/matrix.txt");
-        char *_inputData = const_cast<char *>("INPUT/data.txt");
+
+        // Other options
         bool _algorithmNew = true;
         bool _genMomPropose = true; // Use generalized mass matrix to propose new momenta (true).
         bool _genMomKinetic = true; // Use generalized mass matrix to compute kinetic energy (true).
@@ -35,7 +54,7 @@ namespace hmc {
         bool _ergodic = true;  // Randomizes trajectory length and step size
         bool _hamiltonianMonteCarlo = true; // Metropolis Hastings (false) or Hamiltonian Monte Carlo (true).
         bool _adaptTimestep = true; // adapt timestep for mass-matrix choice
-        double _timeStep = 0.1;
+
 
         // Parse command line options
         void parse_input(int argc, char *argv[]) {
@@ -45,7 +64,6 @@ namespace hmc {
                 display_help();
                 exit(EXIT_SUCCESS);
             }
-            // TODO implement data covariance also
             for (int i = 1; i < argc; i++) {
                 if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
                     display_help();
@@ -53,19 +71,27 @@ namespace hmc {
                 }
                 if (i + 1 != argc) {
                     if (strcmp(argv[i], "-im") == 0 || strcmp(argv[i], "--inputmatrix") == 0) {
-                        _inputMatrix = (argv[i + 1]);
+                        _inputMatrixFile = (argv[i + 1]);
                         i++;
                     } else if (strcmp(argv[i], "-id") == 0 || strcmp(argv[i], "--inputdata") == 0) {
-                        _inputData = (argv[i + 1]);
+                        _inputDataFile = (argv[i + 1]);
+                        i++;
+                    } else if (strcmp(argv[i], "-icm") == 0 || strcmp(argv[i], "--inputparametercovariance") == 0) {
+                        _dataCovarianceFile = (argv[i + 1]);
+                        _fixedPriorCovariance = false;
+                        i++;
+                    } else if (strcmp(argv[i], "-icd") == 0 || strcmp(argv[i], "--inputdatacovariance") == 0) {
+                        _priorCovarianceFile = (argv[i + 1]);
+                        _useFixedDataCovariance = false;
                         i++;
                     } else if (strcmp(argv[i], "-mtype") == 0 || strcmp(argv[i], "--massmatrixtype") == 0) {
                         parse_long_unsigned(argv, i, _massMatrixType);
                         i++;
                     } else if (strcmp(argv[i], "-os") == 0 || strcmp(argv[i], "--outputsamples") == 0) {
-                        _outputSamples = (argv[i + 1]);
+                        _outputSamplesFile = (argv[i + 1]);
                         i++;
                     } else if (strcmp(argv[i], "-ot") == 0 || strcmp(argv[i], "--outputtrajectory") == 0) {
-                        _outputTrajectory = (argv[i + 1]);
+                        _outputTrajectoryFile = (argv[i + 1]);
                         i++;
                     } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--temperature") == 0) {
                         parse_double(argv, i, _temperature);
@@ -85,6 +111,24 @@ namespace hmc {
                     } else if (strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--ergodic") == 0) {
                         parse_boolean(argv, i, _ergodic);
                         i++;
+                    } else if (strcmp(argv[i], "-percd") == 0 || strcmp(argv[i], "--percentualdatacovariance") == 0) {
+                        if(_useFixedDataCovariance != 1){
+                            std::cout << "Option clash for fixed data covariance (percentual) together with input data "
+                                    "covariance matrix, exiting...";
+                            exit(EXIT_SUCCESS);
+                        }else{
+                            parse_double(argv, i, _fixedDataCovariance);
+                        }
+                        i++;
+                    } else if (strcmp(argv[i], "-abscd") == 0 || strcmp(argv[i], "--absolutedatacovariance") == 0) {
+                        if(_useFixedDataCovariance != 2){
+                            std::cout << "Option clash for fixed data covariance (absolute) together with input data "
+                                    "covariance matrix, exiting...";
+                            exit(EXIT_SUCCESS);
+                        }else{
+                            parse_double(argv, i, _fixedDataCovariance);
+                        }
+                        i++;
                     } else if (strcmp(argv[i], "-gmp") == 0 || strcmp(argv[i], "--correlatedmomenta") == 0) {
                         parse_boolean(argv, i, _genMomPropose);
                         i++;
@@ -98,10 +142,10 @@ namespace hmc {
                         parse_boolean(argv, i, _algorithmNew);
                         i++;
                     } else if (strcmp(argv[i], "-means") == 0 || strcmp(argv[i], "--means") == 0) {
-                        parse_double(argv, i, _means);
+                        parse_double(argv, i, _fixedPriorMean);
                         i++;
                     } else if (strcmp(argv[i], "-std") == 0 || strcmp(argv[i], "--standarddeviation") == 0) {
-                        parse_double(argv, i, _std_dev);
+                        parse_double(argv, i, _fixedPriorCovariance);
                         i++;
                     }
                 }
@@ -230,8 +274,7 @@ namespace hmc {
         data _data;
         unsigned long _nt; // Number of time steps for trajectory
         double _dt; // Time step for trajectory
-        double _REMOVETHIS; // Global gravitational constant
-        double _temperature; // Global gravitational constant
+        double _temperature; // Temperature for acceptance criterion
         unsigned long _proposals; // Number of iterations for Monte Carlo sampling
         unsigned long _massMatrixType; // Number of iterations for Monte Carlo sampling
         bool _genMomKinetic;
@@ -239,12 +282,25 @@ namespace hmc {
         bool _algorithmNew;
         bool _testBefore;
         bool _hmc;
+        int _useFixedDataCovariance;
         char *_outputSamples;
+        char *_dataCovarianceFile;
         char *_outputTrajectory;
         char *_inputMatrix;
-        char *_inputData;
         winsize _window;
         bool _ergodic;
+        bool _adaptTimestep;
+        double _fixedDataCovariance;
+
+        // Data stuff
+        char *_inputData;
+
+        // Prior stuff
+        bool _fixedPrior;
+        double _fixedPriorCovariance;
+        double _fixedPriorMean;
+        char *_priorMeanFile;
+        char *_priorCovarianceFile;
 
         arma::mat *_massMatrix;
         arma::mat _optionalMassMatrixMemory;
@@ -276,7 +332,7 @@ namespace hmc {
 
         double kineticEnergy();
 
-        bool _adaptTimestep;
+
     };
 }
 

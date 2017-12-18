@@ -65,7 +65,8 @@ cbar1.set_label('variance')
 # f.tight_layout()
 
 plt.subplots_adjust(wspace=0.5, hspace=20)
-if (sys.argv[2] == 0):
+
+if (sys.argv[2] == "0"):
     plt.show()
 else:
     print "Saving to", sys.argv[3]

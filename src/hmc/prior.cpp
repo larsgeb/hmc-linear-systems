@@ -7,17 +7,16 @@
 #include "prior.hpp"
 
 namespace hmc {
-    prior::prior(arma::vec mean, arma::vec stdv) :
-            _means(std::move(mean)),
-            _covariance(arma::diagmat(arma::square(stdv))),
-            _inv_cov_m(arma::diagmat(1.0 / arma::square(stdv))) {}
-
-    double prior::misfit(arma::vec &parameters) {
-        return arma::as_scalar(0.5 * ((parameters - _means).t() * _inv_cov_m * (parameters - _means)));
+    prior::prior(double mean, double std, arma::uword dim) {
+        _means = mean * arma::ones<arma::vec>(dim);
+        _covariance =  (std * std) * arma::diagmat(arma::ones<arma::vec>(dim));
+        _inv_cov_m = (1.0 / (std * std)) * arma::diagmat(arma::ones<arma::vec>(dim));
     }
 
-    arma::vec prior::gradient_misfit(arma::vec &parameters) {
-        return _inv_cov_m * (parameters - _means);
+    prior::prior(char *mean_vector_file, char *cov_matrix_file) {
+        _means.load(mean_vector_file);
+        _covariance.load(cov_matrix_file);
+        _inv_cov_m = arma::inv_sympd(_covariance);
     }
 
     prior::prior() = default;
