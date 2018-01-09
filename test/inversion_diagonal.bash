@@ -25,7 +25,7 @@ ergodicity=1 # 1 for enforcing ergodicity, 0 for not
 temperature=450
 adapttimestep=1
 time_step=nan # nan for default, is overridden by adapttmestep
-number_of_samples=$((10**3))
+number_of_samples=$((10**4))
 
 
 # Run inversion

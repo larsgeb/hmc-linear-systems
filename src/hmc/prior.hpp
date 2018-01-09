@@ -11,8 +11,8 @@ namespace hmc{
     class prior {
     public:
         // Constructors
-        prior(arma::vec mean, arma::vec std);
-
+        prior(char * mean_vector_file, char * cov_matrix_file);
+        prior(double mean, double std, arma::uword dim);
         prior();
 
 
@@ -21,9 +21,6 @@ namespace hmc{
         arma::mat _covariance;
         arma::mat _inv_cov_m;
 
-        // Member functions
-        double misfit(arma::vec &parameters);
-        arma::vec gradient_misfit(arma::vec &parameters);
     };
 }
 

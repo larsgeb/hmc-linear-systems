@@ -12,23 +12,43 @@
 
 namespace hmc {
     sampler::sampler(InversionSettings settings) {
-        // Read the settings
-        _nt = settings._trajectorySteps;
+        // Window settings
+        _window = settings._window;
+
+        // Output files
+        _outputSamples = settings._outputSamplesFile;
+        _outputTrajectory = settings._outputTrajectoryFile;
+
+        // Forward model
+        _inputMatrix = settings._inputMatrixFile;
+
+        // Prior stuff
+        _fixedPrior = settings._fixedPrior;
+        _fixedPriorMean = settings._fixedPriorMean;
+        _fixedPriorCovariance = settings._fixedPriorCovariance;
+        _priorMeanFile = settings._priorMeanFile;
+        _priorCovarianceFile = settings._priorCovarianceFile;
+
+        // Data stuff
+        _useFixedDataCovariance = settings._useFixedDataCovariance;
+        _fixedDataCovariance = settings._fixedDataCovariance;
+        _inputData = settings._inputDataFile;
+        _dataCovarianceFile = settings._dataCovarianceFile;
+
+        // Tuning parameters
         _dt = settings._timeStep;
         _temperature = settings._temperature;
         _proposals = settings._proposals;
-        _genMomKinetic = settings._genMomKinetic;
-        _genMomPropose = settings._genMomPropose;
-        _testBefore = settings._testBefore;
+        _nt = settings._trajectorySteps;
         _massMatrixType = settings._massMatrixType;
+
+        // Other options
+        _algorithmNew = settings._algorithmNew;
+        _genMomPropose = settings._genMomPropose;
+        _genMomKinetic = settings._genMomKinetic;
+        _testBefore = settings._testBefore;
         _ergodic = settings._ergodic;
         _hmc = settings._hamiltonianMonteCarlo;
-        _outputSamples = settings._outputSamples;
-        _outputTrajectory = settings._outputTrajectory;
-        _inputMatrix = settings._inputMatrix;
-        _inputData = settings._inputData;
-        _algorithmNew = settings._algorithmNew;
-        _window = settings._window;
         _adaptTimestep = settings._adaptTimestep;
 
         // Initialise random number generator
@@ -42,7 +62,7 @@ namespace hmc {
         auto startWall = get_wall_time();
         std::cout << "Loading forward matrix ..." << std::endl;
         arma::mat forward_matrix;
-        forward_matrix.load(settings._inputMatrix);
+        forward_matrix.load(_inputMatrix);
         _model = hmc::forward_model(forward_matrix);
         std::cout << "Forward matrix loading time CPU: " << (std::clock() - startCPU) / (double)
                 (CLOCKS_PER_SEC) << "s, wall: " << get_wall_time() - startWall << "s" << std::endl << std::endl;
@@ -51,8 +71,18 @@ namespace hmc {
         startCPU = std::clock();
         startWall = get_wall_time();
         std::cout << "Loading data ..." << std::endl;
-        arma::vec synthData;
-        synthData.load(settings._inputData);
+        switch (_useFixedDataCovariance) {
+            case 0:// load matrix
+            default:
+                _data = hmc::data(_model, _inputData, _dataCovarianceFile);
+                break;
+            case 1:// generate from 1 absolute value
+                _data = hmc::data(_model, _inputData, _fixedDataCovariance, false);
+                break;
+            case 2:// generate from percentual data
+                _data = hmc::data(_model, _inputData, _fixedDataCovariance, true);
+                break;
+        }
         std::cout << "Data loading time CPU: " << (std::clock() - startCPU) / (double) (CLOCKS_PER_SEC) <<
                   "s, wall: " << get_wall_time() - startWall << "s" << std::endl << std::endl;
 
@@ -60,15 +90,13 @@ namespace hmc {
         startCPU = std::clock();
         startWall = get_wall_time();
         std::cout << "Generating required matrices and setting up the inversion ..." << std::endl;
-        _data = hmc::data(_model, synthData, 0.5, true);
-        arma::dcolvec means(forward_matrix.n_cols);
-        arma::dcolvec std(means.size());
-        // generate uniform prior
-        for (int i = 0; i < means.size(); i++) {
-            means[i] = settings._means;
-            std[i] = settings._std_dev;
+
+        // Two cases: constant means and std_devs, or supplied means vector and cov_matrix
+        if (_fixedPrior) {
+            _prior = hmc::prior(_fixedPriorMean, _fixedPriorCovariance, _model._g.n_cols);
+        } else {
+            _prior = hmc::prior(_priorMeanFile, _priorCovarianceFile);
         }
-        _prior = hmc::prior(means, std);
 
         // Start precomputation
         startCPU = std::clock();
