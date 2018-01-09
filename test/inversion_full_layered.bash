@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 # Model definition
-input_data=../INPUT/Recorded_time_sources_checkerboard_lr_100x100_arma.txt
+input_data=../INPUT/Recorded_time_sources_layered_lr_100x100_arma.txt
 input_matrix=../INPUT/matrix_checkerboard_lr_100x100_arma.txt
 
 # Output file
-name=new_alg_mass_full_10e3_checkerboard_100x100
+name=new_alg_mass_full_10e3_layered_100x100
 output_samples=../OUTPUT/${name}.txt
 output_trajectory=../OUTPUT/${name}_trajecory.txt
 output_log=../OUTPUT/${name}.log

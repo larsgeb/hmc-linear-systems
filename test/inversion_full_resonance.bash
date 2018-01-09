@@ -5,7 +5,7 @@ input_data=../INPUT/Recorded_time_sources_checkerboard_lr_100x100_arma.txt
 input_matrix=../INPUT/matrix_checkerboard_lr_100x100_arma.txt
 
 # Output file
-name=new_alg_mass_full_10e3_checkerboard_100x100
+name=nt_3x_new_alg_mass_full_10e3_checkerboard_100x100
 output_samples=../OUTPUT/${name}.txt
 output_trajectory=../OUTPUT/${name}_trajecory.txt
 output_log=../OUTPUT/${name}.log
@@ -37,6 +37,7 @@ number_of_samples=$((10**3))
     -ns ${number_of_samples} \
     -t ${temperature} \
     -e ${ergodicity} \
+    -nt 180 \
     -dt ${time_step} \
     -means ${means} \
     -at ${adapttimestep} \

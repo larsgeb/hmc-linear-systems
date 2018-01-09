@@ -27,7 +27,7 @@ time_step=nan # nan for default
 number_of_samples=$((10**3))
 
 # Run inversion
-../bin/runSampling \
+../bin/hmc_sampler \
     -im ${input_matrix} \
     -id ${input_data} \
     -os ${output_samples} \

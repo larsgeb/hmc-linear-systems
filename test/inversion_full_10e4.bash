@@ -5,7 +5,7 @@ input_data=../INPUT/Recorded_time_sources_checkerboard_lr_100x100_arma.txt
 input_matrix=../INPUT/matrix_checkerboard_lr_100x100_arma.txt
 
 # Output file
-name=new_alg_mass_full_10e3_checkerboard_100x100
+name=new_alg_mass_full_10e4_checkerboard_100x100
 output_samples=../OUTPUT/${name}.txt
 output_trajectory=../OUTPUT/${name}_trajecory.txt
 output_log=../OUTPUT/${name}.log
@@ -25,7 +25,7 @@ ergodicity=1 # 1 for enforcing ergodicity, 0 for not
 temperature=450
 adapttimestep=1
 time_step=nan # nan for default, is overridden by adapttmestep
-number_of_samples=$((10**3))
+number_of_samples=$((10**4))
 
 
 # Run inversion
