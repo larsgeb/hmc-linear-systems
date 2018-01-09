@@ -41,7 +41,8 @@ f, axarr = plt.subplots(1, 2)
 image0 = axarr[0].imshow(np.transpose(np.reshape(means, (int(numParameters**0.5), int(numParameters**0.5)))), cmap=plt.get_cmap(
     'binary'),
                          interpolation='none',
-                         extent=[-0.5, int(numParameters**0.5) - 0.5, -0.5, int(numParameters**0.5) - 0.5])
+                         extent=[-0.5, int(numParameters**0.5) - 0.5, -0.5, int(numParameters**0.5) - 0.5], vmin=0,
+                         vmax=2e-3)
 axarr[0].invert_yaxis()
 axarr[0].set_title("Mean of model blocks")
 image1 = axarr[1].imshow(np.transpose(np.reshape(variances, (int(numParameters**0.5),
@@ -49,18 +50,18 @@ image1 = axarr[1].imshow(np.transpose(np.reshape(variances, (int(numParameters**
                          cmap=plt.get_cmap('seismic'),
                          interpolation='none',
                          extent=[-0.5, int(numParameters**0.5) - 0.5, int(numParameters**0.5) - 0.5, -0.5], vmin=0,
-                         vmax=maxVar)
+                         vmax=maxVar*1.25)
 axarr[1].invert_yaxis()
 axarr[1].set_title("Variance of model blocks")
 
 divider = make_axes_locatable(axarr[0])
 cax = divider.append_axes("right", size="5%", pad=0.05)
-cbar0 = plt.colorbar(image0, cax=cax)
+cbar0 = plt.colorbar(image0, cax=cax, format='%.2e')
 cbar0.set_label('mean slowness[s/m]')
 
 divider = make_axes_locatable(axarr[1])
 cax = divider.append_axes("right", size="5%", pad=0.05)
-cbar1 = plt.colorbar(image1, cax=cax)
+cbar1 = plt.colorbar(image1, cax=cax, format='%.2e')
 cbar1.set_label('variance')
 # f.tight_layout()
 

@@ -12,7 +12,7 @@ output_log=../OUTPUT/${name}.log
 output_plot=../OUTPUT/${name}.pdf
 
 # plot (0) or save (1)
-pl_or_sv=1
+pl_or_sv=0
 
 # Prior info
 means=0.000667
@@ -29,7 +29,7 @@ number_of_samples=$((10**4))
 
 
 # Run inversion
-../bin/runSampling \
+../bin/hmc_sampler \
     -im ${input_matrix} \
     -id ${input_data} \
     -os ${output_samples} \

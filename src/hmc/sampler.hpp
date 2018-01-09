@@ -267,11 +267,12 @@ namespace hmc {
         arma::vec _currentMomentum;
         arma::vec _proposedMomentum;
 
-    private:
-        // Fields
         prior _prior;
         forward_model _model;
         data _data;
+    private:
+        // Fields
+
         unsigned long _nt; // Number of time steps for trajectory
         double _dt; // Time step for trajectory
         double _temperature; // Temperature for acceptance criterion
