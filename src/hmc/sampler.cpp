@@ -1,7 +1,7 @@
 //
 // Created by Lars Gebraad on 18-8-17.
 //
-#include <src/random/randomnumbers.hpp>
+//#include <../random/randomnumbers.hpp>
 #include <cmath>
 #include <sstream>
 #include <iomanip>
@@ -9,6 +9,7 @@
 #include "data.hpp"
 #include "prior.hpp"
 #include "sampler.hpp"
+#include "../random/randomnumbers.hpp"
 
 namespace hmc {
     sampler::sampler(InversionSettings settings) {

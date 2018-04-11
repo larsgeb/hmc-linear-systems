@@ -3,7 +3,7 @@
  * Created by Lars Gebraad on 7/11/17.
  */
 
-#include "src/hmc/hmc.hpp"
+#include "sampler.hpp"
 
 int main(int argc, char *argv[]) {
 
