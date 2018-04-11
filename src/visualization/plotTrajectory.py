@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 # - Dimensions of interest.
 dim1 = 1
-dim2 = 2
+dim2 = 0
 
 params = {'legend.fontsize': 'x-large',
           'figure.figsize': (4, 4),
@@ -23,7 +23,7 @@ pylab.rcParams.update(params)
 # - Read samples and plot trajectory.
 # ============================================================
 
-fid = open('OUTPUT/trajectory.txt')
+fid = open('OUTPUT/inversion_1_trajecory.txt')
 dummy = fid.read().strip().split()
 fid.close()
 dimensions = int(dummy[0])
@@ -68,5 +68,6 @@ plt.ylabel('q' + str(dim2 + 1))
 # plt.gca().set_aspect('equal', adjustable='box')
 # plt.xlim([0.5, 2.0])
 # plt.ylim([2.65, 3.4])
-plt.savefig('OUTPUT/trajectory.pdf', format='pdf')
+plt.show()
+# plt.savefig('OUTPUT/trajectory.pdf', format='pdf')
 # plt.savefig('OUTPUT/trajectory.png')

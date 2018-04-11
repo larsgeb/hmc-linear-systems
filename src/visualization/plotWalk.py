@@ -15,8 +15,8 @@ pylab.rcParams.update(params)
 
 # If there's other stuff on the line, like misfit values
 trailingElements = 1
-nbi = 30
-fid = open('OUTPUT/samples_52934445.txt')
+nbi = 500
+fid = open('OUTPUT/inversion_1.txt')
 dummy = fid.read().strip().split()
 fid.close()
 numParameters = int(dummy[0])
@@ -30,11 +30,11 @@ for i in range(nbi, numSamples):
         parameter.append(float(dummy[2 + index + (i * (numParameters + trailingElements))]))
 
 # Dimensions to visualize
-dimA = 15
-dimB = 20
-with open('OUTPUT/samples_52934445.txt') as f:
+dimA = 1
+dimB = 2
+with open('OUTPUT/inversion_1.txt') as f:
     iterations = sum(1 for _ in f) - nbi - 2
-dimension = 10201
+dimension = 4
 
 x_plot = np.zeros(iterations)
 y_plot = np.zeros(iterations)
@@ -75,10 +75,10 @@ plt.ylabel('parameter ' + str(dimB))
 plt.title('random walk')
 plt.gcf().subplots_adjust(bottom=0.15)
 plt.tight_layout()
-plt.savefig('OUTPUT/randomWalk.png')
+# plt.savefig('OUTPUT/randomWalk.png')
 # )
-# plt.show()
-plt.close()
+plt.show()
+# plt.close()
 # ============================================================
 # - Histograms.
 # ============================================================
@@ -153,51 +153,3 @@ plt.close()
 
 ## Last trajectory
 
-
-fid = open('OUTPUT/trajectory.txt')
-dummy = fid.read().strip().split()
-fid.close()
-dimensions = int(dummy[0])
-iterations = (dummy.__len__() - 2) / (dimensions + 1)
-
-
-parameters = [[]]
-for i in range(1, dimensions): parameters.append([])
-dimA_model = []
-dimB_model = []
-misfit_model = []
-for i in range(1, iterations + 1):
-    dimA_model.append(float(dummy[2 + dimA + (i - 1) * (dimensions + 1)]))
-    dimB_model.append(float(dummy[2 + dimB + (i - 1) * (dimensions + 1)]))
-    # dim1_model[i-1] = 1/dim1_model[i-1]
-    # dim2_model[i-1] = 1/dim2_model[i-1]
-    misfit_model.append(dummy[2 + dimensions + (i - 1) * (dimensions + 1)])
-
-plt.plot(dimA_model, dimB_model, 'k', linewidth=1, zorder=1)
-plt.scatter(dimA_model, dimB_model, c=misfit_model, edgecolors='none', zorder=2, s=20)
-
-# # Plotting gradient
-# fid = open('OUTPUT/gradient.txt')
-# dummy = fid.read().strip().split("\n")
-# fid.close()
-#
-# # parse data
-# q1 = []
-# q2 = []
-# dq1 = []
-# dq2 = []
-# for line in dummy:
-#     splitty = line.split()
-#     q1.append(float(splitty[0]))
-#     q2.append(float(splitty[1]))
-#     dq1.append(float(splitty[2]))
-#     dq2.append(float(splitty[3]))
-# Q = plt.quiver(q1, q2, dq1, dq2)
-
-plt.xlabel('q' + str(dimA + 1))
-plt.ylabel('q' + str(dimB + 1))
-# plt.gca().set_aspect('equal', adjustable='box')
-# plt.xlim([0.5, 2.0])
-# plt.ylim([2.65, 3.4])
-plt.savefig('OUTPUT/trajectory.pdf', format='pdf')
-# plt.savefig('OUTPUT/trajectory.png')
