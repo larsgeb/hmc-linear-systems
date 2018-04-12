@@ -8,12 +8,22 @@ uncertainty and misfit function.
 The latest implementation (on the 'armadillo' branch) uses the Armadillo Linear Algebra Library 
 to do multithread linear algebra operations. This code has been succesfully tested for models
 up to 10201 parameters. A detailed documentation is as of yet not complete, but for a general idea how
-to set up an inversion i do recommend looking in test/.
+to set up an inversion i do recommend looking in test.
+
+### Current work
+The effectiveness of the method depends mostly on the choice of mass matrix. It turns out that the
+optimal mass matrix is the systems Hessian. For a linear problem, solving the Hessian of the Bayesian 
+formulation is the same as obtaining the full solution. It is therefore quite backwards to solve the
+linear system by computing the Hessian, after which we can use this as a mass matrix to compute the 
+solution.
+
+An alternative is having an estimate of the diagonal entries of the Hessian; the variances of each 
+model parameter. These are relatively cheap to compute if the prior and data covariances are diagonal. 
+This is currently being implemented.
 
 ### Prerequisites
 
-Make sure that BLAS and LaPACK are available on your system, as well as the Armadillo library. Look
-at the branch 'euler' how to use Armadillo of one has the libraries only in the project.
+Make sure that BLAS and LaPACK are available on your system, as well as the Armadillo library. 
 
 ### Compilation
 
@@ -30,17 +40,5 @@ This prepares the platform dependent compilation instructions. For example, on L
  make <target>
  ```
 
-There is one target as of yet:
-
-1. runSampling
-
-   This program will take samples from the posterior distribution described by supplied 
-   prior information, the forward model from a text file and synthetic data 
-   from another text file (with hardcoded data-covariance). The output are the samples in 
-   OUTPUT/samples.txt and the trajectory of the last sample in OUTPUT/trajectory.txt. 
-   Some settings and diagnostics are written to the console.
-
-### Code documentation
-
-Documentation generated using doxygen is found in the docs/ subdirectory, but is also found hosted at [my GitHub 
-Pages](www.larsgeb.github.io).
+The targets can be found in CMakeLists.txt, but are respectively the sampler (hmc_sampler) and generate 
+synthetics (gen_syn).
