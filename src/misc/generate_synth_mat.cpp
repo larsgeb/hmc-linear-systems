@@ -9,20 +9,20 @@ using namespace arma;
 
 int main(int argc, char *argv[]) {
 
-    mat G = zeros(4, 4);
+    mat G = mat(10000, 10000, fill::eye);
 
-    G(0, 0) = 1;
-    G(0, 3) = 1;
-    G(1, 1) = 1;
-    G(2, 2) = 1;
-    G(3, 2) = 1;
+    G(1, 1) = 5;
+    G(0, 1) = 5;
 
-    vec m = {1, 2, 3, 4};
+    vec m = vec(10000, fill::ones);
 
+    m(5) = 2;
+    
     vec d_obs = G * m;
 
     d_obs.save("observed_data.bin");
     G.save("model_matrix.bin");
+    G.save("model_matrix.txt", raw_ascii); // For plotting the matrix using matplotlib
 
     return EXIT_SUCCESS;
 }

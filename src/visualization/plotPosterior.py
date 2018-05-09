@@ -14,7 +14,7 @@ pylab.rcParams.update(params)
 
 # If there's other stuff on the line, like misfit values
 trailingElements = 1
-nbi = 500
+nbi = 50
 fid = open(sys.argv[1])
 dummy = fid.read().strip().split()
 fid.close()

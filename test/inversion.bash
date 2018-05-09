@@ -15,17 +15,17 @@ means=1
 std_dev=10
 
 # Tuning parameters
-algorithm_type=1 # 1 for new, 0 for neal
-mass_matrix_type=2 # 0 for complete, 1 for diagonal, 2 for unit
+algorithm_type=0 # 1 for new, 0 for neal
+mass_matrix_type=1 # 0 for complete, 1 for diagonal, 2 for unit
 ergodicity=1 # 1 for enforcing ergodicity, 0 for not
 temperature=1
-adapttimestep=1
-time_step=nan # nan for default, is overridden by adapttmestep
-number_of_samples=$((10**5))
-
+adapttimestep=0
+time_step=0.5 # nan for default, is overridden by adapttmestep
+number_of_samples=$((10**3))
 
 # Run inversion
 ../bin/hmc_sampler \
+    -nt 100 \
     -im ${input_matrix} \
     -id ${input_data} \
     -os ${output_samples} \

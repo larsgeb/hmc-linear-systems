@@ -307,7 +307,7 @@ namespace hmc {
         arma::mat _optionalMassMatrixMemory;
         arma::mat _CholeskyLowerMassMatrix;
         arma::mat _inverseMassMatrix; // needed to write Hamilton's equations in vector form
-        arma::mat _inverseMassMatrixDiagonal; // needed to write Hamilton's equations in vector form
+        arma::mat _inverseMassMatrixDiagonal; // needed to write Hamilton's equations in vector form TODO rewrite as sparse
 
         // Precomputed misfit function size
         arma::mat _A;

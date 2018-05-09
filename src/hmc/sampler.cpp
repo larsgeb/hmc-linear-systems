@@ -114,24 +114,27 @@ namespace hmc {
         // Pre-compute mass matrix and other associated quantities
         switch (_massMatrixType) {
             case 0:
-                _massMatrix = &_A;
-                break;
-            case 1:
-                _optionalMassMatrixMemory = arma::diagmat(_A);
-                _massMatrix = &_optionalMassMatrixMemory;
-                break;
-            case 2:
-                _optionalMassMatrixMemory = arma::eye(size(_A));
-                _massMatrix = &_optionalMassMatrixMemory;
-                break;
             default:
                 _massMatrix = &_A;
+                // Prepare mass matrix decomposition and inverse
+                _CholeskyLowerMassMatrix = arma::chol(*_massMatrix, "lower");
+                _inverseMassMatrix = arma::inv(*_massMatrix);
+                break;
+            case 1:
+                _genMomKinetic = false;
+                _optionalMassMatrixMemory = arma::diagmat(_A);
+                _massMatrix = &_optionalMassMatrixMemory;
+                _inverseMassMatrixDiagonal = arma::diagmat(1.0 / (*_massMatrix).diag());
+                break;
+            case 2:
+                _genMomKinetic = false;
+                _optionalMassMatrixMemory = arma::eye(size(_A));
+                _massMatrix = &_optionalMassMatrixMemory;
+                _inverseMassMatrixDiagonal = arma::diagmat(1.0 / (*_massMatrix).diag());
+                break;
+//            default:
+//                _massMatrix = &_A;
         }
-        _inverseMassMatrixDiagonal = arma::diagmat(1.0 / (*_massMatrix).diag());
-
-        // Prepare mass matrix decomposition and inverse
-        _CholeskyLowerMassMatrix = arma::chol(*_massMatrix, "lower");
-        _inverseMassMatrix = arma::inv(*_massMatrix);
 
         // Set starting proposal
         propose_momentum();
@@ -152,8 +155,7 @@ namespace hmc {
                     break;
                 case 1:
                 case 2:
-
-                    eig_sym(eigval, eigvec, _inverseMassMatrix * _A);
+                    eig_sym(eigval, eigvec, _inverseMassMatrixDiagonal * _A);
                     maxFrequency = arma::max(eigval);
                     eigval.clear();
                     eigvec.clear();
@@ -291,8 +293,8 @@ namespace hmc {
                 accepted++;
                 x = x_new;
                 _currentModel = _proposedModel;
-                write_sample(samplesfile, x);
             }
+            write_sample(samplesfile, x);
         }
 
         std::cout << "[" << 100 << "%] " << std::string((unsigned long) (_window.ws_col - 7), *"=") << "\r\n"
@@ -347,7 +349,7 @@ namespace hmc {
             x_new = (_hmc ? energy() : chi());
 
             double result_exponent = exp((x - x_new) / _temperature);
-
+//            std::cout << result_exponent << std::endl;
             if ((x_new < x) || (result_exponent > randf(0.0, 1.0))) {
                 if (_testBefore) {
                     leap_frog(uturns, it == _proposals - 1);
@@ -355,8 +357,8 @@ namespace hmc {
                 accepted++;
                 x = x_new;
                 _currentModel = _proposedModel;
-                write_sample(samplesfile, x);
             }
+            write_sample(samplesfile, x);
         }
 
         std::cout << "[" << 100 << "%] " << std::string((unsigned long) (_window.ws_col - 7), *"=") << "\r\n"

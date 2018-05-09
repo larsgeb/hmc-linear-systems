@@ -42,3 +42,9 @@ This prepares the platform dependent compilation instructions. For example, on L
 
 The targets can be found in CMakeLists.txt, but are respectively the sampler (hmc_sampler) and generate 
 synthetics (gen_syn).
+
+### Execution
+
+All targets are compiled into bin/, and should be run from there too. For ease of use, several bash scripts
+ are included in src/test/, which should again be run from bin. All visualization scripts should 
+also be run from this folder.
