@@ -1,8 +1,0 @@
-For compilation;
-	I need to load submodules for later versions of gcc, g++ and cmake using:
-	$ module load gcc/4.8.2 openblas/0.2.13_par
-	$ module load gcc/4.8.2 cmake/3.9.2
-	Which includes parallel openblas and gcc 4.8.2
-
-bsub -I runSampling -n 4
-

@@ -5,11 +5,10 @@
 #include <cmath>
 #include <sstream>
 #include <iomanip>
-#include "forward_model.hpp"
-#include "data.hpp"
-#include "prior.hpp"
 #include "linearSampler.hpp"
 #include "../random/randomnumbers.hpp"
+
+using namespace arma;
 
 namespace hmc {
     linearSampler::linearSampler(InversionSettings settings) {
@@ -131,12 +130,6 @@ namespace hmc {
         _proposedModel = model;
     }
 
-    void linearSampler::propose_metropolis() {
-        // This method might not be the actual Metropolis-Hastings method. It should draw from distributions with
-        // means at the CURRENT model, not at the prior model.
-        _proposedModel = randn(_prior._means, _prior._covariance.t());
-    }
-
     void linearSampler::propose_momentum() {
         // Draw random prior momenta according to the distribution defined by the mass matrix.
         _proposedMomentum = randn(conv_to<mat>::from(massMatrix));
@@ -197,7 +190,7 @@ namespace hmc {
                 x = energy();
                 leap_frog(it == proposals - 1);
             } else {
-                propose_metropolis();
+//                propose_metropolis();
             }
             x_new = (usehmc ? energy() : chi());
 
@@ -229,10 +222,6 @@ namespace hmc {
         arma::vec misfitGrad;
 
         std::ofstream trajectoryfile;
-        if (writeTrajectory) {
-            trajectoryfile.open(_outputTrajectory);
-            trajectoryfile << _prior._means.size() << " " << nt << std::endl;
-        }
 
         unsigned long local_nt = nt;
         double local_dt = dt;

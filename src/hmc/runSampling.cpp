@@ -3,6 +3,7 @@
  * Created by Lars Gebraad on 7/11/17.
  */
 
+#include <cstdlib>
 #include "linearSampler.hpp"
 
 int main(int argc, char *argv[]) {
@@ -13,8 +14,8 @@ int main(int argc, char *argv[]) {
     // Creating the linearSampler
     hmc::linearSampler sampler(settings);
 
-    
-    
+
+
     // Running the actual linearSampler
     sampler.sample();
 //

@@ -40,7 +40,7 @@ This prepares the platform dependent compilation instructions. For example, on L
  make <target>
  ```
 
-The targets can be found in CMakeLists.txt, but are respectively the sampler (hmc_sampler) and generate 
+The targets can be found in CMakeLists.txt, but are respectively the linearSampler (hmc_sampler) and generate 
 synthetics (gen_syn).
 
 ### Execution

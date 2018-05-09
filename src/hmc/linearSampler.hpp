@@ -5,12 +5,12 @@
 #ifndef HMC_LINEAR_SYSTEM_SAMPLER_HPP
 #define HMC_LINEAR_SYSTEM_SAMPLER_HPP
 
-#include "prior.hpp"
-#include "data.hpp"
-
 #include <sys/ioctl.h>
 #include <cstdio>
 #include <unistd.h>
+#include <armadillo>
+
+using namespace arma;
 
 namespace hmc {
 
@@ -227,8 +227,6 @@ namespace hmc {
         vec _currentMomentum;
         vec _proposedMomentum;
 
-        prior _prior;
-
         mat A;
         colvec B;
         double C;
@@ -249,7 +247,6 @@ namespace hmc {
         mat invMass;
 
         // Member functions
-        void propose_metropolis();
 
         void propose_momentum();
 
