@@ -3,7 +3,7 @@
 //
 
 #include <armadillo>
-#include "../hmc/sampler.hpp"
+#include "../hmc/linearSampler.hpp"
 
 using namespace arma;
 

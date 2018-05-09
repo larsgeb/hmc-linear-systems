@@ -19,6 +19,6 @@ namespace hmc {
 #include "forward_model.hpp"
 #include "prior.hpp"
 #include "data.hpp"
-#include "sampler.hpp"
+#include "linearSampler.hpp"
 
 #endif //HMC_LINEAR_SYSTEM_HAMILTONIANMONTECARLO_HPP_HPP
