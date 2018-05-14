@@ -46,30 +46,41 @@ namespace hmc {
         std::cout << "Loading equation ..." << std::endl;
 
         A.load(A_file);
-//        A = A.t();
+        A = A.t();
         B.load(B_file);
         mat C_mat;
         C_mat.load(C_file);
         C = C_mat[0];
 
+//        cx_mat U;
+//        vec s;
+//        cx_mat V;
+//
+//        cx_mat Ac = cx_mat(A, zeros(size(A)));
+//
+//        svd(U, s, V, Ac);
+//
+//        std::cout << U << endl << s << endl << V << endl;
+//
+
         // Start pre-computation
         startCPU = std::clock();
         startWall = get_wall_time();
 
+//        massMatrix = arma::eye(A.n_rows, A.n_cols);
         massMatrix = arma::eye(A.n_rows, A.n_cols);
-//        massMatrix = sqrt(inv(diagmat(A)));
+//        massMatrix = (diagmat(pinv(A)));
         invMass = inv(massMatrix);
 
         // Set starting proposal
         propose_momentum();
-        _proposedModel = ones(A.n_rows, 1);
-
+        _proposedModel = 0.5 * pinv(A, 1e-32 * datum::eps, "std") * B;
         // Set starting model
         _currentModel = _proposedModel;
         _currentMomentum = _proposedMomentum;
 
         // Do analysis of the product _A * massMatrix to determine optimal time step
-        if(settings._adaptTimestep) {
+        if (settings._adaptTimestep) {
             double maxFrequency;
             arma::vec eigval;
             arma::mat eigvec;
@@ -135,7 +146,7 @@ namespace hmc {
         _proposedMomentum = randn(conv_to<mat>::from(massMatrix));
     }
 
-    double linearSampler::precomp_misfit() {
+    double linearSampler::misfit() {
         return as_scalar(_proposedModel.t() * (A * _proposedModel) - B.t() * _proposedModel + C);
     }
 
@@ -148,7 +159,7 @@ namespace hmc {
     }
 
     double linearSampler::chi() {
-        return precomp_misfit();
+        return misfit();
     }
 
     double linearSampler::energy() {
@@ -246,7 +257,7 @@ namespace hmc {
 
     void linearSampler::write_sample(std::ofstream &outfile, double misfit) {
         for (double j : _proposedModel) {
-            outfile << j << "  ";
+            outfile << std::setprecision(53) << j << "  ";
         }
         outfile << misfit;
         outfile << std::endl;

@@ -258,7 +258,7 @@ namespace hmc {
 
         void write_sample(std::ofstream &outfile, double misfit);
 
-        double precomp_misfit();
+        double misfit();
 
         double kineticEnergy();
 
