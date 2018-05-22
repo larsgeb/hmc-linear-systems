@@ -74,7 +74,8 @@ namespace hmc {
 
         // Set starting proposal
         propose_momentum();
-        _proposedModel = 0.5 * pinv(A, 1e-32 * datum::eps, "std") * B;
+        _proposedModel = ones(17,1);
+//        _proposedModel = - pinv((A + A.t()), 1e-32 * datum::eps, "std") * B;
         // Set starting model
         _currentModel = _proposedModel;
         _currentMomentum = _proposedMomentum;
@@ -147,7 +148,7 @@ namespace hmc {
     }
 
     double linearSampler::misfit() {
-        return as_scalar(_proposedModel.t() * (A * _proposedModel) - B.t() * _proposedModel + C);
+        return as_scalar(_proposedModel.t() * (A * _proposedModel) + B.t() * _proposedModel + C);
     }
 
     double linearSampler::kineticEnergy() {
@@ -240,7 +241,7 @@ namespace hmc {
         for (int it = 0; it < local_nt; it++) {
 
 //            if (it == 0) {std::cout << (2 * A * _proposedModel - B);};
-            misfitGrad = (2 * A * _proposedModel - B);
+            misfitGrad = (A.t() * _proposedModel + A * _proposedModel + B);
             _proposedMomentum = _proposedMomentum - 0.5 * local_dt * misfitGrad;
 
             if (writeTrajectory) write_sample(trajectoryfile, chi());
@@ -248,7 +249,7 @@ namespace hmc {
 //            if (it == 0) { std::cout << endl << invMass * _proposedMomentum; };
             _proposedModel = _proposedModel + local_dt * (invMass * _proposedMomentum);
 
-            misfitGrad = (2 * A * _proposedModel - B);
+            misfitGrad = (A.t() * _proposedModel + A * _proposedModel + B);
             _proposedMomentum = _proposedMomentum - 0.5 * local_dt * misfitGrad;
 
         }

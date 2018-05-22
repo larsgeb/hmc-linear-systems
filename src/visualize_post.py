@@ -8,12 +8,14 @@ def autocorr(x):
     return result[int(result.size / 2):] / (np.max(result))
 
 
-samples = np.loadtxt("OUTPUT/inversion_1.txt")
+samples = np.loadtxt("inversion_1.txt")
+
+print(samples[-1,:])
 
 burnin = 0
 
 sns.set_style("darkgrid")
-samples = samples[burnin::1000, :]
+samples = samples[burnin::, :]
 
 print(samples.shape)
 

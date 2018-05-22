@@ -20,12 +20,12 @@ algorithm_type=0 # 1 for new, 0 for neal
 mass_matrix_type=1 # 0 for complete, 1 for diagonal, 2 for unit
 temperature=1
 adapttimestep=0
-time_step=0.000001 # nan for default, is overridden by adapttmestep
-number_of_samples=$((1000000))
+time_step=0.0000001 # nan for default, is overridden by adapttmestep
+number_of_samples=$((10000))
 
 # Run inversion
 ../bin/hmc_sampler \
-    -nt 1000 \
+    -nt 10000 \
     -ia ${input_A} \
     -ib ${input_B} \
     -ic ${input_C} \
@@ -41,5 +41,3 @@ number_of_samples=$((1000000))
     -an ${algorithm_type} \
     2>&1 | tee ${output_log}
 
-# Visualize data
-#python ../src/visualization/plotPosterior.py ${output_samples}
