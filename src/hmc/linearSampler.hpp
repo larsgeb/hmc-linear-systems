@@ -190,7 +190,7 @@ namespace hmc {
                          "propagating, only for algorithm 1" << std::endl
                       << "\t\t \033[1;32m -an\033[0m (boolean, default = 1)" << std::endl
                       << "\t\t choose HMC algorithm; classic (0), new (1)" << std::endl << std::endl
-                      << "\tFor examples, see test/" << std::endl << std::endl;
+                      << "\tFor examples, see inversions/" << std::endl << std::endl;
         }
 
         // Constructor

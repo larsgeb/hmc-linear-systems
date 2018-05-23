@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
 # Model definition
-input_A=A.txt
-input_B=B.txt
-input_C=C.txt
+input_A=A
+input_B=B
+input_C=C
 
 # Output file
 name=inversion_1
-output_samples=OUTPUT/${name}.txt
-output_trajectory=OUTPUT/${name}_trajecory.txt
-output_log=OUTPUT/${name}.log
+output_samples=${name}.txt
+output_trajectory=${name}_trajectory.txt
+output_log=${name}.log
 
 # Prior info
 means=1
@@ -19,13 +19,13 @@ std_dev=10
 algorithm_type=0 # 1 for new, 0 for neal
 mass_matrix_type=1 # 0 for complete, 1 for diagonal, 2 for unit
 temperature=1
-adapttimestep=0
-time_step=0.0000001 # nan for default, is overridden by adapttmestep
-number_of_samples=$((10000))
+adapttimestep=1
+time_step=nan # nan for default, is overridden by adapttmestep
+number_of_samples=$((1000))
 
 # Run inversion
 ../bin/hmc_sampler \
-    -nt 10000 \
+    -nt 10 \
     -ia ${input_A} \
     -ib ${input_B} \
     -ic ${input_C} \

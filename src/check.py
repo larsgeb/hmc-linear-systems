@@ -20,15 +20,17 @@ u1 = u
 misfit = -1.51294100e+05
 
 # Loading the matrices
-A = np.loadtxt("A.txt")
-B = np.loadtxt("B.txt")
-C = np.loadtxt("C.txt")
+A = np.loadtxt("A")
+B = np.loadtxt("B")
+C = np.loadtxt("C")
 
 # If one has to check that the matrices have been loaded correctly.
 # This is how they are used in the HMC sampler
 print("A:\r\n", A)
 print("B:\r\n", B)
 print("C:\r\n", C, "\r\n\r\n")
+
+print(np.linalg.eigvals(A))
 
 # Calculate misfit to check
 print("Last sample in long chain:")
