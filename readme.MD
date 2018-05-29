@@ -18,12 +18,15 @@ to set up an inversion I do recommend looking in the subfolder inversions.
 ## Sample results
 
 Autocorrelation of a single HMC chain:
+
 ![Autocorrelation](docs/Autocorrelation.png)
 
 Correlation matrix of particular inversion result:
+
 ![Correlation](docs/Correlation.png)
 
 Marginal of posterior solution:
+
 ![Marginal](docs/Marginal.png)
 
 ## Hamiltonian Monte Carlo
