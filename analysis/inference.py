@@ -37,10 +37,10 @@ cmap = sns.diverging_palette(220, 10, as_cmap=True)
 # Plot both matrices
 plt.subplots(figsize=(11, 9))
 sns.heatmap(cor, cmap=cmap, vmax=1, vmin=-1, center=0, square=True, linewidths=.5, cbar_kws={"shrink": .5})
-# plt.show()
+plt.show()
 plt.subplots(figsize=(11, 9))
 sns.heatmap(cov, cmap=cmap, vmax=1, vmin=-1, center=0, square=True, linewidths=.5, cbar_kws={"shrink": .5})
-# plt.show()
+plt.show()
 
 print("means:\t\t\t variances:")
 print(np.hstack((means, variances)))

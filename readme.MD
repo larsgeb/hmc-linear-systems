@@ -15,6 +15,17 @@ to do multithread linear algebra operations. This code has been succesfully test
 up to 10201 parameters. A detailed documentation is as of yet not complete, but for a general idea how
 to set up an inversion I do recommend looking in the subfolder inversions.
 
+## Sample results
+
+Autocorrelation of a single HMC chain:
+![Autocorrelation](docs/Autocorrelation.png)
+
+Correlation matrix of particular inversion result:
+![Correlation](docs/Correlation.png)
+
+Marginal of posterior solution:
+![Marginal](docs/Marginal.png)
+
 ## Hamiltonian Monte Carlo
 
 There are a lot of good texts on Hamiltonian Monte Carlo. My favourites include Radform Neal's chapter 

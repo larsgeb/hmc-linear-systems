@@ -17,7 +17,7 @@ means = []
 for i in range(0, samples.shape[1] - 1):
     data["par" + str(i + 1).zfill(3)] = samples[:, i]
 
-sns.jointplot(x="par" + str(par_a).zfill(3), y="par" + str(par_b).zfill(3), data=data, kind="hex", color="#4CB391") \
+sns.jointplot(x="par" + str(par_a).zfill(3), y="par" + str(par_b).zfill(3), data=data, kind="hex", color="#ffdaa8") \
     .set_axis_labels("par" + str(par_a).zfill(3), "par" + str(par_b).zfill(3))
 
 plt.tight_layout()
