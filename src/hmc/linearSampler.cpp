@@ -1,7 +1,7 @@
-//
-// Created by Lars Gebraad on 18-8-17.
-//
-//#include <../random/randomnumbers.hpp>
+/*
+ * Created by Lars Gebraad on 18-08-17.
+ * Last modified 29-05-18.
+ */
 #include <cmath>
 #include <sstream>
 #include <iomanip>
@@ -53,17 +53,16 @@ namespace hmc {
         startCPU = std::clock();
         startWall = get_wall_time();
 
-        massMatrix = (A);
-//        massMatrix = arma::eye(A.n_rows, A.n_cols);
+        massMatrix = A;
         invMass = inv(massMatrix);
 
         // Set starting proposal
         propose_momentum();
-//        _proposedModel = ones(17,1);
-        _proposedModel = -pinv((A + A.t()), 1e-32 * datum::eps, "std") * B;
+        _proposedModel = -pinv((A + A.t()), 1e-1 * datum::eps, "std") * B;
+
         // Set starting model
         _currentModel = _proposedModel;
-        _currentMomentum = _proposedMomentum;
+//        _currentMomentum = _proposedMomentum;
 
         // Do analysis of the product _A * massMatrix to determine optimal time step
         if (settings._adaptTimestep) {
@@ -100,9 +99,9 @@ namespace hmc {
         std::cout << "\t timestep:          \033[1;32m" << dt << "\033[0m" << std::endl;
         std::cout << "\t number of steps:   \033[1;32m" << nt << "\033[0m" << std::endl << std::endl;
         std::cout << "\t Optimal timestep:  \033[1;32m" << (settings._adaptTimestep ? "true" : "false") << "\033[0m" << std::endl;
-        std::cout << "\t mass matrix type:  \033[1;32m" << (massMatrixType == 0 ? "full optimal matrix" :
-                                                            (massMatrixType == 1 ? "diagonal optimal matrix" : "unit matrix"))
-                  << "\033[0m" << std::endl << std::endl;
+//        std::cout << "\t mass matrix type:  \033[1;32m" << (massMatrixType == 0 ? "full optimal matrix" :
+//                                                            (massMatrixType == 1 ? "diagonal optimal matrix" : "unit matrix"))
+//                  << "\033[0m" << std::endl << std::endl;
         std::cout << "\t output samples:    \033[1;32m" << _outputSamples << "\033[0m" << std::endl;
         std::cout << "\t output trajectory: \033[1;32m" << _outputTrajectory << "\033[0m" << std::endl << std::endl;
 
@@ -123,9 +122,6 @@ namespace hmc {
     }
 
     double linearSampler::kineticEnergy() {
-        // If we choose to only use kinetic energy from the diagonal we can use the inverse mass matrix diagonal.
-        // In some choices, there's only non-zero numbers on the diagonal when explicitly choosing a specific
-        // mass matrix, I hardcode these options to be more efficient.
         return as_scalar(0.5 * _proposedMomentum.t() * invMass * _proposedMomentum);
 
     }
@@ -197,7 +193,7 @@ namespace hmc {
         // start proposal at current momentum
         _proposedModel = _currentModel;
         // Acts as starting momentum
-        _currentMomentum = _proposedMomentum;
+//        _currentMomentum = _proposedMomentum;
 
         arma::vec misfitGrad;
 
@@ -205,6 +201,9 @@ namespace hmc {
 
         unsigned long local_nt = nt;
         double local_dt = dt;
+
+        local_nt = static_cast<unsigned long>(nt * randf(0.1, 3));
+        local_dt = dt * randf(0.5, 2);
 
         for (int it = 0; it < local_nt; it++) {
 
@@ -238,6 +237,7 @@ namespace hmc {
         auto startCPU = std::clock();
         auto startWall = get_wall_time();
 
+        // Allow for other methods, remnant of old structure
         sample_neal();
 
         // Output sampling time

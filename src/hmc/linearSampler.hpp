@@ -1,6 +1,7 @@
-//
-// Created by Lars Gebraad on 18-8-17.
-//
+/*
+ * Created by Lars Gebraad on 18-08-17.
+ * Last modified 29-05-18.
+ */
 
 #ifndef HMC_LINEAR_SYSTEM_SAMPLER_HPP
 #define HMC_LINEAR_SYSTEM_SAMPLER_HPP
@@ -13,8 +14,9 @@
 using namespace arma;
 
 namespace hmc {
-
+    // settings structural object, mostly done to tidy up the linearSampler class
     struct InversionSettings {
+
         // Defaults
         const double PI = 3.14159265358979323846264338327;
         struct winsize _window{};
@@ -41,9 +43,7 @@ namespace hmc {
         bool _genMomKinetic = true; // Use generalized mass matrix to compute kinetic energy (true).
         bool _testBefore = true; // Decreases required computation time by order of magnitude, no other influence.
         bool _ergodic = true;  // Randomizes trajectory length and step size
-        bool _hamiltonianMonteCarlo = true; // Metropolis Hastings (false) or Hamiltonian Monte Carlo (true).
         bool _adaptTimestep = true; // adapt timestep for mass-matrix choice
-
 
         // Parse command line options
         void parse_input(int argc, char *argv[]) {
@@ -122,6 +122,7 @@ namespace hmc {
                 to_set = x;
         }
 
+        // Parsing double input
         void parse_double(char *argv[], int position, double &to_set) {
             std::stringstream ss(argv[position + 1]);
             double x;
@@ -131,6 +132,7 @@ namespace hmc {
                 to_set = x;
         }
 
+        // Parsing boolean input
         void parse_boolean(char *argv[], int position, bool &to_set) {
             std::stringstream ss(argv[position + 1]);
             bool x;
@@ -140,6 +142,7 @@ namespace hmc {
                 to_set = x;
         }
 
+        // Display help for sampler
         void display_help() {
             std::cout << std::endl << "Hamiltonian Monte Carlo Sampler" << std::endl
                       << "Lars Gebraad, 2017" << std::endl << "Displaying help ..." << std::endl << std::endl;
@@ -212,58 +215,66 @@ namespace hmc {
         // Constructors and destructors
         explicit linearSampler(InversionSettings settings);
 
-        // Sample the posterior and write samples out to file
+        // Sample the posterior and write samples out to file by
+        // calling one of the sampling methods (only 1 implemented)
         void sample();
 
-        void sample_new();
-
+        // Sample using neals criterion
         void sample_neal();
 
         // Set the starting model explicitly instead of prior-based
         void setStarting(arma::vec &model);
 
+    private:
+        // Fields
+
+        // States
         vec _currentModel;
         vec _proposedModel;
-        vec _currentMomentum;
         vec _proposedMomentum;
-
+        // Quadratic form
         mat A;
         colvec B;
         double C;
+        // Mass matrices
         mat massMatrix;
-    private:
-        // Fields
+        mat invMass; // To spare computation time
+        // Settings
         unsigned long nt; // Number of time steps for trajectory
         double dt; // Time step for trajectory
         double temperature; // Temperature for acceptance criterion
         unsigned long proposals; // Number of iterations for Monte Carlo sampling
         unsigned long massMatrixType; // Number of iterations for Monte Carlo sampling
-        bool usehmc;
+        winsize _window;
+        // Pointers to files
         char *A_file;
         char *B_file;
         char *C_file;
-        winsize _window;
-
-        mat invMass;
-
-        // Member functions
-
-        void propose_momentum();
-
-        void leap_frog(bool writeTrajectory);
-
-        double chi();
-
-        double energy();
-
-        void write_sample(std::ofstream &outfile, double misfit);
-
-        double misfit();
-
-        double kineticEnergy();
-
         char *_outputSamples;
         char *_outputTrajectory;
+
+        // Member methods
+
+        // Propose new momentum according to N(0,M)
+        void propose_momentum();
+
+        // Integrate Hamilton's equations using a leapfrog scheme
+        void leap_frog(bool writeTrajectory);
+
+        // Evaluate misfit (chi)
+        double chi();
+
+        // Evaluate Hamiltonian (H)
+        double energy();
+
+        // Write sample to one line of opened filestream
+        void write_sample(std::ofstream &outfile, double misfit);
+
+        // Calculate misfit of quadratic form
+        double misfit();
+
+        // Calculate kinetic energy as 1/2 pt M^-1 p
+        double kineticEnergy();
 
     };
 }
