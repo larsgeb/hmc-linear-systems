@@ -182,7 +182,7 @@ the figures in any required format. This can also be done from the GUI (as the p
 
 From **bin/** (with substituting the filenames/folders):
 ```
- python chain.py inversionFolder/samplesFile.txt
+ python analysis/chain.py inversionFolder/samplesFile.txt
 ```
 
 **Bayesian inference**
@@ -191,7 +191,7 @@ The actual analysis of parameters is done typically with visualizing the means a
 correlation/covariance matrix. These paremeters completely define the posterior multivariate Gaussian.
 It is visualized in the following way from the **bin/** folder:
 ```
- python inference.py inversionFolder/samplesFile.txt
+ python analysis/inference.py inversionFolder/samplesFile.txt
 ```
 
 Same things happen as with chain.py.
