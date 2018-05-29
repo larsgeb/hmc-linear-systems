@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -26,8 +27,7 @@ def autocorrFFT(x, norm=True):
 
     return acf
 
-
-name = "inversion2"
+name = sys.argv[1]
 samples = np.loadtxt(name + "/samples.txt")
 burnin = 100
 samples = samples[burnin::, :]
