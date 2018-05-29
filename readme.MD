@@ -1,5 +1,5 @@
 
-# Hamiltonian Monte Carlo \r\r Probabilistic inversion of linear models
+# Hamiltonian Monte Carlo Probabilistic inversion of linear models
 
 This program is built to perform Markov Chains using Hamiltonian Mechanics. Essentially, any amount of
 parameters and any linear forward model matrix can be supplied, as long as one can describe the system in quadratic form;
