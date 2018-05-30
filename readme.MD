@@ -162,6 +162,8 @@ should create a separate folder in **bin/**.
 
 ### Visualization and diagnostics
 
+**All codes should work with python 2 & 3**
+
 Multivariate Markov Chains can be visualized in beautiful and colorful ways and everyone does it differently.
 I have provided some scripts, one in R for effective sample sizes, Python for the rest, to visualize the
 chain in what I believe is an intuitive way.
@@ -169,15 +171,31 @@ chain in what I believe is an intuitive way.
 The R scripts uses the coda and mcmcse packages. Expecially the implemntation from the multivariate effective
 sample size is rather novel. It is implemented using the methods in Vats et al. (2017).
 
+**Prerequisites**
+
+Python (pip) packages:
+```
+Numpy
+Matplotlib
+Seaborn
+Pandas
+```
+
+R packages:
+``` 
+coda
+mcmcse
+```
+
 **Effective sample size**
 
 One of the most important things to check is if a chain is converged. One way (of many) to do this is to
 compute the effective sample size. Have we produced enough uncorrelated samples to accurately infer 
 properties? The computation of this quantity is done in the R-script mess.r (multivariate effective samples 
-size, not just a mess ;)  ). From the **bin/** folder:
+size, not just a mess ;)  ). From the **bin/** folder for e.g. inversion1:
 
 ```
-Rscript ../analysis/mess.r
+ Rscript ../analysis/mcmcESS.R inversion1/samples.txt 
 ```
 
 For a sufficiently large chain, this script might take some tens of seconds. Vats et al. (2017) 
@@ -194,21 +212,28 @@ samples and autocorrelations of each parameter. For this, I use the interactive 
 each time you close a figure, the new one will be generated. The code can be modified easily to save
 the figures in any required format. This can also be done from the GUI (as the plot is being shown).
 
-From **bin/** (with substituting the filenames/folders):
+From **bin/** (with substituting the filenames/folders) for e.g. inversion1:
 ```
- python analysis/chain.py inversionFolder/samplesFile.txt
+ python ../analysis/chain.py inversion1/samples.txt
 ```
 
 **Bayesian inference**
 
 The actual analysis of parameters is done typically with visualizing the means and 
 correlation/covariance matrix. These paremeters completely define the posterior multivariate Gaussian.
-It is visualized in the following way from the **bin/** folder:
+It is visualized in the following way from the **bin/** folder for e.g. inversion1:
 ```
- python analysis/inference.py inversionFolder/samplesFile.txt
+ python ../analysis/inference.py inversion1/samples.txt
 ```
 
-Same things happen as with chain.py.
+The matrices are plotted and saved in the same folder as the samples file along with means and variances.
+
+If you want to visualize a marginal of two parameters (e.g. 1 and 5) I have provided a hexagonal joint plot:
+```
+ python ../analysis/joint.py inversion1/samples.txt 1 5
+```
+*Parameter numbering starts at 1*. The two quantities in the legend are respectively the pearson 
+correlation coefficient and it's two-tailed p-value (lower is more certain, zero is ideal).
 
 ### Citation
 
