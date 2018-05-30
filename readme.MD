@@ -29,6 +29,10 @@ Boxplot of parameters on symlog scale:
 
 ![Boxplot](docs/Boxplot.png)
 
+Boxplot of parameters on linear scale:
+
+![Boxplot-true](docs/Boxplot-true.png)
+
 Marginal of posterior solution:
 
 ![Marginal](docs/Marginal.png)
@@ -232,6 +236,11 @@ It is visualized in the following way from the **bin/** folder for e.g. inversio
 ```
 
 The matrices are plotted and saved in the same folder as the samples file along with means and variances.
+
+Also plotted is a boxplot of the parameters. As can be seen in the figures at the very beginning of this page, 
+this might be problematic if the parameters span multiple orders of magnitude. In the two boxplots the same
+HMC results were use, except that in the linear scale plot the last two parameters were omitted. Use at
+your own discretion.
 
 If you want to visualize a marginal of two parameters (e.g. 1 and 5) I have provided a hexagonal joint plot:
 ```

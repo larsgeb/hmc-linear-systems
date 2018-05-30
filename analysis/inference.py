@@ -63,7 +63,7 @@ print("Covariance matrix:\r\n", cov)
 
 sns.set(style="ticks")
 f, ax = plt.subplots(figsize=(7, 6))
-plt.xscale('symlog', linthreshx=0.1)
+# plt.xscale('symlog', linthreshx=0.1)
 plt.boxplot(samples[:, :-1], vert=False)
 ax.xaxis.grid(True)
 ax.set(ylabel="")
