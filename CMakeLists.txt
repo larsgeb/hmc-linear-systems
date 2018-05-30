@@ -12,7 +12,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Wshadow -Wnon
 
 include_directories(../armadillo-code/include) # or whatever your current Armadillo directory is
 
-set(SOURCE_FILES src/hmc/runSampling.cpp src/random/randomnumbers.cpp src/hmc/hmc.hpp src/hmc/linearSampler.cpp src/hmc/linearSampler.hpp)
+set(SOURCE_FILES src/hmc/runSampling.cpp src/random/randomnumbers.cpp src/hmc/linearSampler.cpp src/hmc/linearSampler.hpp)
 
 add_executable(hmc_sampler ${SOURCE_FILES})
 target_link_libraries(hmc_sampler openblas)

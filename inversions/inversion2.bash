@@ -35,3 +35,5 @@ number_of_samples=$((100000))
     --massmatrixtype ${mass_matrix_type} \
     2>&1 | tee ${output_log}
 
+sed -i 's/\x1b\[[0-9;]*m//g' ${output_log}
+sed -i '/\[/d' ${output_log}

@@ -33,5 +33,7 @@ number_of_samples=$((10000))
     -at ${adapt_time_step} \
     -std ${std_dev} \
     --massmatrixtype ${mass_matrix_type} \
-    2>&1 |  tee ${output_log}
+    2>&1 | tee ${output_log}
 
+sed -i 's/\x1b\[[0-9;]*m//g' ${output_log}
+sed -i '/\[/d' ${output_log}
