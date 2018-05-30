@@ -25,6 +25,10 @@ Correlation matrix of particular inversion result:
 
 ![Correlation](docs/Correlation.png)
 
+Boxplot of parameters on symlog scale:
+
+![Boxplot](docs/Boxplot.png)
+
 Marginal of posterior solution:
 
 ![Marginal](docs/Marginal.png)
