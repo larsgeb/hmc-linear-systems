@@ -1,3 +1,6 @@
+# Visualization of Markov Chain Behaviour
+# Lars Gebraad, 2018
+
 import sys
 import numpy as np
 import seaborn as sns

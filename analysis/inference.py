@@ -1,11 +1,16 @@
+# Visualization of Markov Chain Results
+# Lars Gebraad, 2018
+
 import sys
+import os
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 name = sys.argv[1]
-samples = np.loadtxt(name + "/samples.txt")
+dir_path = os.path.dirname(os.path.realpath(name))
+samples = np.loadtxt(name)
 burnin = 100
 samples = samples[burnin::, :]
 data = {}
@@ -24,12 +29,14 @@ data = pd.DataFrame(data=data)
 # Compute the correlation and covariance matrices
 cor = data.corr()
 cov = data.cov()
-variances = np.diag(cov.as_matrix())
+variances = np.diag(cov.values)
 variances.shape = (variances.shape[0], 1)
 
 # Save these matrices
-np.savetxt(name + "/correlation.txt", cor.as_matrix())
-np.savetxt(name + "/covariance.txt", cov.as_matrix())
+np.savetxt(dir_path + "/correlation.txt", cor.values)
+np.savetxt(dir_path + "/covariance.txt", cov.values)
+np.savetxt(dir_path + "/means.txt", means)
+np.savetxt(dir_path + "/variances.txt", variances)
 
 # Custom cmap
 cmap = sns.diverging_palette(220, 10, as_cmap=True)

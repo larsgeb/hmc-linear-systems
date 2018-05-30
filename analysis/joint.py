@@ -1,3 +1,6 @@
+# Visualization of Markov Chain Joint Marginals
+# Lars Gebraad, 2018
+
 import sys
 import numpy as np
 import pandas as pd
