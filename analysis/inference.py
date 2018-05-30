@@ -15,10 +15,14 @@ burnin = 100
 samples = samples[burnin::, :]
 data = {}
 means = []
+names = []
 
-for i in range(0, 17):
+zfill = int(np.ceil(np.log10(samples.shape[1] - 1)))
+
+for i in range(0, samples.shape[1] - 1):
     means.append(np.mean(samples[:, i]))
-    data["par" + str(i + 1).zfill(2)] = samples[:, i]
+    names.append("par" + str(i + 1).zfill(zfill))
+    data["par" + str(i + 1).zfill(zfill)] = samples[:, i]
 
 means = np.array(means)
 means.shape = (means.shape[0], 1)
@@ -56,3 +60,14 @@ print("\r\n--------------------------------------------\r\n\r\n")
 print("Correlation matrix:\r\n", cor)
 print("\r\n--------------------------------------------\r\n\r\n")
 print("Covariance matrix:\r\n", cov)
+
+sns.set(style="ticks")
+f, ax = plt.subplots(figsize=(7, 6))
+plt.xscale('symlog', linthreshx=0.1)
+plt.boxplot(samples[:, :-1], vert=False)
+ax.xaxis.grid(True)
+ax.set(ylabel="")
+sns.despine(trim=True, left=True)
+plt.xlabel('value (very skewed representation due to symlog axis)')
+plt.yticks(np.arange(1, samples.shape[1]), names)
+plt.show()

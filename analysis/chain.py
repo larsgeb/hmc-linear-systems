@@ -35,12 +35,14 @@ samples = np.loadtxt(name + "/samples.txt")
 burnin = 100
 samples = samples[burnin::, :]
 
+zfill = int(np.ceil(np.log10(samples.shape[1] - 1)))
+
 # Samples plot
 legend = []
 sns.set_style("darkgrid")
 for i in range(0, 17):
     plt.plot(samples[:, i])
-    legend.append("par" + str(i + 1).zfill(2))
+    legend.append("par" + str(i + 1).zfill(zfill))
 legend = plt.legend(legend)
 plt.show()
 

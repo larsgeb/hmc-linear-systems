@@ -17,11 +17,13 @@ samples = samples[burnin::, :]
 data = {}
 means = []
 
-for i in range(0, samples.shape[1] - 1):
-    data["par" + str(i + 1).zfill(3)] = samples[:, i]
+zfill = int(np.ceil(np.log10(samples.shape[1] - 1)))
 
-sns.jointplot(x="par" + str(par_a).zfill(3), y="par" + str(par_b).zfill(3), data=data, kind="hex", color="#ffdaa8") \
-    .set_axis_labels("par" + str(par_a).zfill(3), "par" + str(par_b).zfill(3))
+for i in range(0, samples.shape[1] - 1):
+    data["par" + str(i + 1).zfill(zfill)] = samples[:, i]
+
+sns.jointplot(x="par" + str(par_a).zfill(zfill), y="par" + str(par_b).zfill(zfill), data=data, kind="hex", color="#ffdaa8") \
+    .set_axis_labels("par" + str(par_a).zfill(zfill), "par" + str(par_b).zfill(zfill))
 
 plt.tight_layout()
 plt.show()

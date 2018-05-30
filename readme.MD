@@ -162,7 +162,7 @@ should create a separate folder in **bin/**.
 
 ### Visualization and diagnostics
 
-**All codes should work with python 2 & 3**
+**All codes should work with Python 2 & 3**
 
 Multivariate Markov Chains can be visualized in beautiful and colorful ways and everyone does it differently.
 I have provided some scripts, one in R for effective sample sizes, Python for the rest, to visualize the
@@ -191,8 +191,8 @@ mcmcse
 
 One of the most important things to check is if a chain is converged. One way (of many) to do this is to
 compute the effective sample size. Have we produced enough uncorrelated samples to accurately infer 
-properties? The computation of this quantity is done in the R-script mess.r (multivariate effective samples 
-size, not just a mess ;)  ). From the **bin/** folder for e.g. inversion1:
+properties? The computation of this quantity is done in the R-script mcmcESS.R.
+ From the **bin/** folder for e.g. inversion1:
 
 ```
  Rscript ../analysis/mcmcESS.R inversion1/samples.txt 
@@ -203,11 +203,12 @@ also provided a criterium to calculate a required effective sample size. This is
 this script.
 
 If one requires more visualization on chain diagnostics, I highly recommend the **coda** R package.
+Especially the summary() function is a lot more sophisticated than the Python implementations.
 
 **Chain visualization**
 
 Visualizing the state of the Markov Chain is another way to get a good feeling of how MCMC works as 
-well as to perform diagnostics. In the python script chain.py I have provided ways to look at the 
+well as to perform diagnostics. In the Python script chain.py I have provided ways to look at the 
 samples and autocorrelations of each parameter. For this, I use the interactive mode of matplotlib;
 each time you close a figure, the new one will be generated. The code can be modified easily to save
 the figures in any required format. This can also be done from the GUI (as the plot is being shown).
