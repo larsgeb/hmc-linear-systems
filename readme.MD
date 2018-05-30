@@ -10,7 +10,7 @@ Typically, the matrix A has to be positive definite, for a posterior probabilty 
 model space. Typically, this quadratic form is the result of using Bayes' Theorem in conjuction with 
 a linear model and some prior information. More is described in the reader. 
 
-The latest implementation (on the 'ABC' branch) uses the Armadillo Linear Algebra Library 
+The latest implementation (on the 'ABC' branch) uses the Armadillo library (Sanderson and Curtin, 2016)
 to do multithread linear algebra operations. This code has been succesfully tested for models
 up to 10201 parameters. A detailed documentation is as of yet not complete, but for a general idea how
 to set up an inversion I do recommend looking in the subfolder inversions.
@@ -269,6 +269,10 @@ Not many people have asked me questions yet. Feel free though!
 ### References
 
 ```
+Conrad Sanderson and Ryan Curtin.
+Armadillo: a template-based C++ library for linear algebra.
+Journal of Open Source Software, Vol. 1, pp. 26, 2016.
+
 Multivariate Output Analysis for Markov chain Monte Carlo
 D. Vats, J. M. Flegal, G. L. Jones, 2017
 arXiv:1512.07713v4
