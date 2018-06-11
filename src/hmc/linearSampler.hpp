@@ -276,6 +276,7 @@ namespace hmc {
         // Calculate kinetic energy as 1/2 pt M^-1 p
         double kineticEnergy();
 
+        const Op<Mat<double>, op_chol> CholeskyLowerMassMatrix;
     };
 }
 

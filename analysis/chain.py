@@ -32,7 +32,7 @@ def autocorrFFT(x, norm=True):
 
 name = sys.argv[1]
 samples = np.loadtxt(name + "/samples.txt")
-burnin = 100
+burnin = 0
 samples = samples[burnin::, :]
 
 zfill = int(np.ceil(np.log10(samples.shape[1] - 1)))
@@ -40,7 +40,7 @@ zfill = int(np.ceil(np.log10(samples.shape[1] - 1)))
 # Samples plot
 legend = []
 sns.set_style("darkgrid")
-for i in range(0, 17):
+for i in range(0, 121):
     plt.plot(samples[:, i])
     legend.append("par" + str(i + 1).zfill(zfill))
 legend = plt.legend(legend)

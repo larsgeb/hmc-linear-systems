@@ -15,12 +15,12 @@ output_log=${name}/${name}.log
 mass_matrix_type=0 # 0 for complete, 1 for diagonal, 2 for unit
 temperature=1
 adapt_time_step=0
-time_step=0.1 # nan for default, is overridden by adapttmestep
-number_of_samples=$((1000))
+time_step=0.2 # nan for default, is overridden by adapttmestep
+number_of_samples=$((100000))
 
 # Run inversion
 ./hmc_sampler \
-    -nt 50 \
+    -nt 10 \
     -ia ${input_A} \
     -ib ${input_B} \
     -ic ${input_C} \
@@ -29,9 +29,7 @@ number_of_samples=$((1000))
     -ns ${number_of_samples} \
     -t ${temperature} \
     -dt ${time_step} \
-    -means ${means} \
     -at ${adapt_time_step} \
-    -std ${std_dev} \
     --massmatrixtype ${mass_matrix_type} \
     2>&1 | tee ${output_log}
 

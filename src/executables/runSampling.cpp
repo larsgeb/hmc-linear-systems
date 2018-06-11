@@ -5,7 +5,7 @@
  */
 
 #include <cstdlib>
-#include "linearSampler.hpp"
+#include "../hmc/linearSampler.hpp"
 
 int main(int argc, char *argv[]) {
 

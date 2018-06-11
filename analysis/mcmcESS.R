@@ -1,11 +1,11 @@
 #!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
 
-cat('Estimation of (m)ESS. Small script written by Lars Gebraad, 2018. \r\n\r\n')
+cat('Estimation of (m)ESS. \r\n\r\n')
 
 # Install packages (do this only once, maybe easier from R-console)
-#install.packages('coda')
-#install.packages('mcmcse')
+install.packages('coda')
+install.packages('mcmcse')
 
 # Load libraries
 library(coda)

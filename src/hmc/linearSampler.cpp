@@ -43,7 +43,6 @@ namespace hmc {
         std::cout << "Loading equation ..." << std::endl;
 
         A.load(A_file);
-        A = A.t();
         B.load(B_file);
         mat C_mat;
         C_mat.load(C_file);
@@ -53,7 +52,8 @@ namespace hmc {
         startCPU = std::clock();
         startWall = get_wall_time();
 
-        massMatrix = A;
+        massMatrix = 0.5 * (A + A.t());
+        CholeskyLowerMassMatrix = arma::chol(massMatrix, "lower");
         invMass = inv(massMatrix);
 
         // Set starting proposal
@@ -112,9 +112,10 @@ namespace hmc {
         _proposedModel = model;
     }
 
-    void linearSampler::propose_momentum() {
+    void linearSampler::propose_momentum() { // todo replace with general covariance matrix
         // Draw random prior momenta according to the distribution defined by the mass matrix.
-        _proposedMomentum = randn(conv_to<mat>::from(massMatrix));
+//        _proposedMomentum = randn(conv_to<mat>::from(massMatrix));
+        _proposedMomentum = randn_Cholesky(CholeskyLowerMassMatrix);
     }
 
     double linearSampler::misfit() {
@@ -144,7 +145,7 @@ namespace hmc {
         std::ofstream samplesfile;
         samplesfile.open(_outputSamples);
 
-        write_sample(samplesfile, x);
+        write_sample(samplesfile, chi());
 
         // Write progress to console
         std::cout << "[" << std::setw(3) << (int) (100.0 * double(0) / proposals) << "%] "
@@ -163,7 +164,6 @@ namespace hmc {
             }
 
             // Propose
-
             propose_momentum();
             x = energy();
             leap_frog(it == proposals - 1);
@@ -202,18 +202,17 @@ namespace hmc {
         unsigned long local_nt = nt;
         double local_dt = dt;
 
-        local_nt = static_cast<unsigned long>(nt * randf(0.1, 3));
-        local_dt = dt * randf(0.5, 2);
+        local_nt = static_cast<unsigned long>(nt * randf(0.5, 1.5));
+        local_dt = dt * randf(0.5, 1.5);
 
         for (int it = 0; it < local_nt; it++) {
 
-//            if (it == 0) {std::cout << (2 * A * _proposedModel - B);};
+            // this allows for non-symmetric matrices, usually same as 2Ax + B
             misfitGrad = (A.t() * _proposedModel + A * _proposedModel + B);
             _proposedMomentum = _proposedMomentum - 0.5 * local_dt * misfitGrad;
 
             if (writeTrajectory) write_sample(trajectoryfile, chi());
 
-//            if (it == 0) { std::cout << endl << invMass * _proposedMomentum; };
             _proposedModel = _proposedModel + local_dt * (invMass * _proposedMomentum);
 
             misfitGrad = (A.t() * _proposedModel + A * _proposedModel + B);
@@ -225,7 +224,7 @@ namespace hmc {
 
     void linearSampler::write_sample(std::ofstream &outfile, double misfit) {
         for (double j : _proposedModel) {
-            outfile << std::setprecision(53) << j << "  ";
+            outfile << std::setprecision(20) << j << "  ";
         }
         outfile << misfit;
         outfile << std::endl;
