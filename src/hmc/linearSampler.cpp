@@ -13,7 +13,7 @@ using namespace arma;
 namespace hmc {
     linearSampler::linearSampler(InversionSettings settings) {
         // Window settings
-        _window = settings._window;
+        window = settings._window;
 
         // Output files
         _outputSamples = settings._outputSamplesFile;
@@ -34,19 +34,20 @@ namespace hmc {
         // Initialise random number generator
         srand((unsigned int) time(nullptr));
 
-        std::cout << std::endl << "Hamiltonian Monte Carlo Sampler" << std::endl << "Lars Gebraad, 2017" << std::endl
+        // Show version
+        std::cout << std::endl << "Hamiltonian Monte Carlo Sampler" << std::endl << "Lars Gebraad, version 2 - Summer 2018" << std::endl
                   << "Use --help or -h to display the documentation." << std::endl << std::endl;
 
-        // Load forward matrix
+        // Load quadratic form
         auto startCPU = get_cpu_time();
         auto startWall = get_wall_time();
         std::cout << "Loading equation ..." << std::endl;
-
         A.load(A_file);
         B.load(B_file);
         mat C_mat;
         C_mat.load(C_file);
         C = C_mat[0];
+        std::cout << "Matrices loaded." << std::endl;
 
         // Start pre-computation
         startCPU = std::clock();
@@ -62,7 +63,6 @@ namespace hmc {
 
         // Set starting model
         _currentModel = _proposedModel;
-//        _currentMomentum = _proposedMomentum;
 
         // Do analysis of the product _A * massMatrix to determine optimal time step
         if (settings._adaptTimestep) {
@@ -99,12 +99,12 @@ namespace hmc {
         std::cout << "\t timestep:          \033[1;32m" << dt << "\033[0m" << std::endl;
         std::cout << "\t number of steps:   \033[1;32m" << nt << "\033[0m" << std::endl << std::endl;
         std::cout << "\t Optimal timestep:  \033[1;32m" << (settings._adaptTimestep ? "true" : "false") << "\033[0m" << std::endl;
-//        std::cout << "\t mass matrix type:  \033[1;32m" << (massMatrixType == 0 ? "full optimal matrix" :
-//                                                            (massMatrixType == 1 ? "diagonal optimal matrix" : "unit matrix"))
-//                  << "\033[0m" << std::endl << std::endl;
+        std::cout << "\t mass matrix type:  \033[1;32m" << (massMatrixType == 0 ? "full optimal matrix" :
+                                                            (massMatrixType == 1 ? "diagonal optimal matrix" : "unit matrix"))
+                  << "\033[0m" << std::endl << std::endl;
         std::cout << "\t output samples:    \033[1;32m" << _outputSamples << "\033[0m" << std::endl;
-        std::cout << "\t output trajectory: \033[1;32m" << _outputTrajectory << "\033[0m" << std::endl << std::endl;
-
+        std::cout << "\t output trajectory: \033[1;32m" << _outputTrajectory << "\033[0m" << std::endl;
+        std::cout << "\t Diagonal matrix:   \033[1;32m" << (symmetricA ? "yes" : "no") << "\033[0m" << std::endl << std::endl;
     };
 
     void linearSampler::setStarting(arma::vec &model) {
@@ -141,25 +141,22 @@ namespace hmc {
         double x_new;
         int accepted = 1;
 
-        // Open output file
+        // Open output file and write starting model
         std::ofstream samplesfile;
         samplesfile.open(_outputSamples);
-
         write_sample(samplesfile, chi());
 
-        // Write progress to console
+        // Write progress in percentages to console
         std::cout << "[" << std::setw(3) << (int) (100.0 * double(0) / proposals) << "%] "
-                  << std::string(((unsigned long) ((_window.ws_col - 7) * 0 / proposals)), *"=") <<
+                  << std::string(((unsigned long) ((window.ws_col - 7) * 0 / proposals)), *"=") <<
                   "\r" << std::flush;
 
-
-        // Start sampling
+        // Perform sampling
         for (int it = 1; it < proposals; it++) {
-
-            // Write progress to console
+            // Write progress to console every 100 steps
             if (it % 100 == 0) {
                 std::cout << "[" << std::setw(3) << (int) (100.0 * double(it) / proposals) << "%] "
-                          << std::string(((unsigned long) ((_window.ws_col - 7) * it / proposals)), *"=") <<
+                          << std::string(((unsigned long) ((window.ws_col - 7) * it / proposals)), *"=") <<
                           "\r" << std::flush;
             }
 
@@ -168,8 +165,10 @@ namespace hmc {
             x = energy();
             leap_frog(it == proposals - 1);
 
+            // Calculate new Hamiltonian
             x_new = energy();
 
+            // Evaluate acceptance criterion
             double result_exponent = exp((x - x_new) / temperature);
             if ((x_new < x) || (result_exponent > randf(0.0, 1.0))) {
                 accepted++;
@@ -179,12 +178,12 @@ namespace hmc {
             }
         }
 
-        std::cout << "[" << 100 << "%] " << std::string((unsigned long) (_window.ws_col - 7), *"=") << "\r\n"
+        // Write out 100% at the end
+        std::cout << "[" << 100 << "%] " << std::string((unsigned long) (window.ws_col - 7), *"=") << "\r\n"
                   << std::flush;
         std::cout << "Number of accepted models: " << accepted << std::endl;
 
-        // Write result
-//        samplesfile << accepted << std::endl;
+        // Close output file
         samplesfile.close();
     }
 
@@ -192,19 +191,17 @@ namespace hmc {
 
         // start proposal at current momentum
         _proposedModel = _currentModel;
-        // Acts as starting momentum
-//        _currentMomentum = _proposedMomentum;
 
         arma::vec misfitGrad;
-
         std::ofstream trajectoryfile;
 
+        // Randomize settings as to ensure ergodicity
         unsigned long local_nt = nt;
         double local_dt = dt;
-
         local_nt = static_cast<unsigned long>(nt * randf(0.5, 1.5));
         local_dt = dt * randf(0.5, 1.5);
 
+        // Time integrate Hamiltons equations
         for (int it = 0; it < local_nt; it++) {
 
             // this allows for non-symmetric matrices, usually same as 2Ax + B

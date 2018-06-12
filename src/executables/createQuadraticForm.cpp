@@ -44,9 +44,9 @@ int main(int argc, char *argv[]) {
     B = -(m0.t() * invcm + d0.t() * invcdG).t();
     C = 0.5 * (m0.t() * invcm * m0 + d0.t() * invcd * d0);
 
-    A.save("A.txt", raw_ascii);
-    B.save("B.txt", raw_ascii);
-    C.save("C.txt", raw_ascii);
+    A.save("A.txt");
+    B.save("B.txt");
+    C.save("C.txt");
 
     arma::vec m_post = m0 + (cm * G.t()) * inv(G * cm * G.t() + cd) * (d0 - G * m0);
 
@@ -60,8 +60,8 @@ int main(int argc, char *argv[]) {
 
     cout << X(A, B, C, m_post);
 
-    m_post.save("m_post.txt", raw_ascii);
-    cm_post.save("cm_post.txt", raw_ascii);
+    m_post.save("m_post.txt");
+    cm_post.save("cm_post.txt");
 
     return EXIT_SUCCESS;
 }

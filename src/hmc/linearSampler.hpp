@@ -212,50 +212,66 @@ namespace hmc {
 
     class linearSampler {
     public:
-        // Constructors and destructors
+        /** \brief Constructor for a probabilistic sampler.
+          * \param InversionSettings settings
+          * \return linearSampler object
+          * */
         explicit linearSampler(InversionSettings settings);
 
-        // Sample the posterior and write samples out to file by
-        // calling one of the sampling methods (only 1 implemented)
+        /** \brief General wrapper for any sampler
+          * \return void
+          * */
         void sample();
 
-        // Sample using neals criterion
-        void sample_neal();
-
-        // Set the starting model explicitly instead of prior-based
+        /** \brief Set the starting model explicitly instead of prior-based.
+          * \param arma::vec startingModel
+          * \return void
+          * */
         void setStarting(arma::vec &model);
 
-    private:
-        // Fields
+        /** \brief Method for sampling using the criterion as described in Neal's HMC introduction.
+          * \return void
+          * */
+        void sample_neal();
 
+    private:
         // States
-        vec _currentModel;
-        vec _proposedModel;
-        vec _proposedMomentum;
+        vec _currentModel; ///< State of markov chain describing coordinates of current point.
+        vec _proposedModel; ///< State of markov chain describing coordinates of proposal.
+        vec _proposedMomentum; ///< State of markov chain describing momentum of proposal.
+
         // Quadratic form
-        mat A;
-        colvec B;
-        double C;
+        mat A; ///< A in quadratic form.
+        mat At; ///< A^t in quadratic form, speeds up proposals at the cost of memory.
+        bool symmetricA = false; ///< boolean for symmetry of A in quadratic form, speeds up gradient calculations if true.
+        colvec B; ///< B in quadratic form.
+        double C; ///< C in quadratic form.
+
         // Mass matrices
-        mat massMatrix;
-        mat invMass; // To spare computation time
+        mat massMatrix; ///< Mass matrix for HMC.
+        mat invMass; ///< Inverse mass matrix for calculation of kinetic energy in HMC.
+
         // Settings
-        unsigned long nt; // Number of time steps for trajectory
-        double dt; // Time step for trajectory
-        double temperature; // Temperature for acceptance criterion
-        unsigned long proposals; // Number of iterations for Monte Carlo sampling
-        unsigned long massMatrixType; // Number of iterations for Monte Carlo sampling
-        winsize _window;
+        unsigned long nt; ///< Number of time steps for trajectory in HMC.
+        double dt; ///< Time step for trajectory in HMC.
+        double temperature; ///< Temperature for acceptance criterion in MCMC.
+        unsigned long proposals; ///< Number of proposals for MCMC.
+        unsigned long massMatrixType; ///< Number of iterations in HMC.
+        winsize window; ///< Size of terminal for nice output.
+
         // Pointers to files
-        char *A_file;
-        char *B_file;
-        char *C_file;
-        char *_outputSamples;
-        char *_outputTrajectory;
+        char *A_file; ///< Pointer to character array of filename containing A in the quadratic form.
+        char *B_file; ///< Pointer to character array of filename containing B in the quadratic form.
+        char *C_file; ///< Pointer to character array of filename containing C in the quadratic form.
+        char *_outputSamples; ///< Pointer to character array of filename to store samples in MCMC.
+        char *_outputTrajectory; ///< Pointer to character array of filename to store trajectory samples from HMC.
 
         // Member methods
 
-        // Propose new momentum according to N(0,M)
+        //
+        /** \brief Propose new momentum according to N(0,M), writes to \ref linearSampler::_proposedMomentum.
+          * \return void
+          * */
         void propose_momentum();
 
         // Integrate Hamilton's equations using a leapfrog scheme
@@ -276,7 +292,7 @@ namespace hmc {
         // Calculate kinetic energy as 1/2 pt M^-1 p
         double kineticEnergy();
 
-        const Op<Mat<double>, op_chol> CholeskyLowerMassMatrix;
+        arma::mat CholeskyLowerMassMatrix;
     };
 }
 
