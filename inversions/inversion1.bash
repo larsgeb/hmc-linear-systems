@@ -14,13 +14,13 @@ output_log=${name}/${name}.log
 # Tuning parameters
 mass_matrix_type=0 # 0 for complete, 1 for diagonal, 2 for unit
 temperature=1
-adapt_time_step=0
-time_step=0.2 # nan for default, is overridden by adapttmestep
+adapt_time_step=1
+time_step=nan # nan for default, is overridden by adapttmestep
 number_of_samples=$((100000))
 
 # Run inversion
 ./hmc_sampler \
-    -nt 10 \
+    -nt 25 \
     -ia ${input_A} \
     -ib ${input_B} \
     -ic ${input_C} \
