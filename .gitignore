@@ -54,3 +54,4 @@ runSampling
 INPUT/
 bin/
 armadillo/
+docs/doxygen
