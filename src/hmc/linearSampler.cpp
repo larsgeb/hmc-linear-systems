@@ -85,7 +85,9 @@ namespace hmc {
 
         // Set starting proposal
         propose_momentum();
-        _proposedModel = -pinv((A + A.t()), 1e-1 * datum::eps, "std") * B;
+        _proposedModel = (massMatrixType == 0) ?
+                         (-2 * invMass * B) :
+                         symmetricA ? arma::conv_to<vec>::from(-inv(2 * A) * B) : arma::conv_to<vec>::from(-inv(At + A) * B);
 
         // Set starting model
         _currentModel = _proposedModel;
@@ -234,17 +236,18 @@ namespace hmc {
 
         // Time integrate Hamiltons equations
         for (int it = 0; it < local_nt; it++) {
-
-            // this allows for non-symmetric matrices, usually same as 2Ax + B
-            misfitGrad = (A.t() * _proposedModel + A * _proposedModel + B);
+            misfitGrad = symmetricA ?
+                         arma::conv_to<vec>::from(2 * A * _proposedModel + B) :
+                         arma::conv_to<vec>::from(At * _proposedModel + A * _proposedModel + B);
             _proposedMomentum = _proposedMomentum - 0.5 * local_dt * misfitGrad;
             if (writeTrajectory) write_sample(trajectoryfile, chi());
             _proposedModel = _proposedModel + local_dt *
                                               (massMatrixType == 0 ?
                                                conv_to<vec>::from(invMass * _proposedMomentum) :
                                                conv_to<vec>::from(invMass % _proposedMomentum));
-
-            misfitGrad = (A.t() * _proposedModel + A * _proposedModel + B);
+            misfitGrad = symmetricA ?
+                         arma::conv_to<vec>::from(2 * A * _proposedModel + B) :
+                         arma::conv_to<vec>::from(At * _proposedModel + A * _proposedModel + B);
             _proposedMomentum = _proposedMomentum - 0.5 * local_dt * misfitGrad;
 
         }
