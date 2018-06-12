@@ -52,10 +52,36 @@ namespace hmc {
         // Start pre-computation
         startCPU = std::clock();
         startWall = get_wall_time();
-
-        massMatrix = 0.5 * (A + A.t());
-        CholeskyLowerMassMatrix = arma::chol(massMatrix, "lower");
-        invMass = inv(massMatrix);
+        // Perform mass pre-computations
+        At = A.t();
+        massMatrix = 0.5 * (A + At);
+        if (arma::approx_equal(massMatrix, A, "rel_tol", 0.01)) {
+            symmetricA = true;
+            // If matrix is symmetric, we don't need to `remember' its transpose.
+            At.clear();
+        }
+        // Check for mass matrix type and modify accordingly.
+        if (massMatrixType == 1) {
+            massMatrix = diagvec(massMatrix);
+        } else if (massMatrixType == 2) {
+            // This is not optimally placed, as when we truly want to use eye, we shouldn't want to compute A+At for
+            // the mass matrix. However, this is still necessary to calculate the symmetry condition.
+            massMatrix = ones(massMatrix.n_rows, 1);
+        }
+        // Perform necessary precomputations
+        if (massMatrixType == 0) {
+            std::cout << "Performing Cholesky decomposition." << std::endl;
+            CholeskyLowerMassMatrix = arma::chol(massMatrix, "lower");
+            std::cout << "Performed Cholesky decomposition." << std::endl;
+            std::cout << "Inverting Cholesky decomposition." << std::endl;
+            mat invChol = inv(CholeskyLowerMassMatrix);
+            std::cout << "Inverted Cholesky decomposition." << std::endl;
+            std::cout << "Inverting mass using Cholesky decomposition." << std::endl;
+            invMass = invChol.t() * invChol;
+            std::cout << "Inverted mass using Cholesky decomposition." << std::endl;
+        } else {
+            invMass = 1.0 / massMatrix;
+        }
 
         // Set starting proposal
         propose_momentum();
@@ -75,7 +101,7 @@ namespace hmc {
                     break;
                 case 1:
                 case 2:
-                    eig_sym(eigval, eigvec, invMass * A);
+                    eig_sym(eigval, eigvec, diagmat(invMass) * A);
                     maxFrequency = arma::max(eigval);
                     eigval.clear();
                     eigvec.clear();
@@ -112,10 +138,13 @@ namespace hmc {
         _proposedModel = model;
     }
 
-    void linearSampler::propose_momentum() { // todo replace with general covariance matrix
+    void linearSampler::propose_momentum() {
         // Draw random prior momenta according to the distribution defined by the mass matrix.
-//        _proposedMomentum = randn(conv_to<mat>::from(massMatrix));
-        _proposedMomentum = randn_Cholesky(CholeskyLowerMassMatrix);
+        if (massMatrixType == 0) {
+            _proposedMomentum = randn_Cholesky(CholeskyLowerMassMatrix);
+        } else {
+            _proposedMomentum = randn(conv_to<vec>::from(massMatrix));
+        }
     }
 
     double linearSampler::misfit() {
@@ -123,7 +152,9 @@ namespace hmc {
     }
 
     double linearSampler::kineticEnergy() {
-        return as_scalar(0.5 * _proposedMomentum.t() * invMass * _proposedMomentum);
+        return 0.5 * ((massMatrixType == 0) ?
+                      as_scalar(_proposedMomentum.t() * invMass * _proposedMomentum) :
+                      dot(_proposedMomentum % invMass, _proposedMomentum));
 
     }
 
@@ -160,7 +191,7 @@ namespace hmc {
                           "\r" << std::flush;
             }
 
-            // Propose
+            // Propose new momentum and propagate
             propose_momentum();
             x = energy();
             leap_frog(it == proposals - 1);
@@ -207,10 +238,11 @@ namespace hmc {
             // this allows for non-symmetric matrices, usually same as 2Ax + B
             misfitGrad = (A.t() * _proposedModel + A * _proposedModel + B);
             _proposedMomentum = _proposedMomentum - 0.5 * local_dt * misfitGrad;
-
             if (writeTrajectory) write_sample(trajectoryfile, chi());
-
-            _proposedModel = _proposedModel + local_dt * (invMass * _proposedMomentum);
+            _proposedModel = _proposedModel + local_dt *
+                                              (massMatrixType == 0 ?
+                                               conv_to<vec>::from(invMass * _proposedMomentum) :
+                                               conv_to<vec>::from(invMass % _proposedMomentum));
 
             misfitGrad = (A.t() * _proposedModel + A * _proposedModel + B);
             _proposedMomentum = _proposedMomentum - 0.5 * local_dt * misfitGrad;
